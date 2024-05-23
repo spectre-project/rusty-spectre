@@ -1,0 +1,12 @@
+<html>
+    <head>
+        <script type="module">
+            import * as spectre from './spectre-rpc/spectre-rpc.js';
+            (async () => {
+                await spectre.default('./spectre-rpc/spectre-rpc_bg.wasm');
+                console.log(spectre.version());
+            })();
+        </script>
+    </head>
+    <body></body>
+</html>

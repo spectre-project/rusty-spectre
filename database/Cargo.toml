@@ -1,0 +1,28 @@
+[package]
+name = "spectre-database"
+description = "Spectre database"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+bincode.workspace = true
+enum-primitive-derive.workspace = true
+faster-hex.workspace = true
+indexmap.workspace = true
+itertools.workspace = true
+spectre-hashes.workspace = true
+spectre-utils.workspace = true
+num_cpus.workspace = true
+num-traits.workspace = true
+parking_lot.workspace = true
+rand.workspace = true
+rocksdb.workspace = true
+serde.workspace = true
+smallvec.workspace = true
+tempfile.workspace = true
+thiserror.workspace = true

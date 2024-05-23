@@ -1,0 +1,41 @@
+[package]
+name = "spectre-wrpc-server"
+description = "Spectre wRPC server"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+async-trait.workspace = true
+borsh = { workspace = true, features = ["rc"] }
+futures.workspace = true
+spectre-consensus-core.workspace = true
+spectre-core.workspace = true
+spectre-grpc-client.workspace = true
+spectre-notify.workspace = true
+spectre-rpc-core.workspace = true
+spectre-rpc-macros.workspace = true
+spectre-rpc-service.workspace = true
+spectre-utils.workspace = true
+log.workspace = true
+num_cpus.workspace = true
+paste.workspace = true
+serde = { workspace = true, features = ["rc"] }
+thiserror.workspace = true
+tokio.workspace = true
+workflow-core.workspace = true
+workflow-log.workspace = true
+workflow-rpc.workspace = true
+
+[target.x86_64-unknown-linux-gnu.dependencies]
+# Adding explicitely the openssl dependency here is needed for a successful build with zigbuild
+# as used in the release deployment in GitHub CI
+# see: https://github.com/rust-cross/cargo-zigbuild/issues/127
+openssl = { version = "0.10", features = ["vendored"] }

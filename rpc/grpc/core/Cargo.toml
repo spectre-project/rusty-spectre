@@ -1,0 +1,38 @@
+[package]
+name = "spectre-grpc-core"
+description = "Spectre gRPC core"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+spectre-consensus-core.workspace = true
+spectre-core.workspace = true
+spectre-notify.workspace = true
+spectre-rpc-core.workspace = true
+spectre-utils.workspace = true
+
+async-channel.workspace = true
+async-stream.workspace = true
+async-trait.workspace = true
+faster-hex.workspace = true
+futures.workspace = true
+h2.workspace = true
+log.workspace = true
+paste.workspace = true
+prost.workspace = true
+rand.workspace = true
+regex.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "sync", "time"] }
+tokio-stream.workspace = true
+tonic = { workspace = true, features = ["tls", "gzip"] }
+triggered.workspace = true
+workflow-core.workspace = true
+
+[build-dependencies]
+tonic-build = { workspace = true, features = ["prost"] }

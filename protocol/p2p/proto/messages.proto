@@ -1,0 +1,60 @@
+syntax = "proto3";
+package protowire;
+
+option go_package = "github.com/spectre-project/spectred/protowire";
+
+import "p2p.proto";
+
+message SpectredMessage {
+  uint32 response_id = 101;
+  uint32 request_id = 102;
+  oneof payload {
+    AddressesMessage addresses = 1;
+    BlockMessage block = 2;
+    TransactionMessage transaction = 3;
+    BlockLocatorMessage blockLocator = 5;
+    RequestAddressesMessage requestAddresses = 6;
+    RequestRelayBlocksMessage requestRelayBlocks = 10;
+    RequestTransactionsMessage requestTransactions = 12;
+    BlockMessage ibdBlock = 13;
+    InvRelayBlockMessage invRelayBlock = 14;
+    InvTransactionsMessage invTransactions = 15;
+    PingMessage ping = 16;
+    PongMessage pong = 17;
+    VerackMessage verack = 19;
+    VersionMessage version = 20;
+    TransactionNotFoundMessage transactionNotFound = 21;
+    RejectMessage reject = 22;
+    PruningPointUtxoSetChunkMessage pruningPointUtxoSetChunk = 25;
+    RequestIBDBlocksMessage requestIBDBlocks = 26;
+    UnexpectedPruningPointMessage unexpectedPruningPoint = 27;
+    IbdBlockLocatorMessage ibdBlockLocator = 30;
+    IbdBlockLocatorHighestHashMessage ibdBlockLocatorHighestHash = 31;
+    RequestNextPruningPointUtxoSetChunkMessage requestNextPruningPointUtxoSetChunk = 33;
+    DonePruningPointUtxoSetChunksMessage donePruningPointUtxoSetChunks = 34;
+    IbdBlockLocatorHighestHashNotFoundMessage ibdBlockLocatorHighestHashNotFound = 35;
+    BlockWithTrustedDataMessage blockWithTrustedData = 36;
+    DoneBlocksWithTrustedDataMessage doneBlocksWithTrustedData = 37;
+    RequestPruningPointAndItsAnticoneMessage requestPruningPointAndItsAnticone = 40;
+    BlockHeadersMessage blockHeaders = 41;
+    RequestNextHeadersMessage requestNextHeaders = 42;
+    DoneHeadersMessage DoneHeaders = 43;
+    RequestPruningPointUTXOSetMessage requestPruningPointUTXOSet = 44;
+    RequestHeadersMessage requestHeaders = 45;
+    RequestBlockLocatorMessage requestBlockLocator = 46;
+    PruningPointsMessage pruningPoints = 47;
+    RequestPruningPointProofMessage requestPruningPointProof = 48;
+    PruningPointProofMessage pruningPointProof = 49;
+    ReadyMessage ready = 50;
+    BlockWithTrustedDataV4Message blockWithTrustedDataV4 = 51;
+    TrustedDataMessage trustedData = 52;
+    RequestIBDChainBlockLocatorMessage requestIBDChainBlockLocator = 53;
+    IbdChainBlockLocatorMessage ibdChainBlockLocator = 54;
+    RequestAntipastMessage requestAntipast = 55;
+    RequestNextPruningPointAndItsAnticoneBlocksMessage requestNextPruningPointAndItsAnticoneBlocks = 56;
+  }
+}
+
+service P2P {
+  rpc MessageStream (stream SpectredMessage) returns (stream SpectredMessage) {}
+}

@@ -1,0 +1,13 @@
+[package]
+name = "spectre-merkle"
+description = "Spectre merkle tree library"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+spectre-hashes.workspace = true

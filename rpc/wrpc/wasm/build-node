@@ -1,0 +1,3 @@
+#!/bin/bash
+
+wasm-pack build --target nodejs --out-name spectre-rpc --out-dir nodejs/spectre-rpc --features wasm32-sdk

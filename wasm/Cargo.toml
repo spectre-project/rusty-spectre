@@ -1,0 +1,65 @@
+[package]
+name = "spectre-wasm"
+description = "SPECTRE WASM bindings"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+repository.workspace = true
+# wasm-pack requires this value to be a string
+# (it can not be derived from the workspace)
+license = "ISC"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+cfg-if.workspace = true
+js-sys.workspace = true
+spectre-addresses.workspace = true
+spectre-consensus-core.workspace = true
+spectre-consensus-wasm.workspace = true
+spectre-core.workspace = true
+spectre-math.workspace = true
+spectre-pow.workspace = true
+spectre-rpc-core.workspace = true
+spectre-utils.workspace = true
+spectre-wasm-core.workspace = true
+spectre-wallet-core.workspace = true
+spectre-wallet-keys.workspace = true
+spectre-wrpc-client.workspace = true
+spectre-wrpc-wasm.workspace = true
+num.workspace = true
+wasm-bindgen.workspace = true
+workflow-log.workspace = true
+workflow-core.workspace = true
+workflow-wasm.workspace = true
+
+[features] 
+wasm32-sdk = [
+    "spectre-wallet-core/wasm32-sdk",
+    "spectre-pow/wasm32-sdk",
+]
+wasm32-core = [
+    "spectre-wallet-core/wasm32-core",
+    "spectre-pow/wasm32-sdk",
+]
+wasm32-rpc = [
+    "spectre-consensus-core/wasm32-sdk",
+    "spectre-consensus-wasm/wasm32-sdk",
+    "spectre-wrpc-client/wasm32-sdk",
+    "spectre-wrpc-wasm/wasm32-sdk",
+]
+wasm32-keygen = []
+default = []
+
+[package.metadata.docs.rs]
+targets = ["wasm32-unknown-unknown"]
+
+[package.metadata.emanate.wasm]
+targets = [
+    { target = "nodejs", out-dir = "nodejs/spectre" },
+    { target = "web", out-dir = "web/spectre" }
+]
+folder = "setup"

@@ -1,0 +1,84 @@
+[package]
+name = "spectre-cli"
+description = "Spectre CLI"
+keywords = ["spectre", "wallet", "cli", "rpc"]
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+include = [
+    "src/**/*.rs",
+    "src/**/*.txt",
+    "src/**/*.css",
+    "Cargo.toml",
+    "Cargo.lock",
+]
+
+[features]
+default = []
+
+[lib]
+name = "spectre_cli_lib"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+async-trait.workspace = true
+borsh.workspace = true
+cfg-if.workspace = true
+convert_case.workspace = true
+dashmap.workspace = true
+downcast.workspace = true
+faster-hex.workspace = true
+futures.workspace = true
+js-sys.workspace = true
+spectre-addresses.workspace = true
+spectre-bip32.workspace = true
+spectre-consensus-core.workspace = true
+spectre-core.workspace = true
+spectre-daemon.workspace = true
+spectre-metrics-core.workspace = true
+spectre-rpc-core.workspace = true
+spectre-utils.workspace = true
+spectre-wallet-core.workspace = true
+spectre-wallet-keys.workspace = true
+spectre-wrpc-client.workspace = true
+nw-sys.workspace = true
+pad.workspace = true
+regex.workspace = true
+separator.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+textwrap.workspace = true
+thiserror.workspace = true
+wasm-bindgen.workspace = true
+workflow-core.workspace = true
+workflow-dom.workspace = true
+workflow-log.workspace = true
+workflow-node.workspace = true
+workflow-nw.workspace = true
+workflow-store.workspace = true
+workflow-terminal.workspace = true
+workflow-wasm.workspace = true
+
+[dependencies.web-sys]
+workspace = true
+features = [
+    'console',
+    'Document',
+    'Window',
+    'Node',
+    'Element',
+    'HtmlElement',
+    'DomTokenList',
+    # 'HtmlElement',
+    # 'CustomEvent',
+    # 'MouseEvent'
+]
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio.workspace = true
+
+[lints.clippy]
+empty_docs = "allow"

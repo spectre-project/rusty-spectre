@@ -1,0 +1,31 @@
+[package]
+name = "spectre-pow"
+description = "Spectre proof-of-work"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+wasm32-sdk = []
+
+[dependencies]
+js-sys.workspace = true
+spectre-consensus-core.workspace = true
+spectre-consensus-client.workspace = true
+spectre-hashes.workspace = true
+spectre-math.workspace = true
+spectre-utils.workspace = true
+wasm-bindgen.workspace = true
+workflow-wasm.workspace = true
+num.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+
+[[bench]]
+name = "bench"
+harness = false

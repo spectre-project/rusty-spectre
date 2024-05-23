@@ -1,0 +1,66 @@
+#!/bin/bash
+
+cargo fmt --all
+cargo clippy --workspace --tests --benches
+
+status=$?
+if [ $status -ne 0 ]; then
+    echo
+    echo "--> cargo clippy check failed"
+    echo
+    exit $status
+fi
+
+declare -a crates=(
+    "spectre-wasm"
+)
+
+for crate in "${crates[@]}"
+do
+    cargo clippy -p $crate --target wasm32-unknown-unknown --tests --benches --features wasm32-sdk
+    status=$?
+    if [ $status -ne 0 ]; then
+        echo
+        echo "--> wasm32 check of $crate failed"
+        echo
+        exit $status
+    fi
+done
+
+declare -a crates=(
+    "spectre-wrpc-wasm"
+    "spectre-wallet-cli-wasm"
+    "spectre-wasm"
+    "spectre-cli"
+    "spectre-daemon"
+)
+
+for crate in "${crates[@]}"
+do
+    cargo clippy -p $crate --target wasm32-unknown-unknown --tests --benches
+    status=$?
+    if [ $status -ne 0 ]; then
+        echo
+        echo "--> wasm32 check of $crate failed"
+        echo
+        exit $status
+    fi
+done
+
+declare -a features=(
+    "wasm32-rpc"
+    "wasm32-core"
+    "wasm32-sdk"
+)
+
+for feature in "${features[@]}"
+do
+    cargo clippy -p spectre-wasm --target wasm32-unknown-unknown --features $feature
+    status=$?
+    if [ $status -ne 0 ]; then
+        echo
+        echo "--> wasm32 check of spectre-wasm --features $feature has failed"
+        echo
+        exit $status
+    fi
+done

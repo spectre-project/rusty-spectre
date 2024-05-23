@@ -1,0 +1,47 @@
+[package]
+name = "spectre-wrpc-client"
+description = "Spectre wRPC client"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+wasm32-sdk = ["spectre-consensus-wasm/wasm32-sdk","spectre-rpc-core/wasm32-sdk","workflow-rpc/wasm32-sdk"]
+default = []
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+async-std.workspace = true
+async-trait.workspace = true
+borsh.workspace = true
+cfg-if.workspace = true
+futures.workspace = true
+js-sys.workspace = true
+spectre-addresses.workspace = true
+spectre-consensus-core.workspace = true
+spectre-consensus-wasm.workspace = true
+spectre-notify.workspace = true
+spectre-rpc-core.workspace = true
+spectre-rpc-macros.workspace = true
+paste.workspace = true
+rand.workspace = true
+regex.workspace = true
+serde_json.workspace = true
+serde-wasm-bindgen.workspace = true
+serde.workspace = true
+toml.workspace = true
+thiserror.workspace = true
+wasm-bindgen-futures.workspace = true
+wasm-bindgen.workspace = true
+workflow-core.workspace = true
+workflow-dom.workspace = true
+workflow-http.workspace = true
+workflow-log.workspace = true
+workflow-rpc.workspace = true
+workflow-wasm.workspace = true

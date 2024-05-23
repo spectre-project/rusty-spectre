@@ -1,0 +1,39 @@
+[package]
+name = "spectre-txscript"
+description = "Spectre txscript engine library"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+blake2b_simd.workspace = true
+borsh.workspace = true
+indexmap.workspace = true
+itertools.workspace = true
+spectre-addresses.workspace = true
+spectre-consensus-core.workspace = true
+spectre-hashes.workspace = true
+spectre-txscript-errors.workspace = true
+log.workspace = true
+parking_lot.workspace = true
+rand.workspace = true
+secp256k1.workspace = true
+serde.workspace = true
+sha2.workspace = true
+smallvec.workspace = true
+thiserror.workspace = true
+wasm-bindgen.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+smallvec.workspace = true
+hex.workspace = true
+serde_json.workspace = true
+
+[[bench]]
+name = "bench"
+harness = false

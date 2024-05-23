@@ -1,0 +1,32 @@
+[package]
+name = "spectre-addresses"
+description = "Spectre address"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+borsh.workspace = true
+js-sys.workspace = true
+serde.workspace = true
+smallvec.workspace = true
+thiserror.workspace = true
+wasm-bindgen.workspace = true
+workflow-wasm.workspace = true
+workflow-log.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+wasm-bindgen-test.workspace = true
+web-sys.workspace = true
+
+[[bench]]
+name = "bench"
+harness = false
+
+[lints.clippy]
+empty_docs = "allow"

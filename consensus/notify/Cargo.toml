@@ -1,0 +1,25 @@
+[package]
+name = "spectre-consensus-notify"
+description = "Spectre consensus notifier"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+async-channel.workspace = true
+cfg-if.workspace = true
+derive_more.workspace = true
+futures.workspace = true
+spectre-consensus-core.workspace = true
+spectre-core.workspace = true
+spectre-hashes.workspace = true
+spectre-notify.workspace = true
+spectre-utils.workspace = true
+log.workspace = true
+paste.workspace = true
+thiserror.workspace = true
+triggered.workspace = true

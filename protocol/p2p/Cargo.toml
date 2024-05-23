@@ -1,0 +1,53 @@
+[package]
+name = "spectre-p2p-lib"
+description = "Spectre p2p library"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+path = "./src/lib.rs"
+
+[[bin]]
+name = "spectre_p2p_client"
+path = "./src/bin/client.rs"
+
+[[bin]]
+name = "spectre_p2p_server"
+path = "./src/bin/server.rs"
+
+[dependencies]
+spectre-core.workspace = true
+spectre-consensus-core.workspace = true
+spectre-mining-errors.workspace = true
+spectre-hashes.workspace = true
+spectre-math.workspace = true
+spectre-utils.workspace = true
+spectre-utils-tower.workspace = true
+
+borsh.workspace = true
+ctrlc.workspace = true
+futures = { workspace = true, features = ["alloc"] }
+h2.workspace = true
+itertools.workspace = true
+log.workspace = true
+parking_lot.workspace = true
+prost.workspace = true
+rand.workspace = true
+seqlock.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = [ "rt-multi-thread", "macros", "signal" ] }
+tokio-stream = { workspace = true, features = ["net"] }
+tonic = { workspace = true, features = ["tls", "gzip"] }
+uuid.workspace = true
+
+[build-dependencies]
+tonic-build = { workspace = true, features = ["prost"] }
+
+[dev-dependencies]
+hex.workspace = true

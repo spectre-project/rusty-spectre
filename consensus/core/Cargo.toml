@@ -1,0 +1,57 @@
+[package]
+name = "spectre-consensus-core"
+description = "Spectre consensus core"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+devnet-prealloc = []
+wasm32-sdk = []
+default = []
+
+[dependencies]
+async-trait.workspace = true
+borsh.workspace = true
+cfg-if.workspace = true
+faster-hex.workspace = true
+futures-util.workspace = true
+getrandom.workspace = true
+itertools.workspace = true
+js-sys.workspace = true
+spectre-addresses.workspace = true
+spectre-core.workspace = true
+spectre-hashes.workspace = true
+spectre-math.workspace = true
+spectre-merkle.workspace = true
+spectre-muhash.workspace = true
+spectre-txscript-errors.workspace = true
+spectre-utils.workspace = true
+rand.workspace = true
+secp256k1.workspace = true
+serde_json.workspace = true
+serde-wasm-bindgen.workspace = true
+serde.workspace = true
+smallvec.workspace = true
+thiserror.workspace = true
+wasm-bindgen.workspace = true
+workflow-core.workspace = true
+workflow-log.workspace = true
+workflow-wasm.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+bincode.workspace = true
+wasm-bindgen-test.workspace = true
+web-sys.workspace = true
+
+[[bench]]
+name = "serde_benchmark"
+harness = false
+
+[lints.clippy]
+empty_docs = "allow"

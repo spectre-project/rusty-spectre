@@ -1,0 +1,16 @@
+[package]
+name = "spectre-mining-errors"
+description = "Spectre mining error definitions"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+thiserror.workspace = true
+spectre-consensus-core.workspace = true

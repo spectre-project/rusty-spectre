@@ -1,0 +1,63 @@
+[package]
+name = "spectre-consensus"
+description = "Spectre consensus library"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+arc-swap.workspace = true
+async-channel.workspace = true
+bincode.workspace = true
+crossbeam-channel.workspace = true
+faster-hex.workspace = true
+futures-util.workspace = true
+indexmap.workspace = true
+itertools.workspace = true
+spectre-consensus-core.workspace = true
+spectre-consensus-notify.workspace = true
+spectre-consensusmanager.workspace = true
+spectre-core.workspace = true
+spectre-database.workspace = true
+spectre-hashes.workspace = true
+spectre-math.workspace = true
+spectre-merkle.workspace = true
+spectre-muhash.workspace = true
+spectre-notify.workspace = true
+spectre-pow.workspace = true
+spectre-txscript.workspace = true
+spectre-utils.workspace = true
+log.workspace = true
+once_cell.workspace = true
+parking_lot.workspace = true
+rayon.workspace = true
+rocksdb.workspace = true
+secp256k1.workspace = true
+serde.workspace = true
+smallvec.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+
+rand = { workspace = true, features = ["small_rng"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+tokio = { workspace = true, features = ["rt", "macros"] }
+
+[dev-dependencies]
+criterion.workspace = true
+serde_json.workspace = true
+flate2.workspace = true
+rand_distr.workspace = true
+spectre-txscript-errors.workspace = true
+
+[[bench]]
+name = "hash_benchmarks"
+harness = false
+
+[features]
+html_reports = []
+devnet-prealloc = ["spectre-consensus-core/devnet-prealloc"]

@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+
+wasm-pack build --weak-refs --target nodejs --out-name spectre --out-dir nodejs/spectre --features wasm32-sdk

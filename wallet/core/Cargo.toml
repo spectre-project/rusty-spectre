@@ -1,0 +1,129 @@
+[package]
+name = "spectre-wallet-core"
+description = "Spectre wallet library"
+keywords = ["spectre", "wallet"]
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+multi-user = []
+wasm32-keygen = [
+    # "spectre-consensus-wasm/wasm32-types",
+]
+wasm32-core = [
+    "spectre-consensus-wasm/wasm32-sdk",
+    "spectre-consensus-core/wasm32-sdk",
+    "spectre-wrpc-client/wasm32-sdk",
+    "spectre-wrpc-wasm/wasm32-sdk",
+    "spectre-wasm-core/wasm32-sdk",
+]
+wasm32-sdk = [
+    "wasm32-core"
+]
+default = ["wasm32-sdk"]
+# default = []
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+aes.workspace = true
+ahash.workspace = true
+argon2.workspace = true
+async-channel.workspace = true
+async-std.workspace = true
+async-trait.workspace = true
+base64.workspace = true
+borsh.workspace = true
+cfb-mode.workspace = true
+cfg-if.workspace = true
+chacha20poly1305.workspace = true
+convert_case.workspace = true
+crypto_box.workspace = true
+dashmap.workspace = true
+derivative.workspace = true
+downcast.workspace = true
+evpkdf.workspace = true
+faster-hex.workspace = true
+fixedstr.workspace = true
+futures.workspace = true
+heapless.workspace = true
+hmac.workspace = true
+itertools.workspace = true
+js-sys.workspace = true
+spectre-addresses.workspace = true
+spectre-bip32.workspace = true
+spectre-consensus-client.workspace = true
+spectre-consensus-core.workspace = true
+spectre-consensus-wasm.workspace = true
+spectre-core.workspace = true
+spectre-hashes.workspace = true
+spectre-metrics-core.workspace = true
+spectre-notify.workspace = true
+spectre-rpc-core.workspace = true
+spectre-txscript-errors.workspace = true
+spectre-txscript.workspace = true
+spectre-utils.workspace = true
+spectre-wallet-keys.workspace = true
+spectre-wallet-macros.workspace = true
+spectre-wasm-core.workspace = true
+spectre-wrpc-client.workspace = true
+spectre-wrpc-wasm.workspace = true
+md-5.workspace = true
+pad.workspace = true
+pbkdf2.workspace = true
+rand.workspace = true
+regex.workspace = true
+ripemd.workspace = true
+secp256k1.workspace = true
+separator.workspace = true
+serde_json.workspace = true
+serde-wasm-bindgen.workspace = true
+serde.workspace = true
+sha1.workspace = true
+sha2.workspace = true
+slugify-rs.workspace = true
+sorted-insert.workspace = true
+thiserror.workspace = true
+wasm-bindgen-futures.workspace = true
+wasm-bindgen.workspace = true
+workflow-core.workspace = true
+workflow-log.workspace = true
+workflow-node.workspace = true
+workflow-rpc.workspace = true
+workflow-store.workspace = true
+workflow-wasm.workspace = true
+xxhash-rust.workspace = true
+zeroize.workspace = true
+indexed_db_futures.workspace = true
+
+[dependencies.web-sys]
+workspace = true
+features = [
+    'Storage',
+    'Window',
+    'IdbFactory',
+    'IdbDatabase',
+    'IdbOpenDbOptions',
+    'IdbOpenDbRequest',
+    'IdbTransaction',
+    'IdbCursorDirection',
+]
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+home.workspace = true
+
+[dev-dependencies]
+hex-literal.workspace = true
+serde_repr.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+tokio.workspace = true
+
+[lints.clippy]
+empty_docs = "allow"

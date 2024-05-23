@@ -1,0 +1,40 @@
+[package]
+name = "spectre-mining"
+description = "Spectre mining"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+spectre-addresses.workspace = true
+spectre-consensus-core.workspace = true
+spectre-consensusmanager.workspace = true
+spectre-core.workspace = true
+spectre-hashes.workspace = true
+spectre-mining-errors.workspace = true
+spectre-muhash.workspace = true
+spectre-txscript.workspace = true
+spectre-utils.workspace = true
+
+futures-util.workspace = true
+itertools.workspace = true
+log.workspace = true
+parking_lot.workspace = true
+rand.workspace = true
+serde.workspace = true
+smallvec.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = [ "rt-multi-thread", "macros", "signal" ] }
+
+[dev-dependencies]
+spectre-txscript.workspace = true
+criterion.workspace = true
+secp256k1.workspace = true
+
+[[bench]]
+name = "bench"
+harness = false

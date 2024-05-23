@@ -1,0 +1,28 @@
+#!/bin/bash
+set -e
+
+./build-web $@
+
+if [ "$1" == "--keygen" ]; then
+    echo "building keygen"
+    typedoc --name "Spectre WASM32 SDK - Key Generation" --sourceLinkExternal --readme ./README.md --options ./build/docs/ --out ./docs/spectre-keygen ./build/docs/spectre-keygen.ts
+elif [ "$1" == "--rpc" ]; then
+    echo "building rpc"
+    typedoc --name "Spectre WASM32 SDK - RPC" --sourceLinkExternal --readme ./README.md --options ./build/docs/ --out ./docs/spectre-rpc ./build/docs/spectre-rpc.ts
+elif [ "$1" == "--core" ]; then
+    echo "building core"
+    typedoc --name "Spectre WASM32 SDK - Core" --sourceLinkExternal --readme ./README.md --options ./build/docs/ --out ./docs/spectre-core ./build/docs/spectre-core.ts
+elif [ "$1" == "--sdk" ]; then
+    echo "building full"
+    typedoc --name "Spectre WASM32 SDK" --sourceLinkExternal --readme ./README.md --options ./build/docs/ --out ./docs/spectre ./build/docs/spectre.ts
+else
+    echo "building keygen"
+    typedoc --name "Spectre WASM32 SDK - Key Generation" --sourceLinkExternal --readme ./README.md --options ./build/docs/ --out ./docs/spectre-keygen ./build/docs/spectre-keygen.ts
+    echo "building rpc"
+    typedoc --name "Spectre WASM32 SDK - RPC" --sourceLinkExternal --readme ./README.md --options ./build/docs/ --out ./docs/spectre-rpc ./build/docs/spectre-rpc.ts
+    echo "building core"
+    typedoc --name "Spectre WASM32 SDK - Core" --sourceLinkExternal --readme ./README.md --options ./build/docs/ --out ./docs/spectre-core ./build/docs/spectre-core.ts
+    echo "building full"
+    typedoc --name "Spectre WASM32 SDK" --sourceLinkExternal --readme ./README.md --options ./build/docs/ --out ./docs/spectre ./build/docs/spectre.ts
+
+fi

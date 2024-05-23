@@ -1,0 +1,44 @@
+[package]
+name = "spectre-grpc-server"
+description = "Spectre gRPC server"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+spectre-consensus-core.workspace = true
+spectre-core.workspace = true
+spectre-grpc-core.workspace = true
+spectre-notify.workspace = true
+spectre-rpc-core.workspace = true
+spectre-rpc-macros.workspace = true
+spectre-rpc-service.workspace = true
+spectre-utils-tower.workspace = true
+spectre-utils.workspace = true
+
+async-channel.workspace = true
+async-stream.workspace = true
+async-trait.workspace = true
+faster-hex.workspace = true
+futures.workspace = true
+h2.workspace = true
+itertools.workspace = true
+log.workspace = true
+once_cell.workspace = true
+parking_lot.workspace = true
+paste.workspace = true
+prost.workspace = true
+rand.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "sync", "time"] }
+tokio-stream.workspace = true
+tonic = { workspace = true, features = ["gzip"] }
+triggered.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+spectre-grpc-client.workspace = true

@@ -1,0 +1,58 @@
+[package]
+name = "spectre-rpc-core"
+description = "Spectre RPC core"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+wasm32-sdk = [
+    "spectre-consensus-client/wasm32-sdk",
+    "spectre-consensus-wasm/wasm32-sdk"
+]
+
+[dependencies]
+spectre-addresses.workspace = true
+spectre-consensus-core.workspace = true
+spectre-consensus-client.workspace = true
+spectre-consensus-notify.workspace = true
+spectre-consensus-wasm.workspace = true
+spectre-core.workspace = true
+spectre-hashes.workspace = true
+spectre-index-core.workspace = true
+spectre-math.workspace = true
+spectre-mining-errors.workspace = true
+spectre-notify.workspace = true
+spectre-txscript.workspace = true
+spectre-utils.workspace = true
+spectre-rpc-macros.workspace = true
+
+async-channel.workspace = true
+async-trait.workspace = true
+borsh.workspace = true
+cfg-if.workspace = true
+derive_more.workspace = true
+downcast.workspace = true
+faster-hex.workspace = true
+hex.workspace = true
+js-sys.workspace = true
+log.workspace = true
+paste.workspace = true
+serde-wasm-bindgen.workspace = true
+serde.workspace = true
+smallvec.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+wasm-bindgen.workspace = true
+workflow-core.workspace = true
+workflow-wasm.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints.clippy]
+empty_docs = "allow"

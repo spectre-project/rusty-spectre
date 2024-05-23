@@ -1,0 +1,28 @@
+[package]
+name = "spectre-daemon"
+description = "Utilities for running Spectre node and tools as a child processes"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+borsh.workspace = true
+cfg-if.workspace = true
+downcast-rs.workspace = true
+futures.workspace = true
+spectre-addresses.workspace = true
+spectre-consensus-core.workspace = true
+spectre-wallet-core.workspace = true
+nw-sys.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+workflow-core.workspace = true
+workflow-log.workspace = true
+workflow-node.workspace = true
+workflow-nw.workspace = true
+workflow-store.workspace = true

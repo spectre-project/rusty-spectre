@@ -1,0 +1,28 @@
+{
+  "name": "spectre",
+  "version": "0.3.14",
+  "description": "Spectre SDK",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spectre-project/rusty-spectre.git"
+  },
+  "keywords": [
+    "spectre",
+    "wasm",
+    "sdk"
+  ],
+  "author": "Spectre developers",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/spectre-project/rusty-spectre/issues"
+  },
+  "homepage": "https://github.com/spectre-project/rusty-spectre#readme",
+  "dependencies": {
+    "websocket": "1.0.34",
+    "spectre-wasm": "0.3.14"
+  }
+}

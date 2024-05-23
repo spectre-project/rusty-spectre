@@ -1,0 +1,29 @@
+[package]
+name = "spectre-utxoindex"
+description = "Spectre UTXO index"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+futures.workspace = true
+spectre-consensus-core.workspace = true
+spectre-consensusmanager.workspace = true
+spectre-core.workspace = true
+spectre-database.workspace = true
+spectre-hashes.workspace = true
+spectre-index-core.workspace = true
+spectre-utils.workspace = true
+log.workspace = true
+parking_lot.workspace = true
+rocksdb.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+spectre-consensus.workspace = true
+rand = { workspace = true, features = ["small_rng"] }

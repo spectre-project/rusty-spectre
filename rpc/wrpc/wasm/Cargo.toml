@@ -1,0 +1,45 @@
+[package]
+name = "spectre-wrpc-wasm"
+description = "Spectre wRPC WASM client"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+wasm32-sdk = ["spectre-wrpc-client/wasm32-sdk"]
+default = []
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+ahash.workspace = true
+async-std.workspace = true
+cfg-if.workspace = true
+spectre-addresses.workspace = true
+spectre-consensus-core.workspace = true
+spectre-consensus-client.workspace = true
+spectre-consensus-wasm.workspace = true
+spectre-notify.workspace = true
+spectre-wrpc-client.workspace = true
+spectre-rpc-core.workspace = true
+spectre-rpc-macros.workspace = true
+spectre-wasm-core.workspace = true
+serde_json.workspace = true
+serde-wasm-bindgen.workspace = true
+serde.workspace = true
+workflow-log.workspace = true
+workflow-rpc.workspace = true
+workflow-wasm.workspace = true
+wasm-bindgen.workspace = true
+js-sys.workspace = true
+wasm-bindgen-futures.workspace = true
+workflow-core.workspace = true
+futures.workspace = true
+
+[lints.clippy]
+empty_docs = "allow"

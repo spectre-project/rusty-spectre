@@ -1,0 +1,6 @@
+/target
+/Cargo.lock
+/web/spectre-rpc
+/nodejs/spectre-rpc
+/nodejs/node_modules
+/nodejs/package-lock.json

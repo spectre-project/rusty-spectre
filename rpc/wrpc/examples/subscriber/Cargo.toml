@@ -1,0 +1,22 @@
+[package]
+name = "spectre-wrpc-example-subscriber"
+description = "Spectre wRPC subscription example"
+publish = false
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+futures.workspace = true
+spectre-consensus-core.workspace = true
+spectre-rpc-core.workspace = true
+spectre-wrpc-client.workspace = true
+spectre-notify.workspace = true
+tokio.workspace = true
+workflow-core.workspace = true
+workflow-log.workspace = true
+ctrlc.workspace = true

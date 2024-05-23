@@ -1,0 +1,194 @@
+name: Build and upload assets
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Build gnu-linux on ubuntu-18.04 and musl on ubuntu latest
+        # os: [ ubuntu-18.04, ubuntu-latest, windows-latest, macos-latest ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    name: Building, ${{ matrix.os }}
+    steps:
+      - name: Fix CRLF on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install zig on linux
+        if: runner.os == 'Linux'
+        uses: goto-bus-stop/setup-zig@v2 # needed for cargo-zigbuild
+
+      - name: Build on Linux
+        if: runner.os == 'Linux'
+        # We're using musl to make the binaries statically linked and portable
+        run: |
+          cargo install cargo-zigbuild
+          cargo --verbose zigbuild --bin spectred --bin simpa --bin rothschild --bin spectre-wallet --release --target x86_64-unknown-linux-gnu.2.27 # Use an older glibc version
+          mkdir bin || true
+          cp target/x86_64-unknown-linux-gnu/release/spectred bin/
+          cp target/x86_64-unknown-linux-gnu/release/simpa bin/
+          cp target/x86_64-unknown-linux-gnu/release/rothschild bin/
+          cp target/x86_64-unknown-linux-gnu/release/spectre-wallet bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-amd64.zip"
+          asset_name="rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-amd64.zip"
+          zip -r "${archive}" ./bin/*
+          echo "archive=${archive}" >> $GITHUB_ENV
+          echo "asset_name=${asset_name}" >> $GITHUB_ENV
+
+      - name: Build on Windows
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          cargo build --bin spectred --release
+          cargo build --bin simpa --release
+          cargo build --bin rothschild --release
+          cargo build --bin spectre-wallet --release
+          mkdir bin || true
+          cp target/release/spectred.exe bin/
+          cp target/release/simpa.exe bin/
+          cp target/release/rothschild.exe bin/
+          cp target/release/spectre-wallet.exe bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-win64.zip"
+          asset_name="rusty-spectre-${{ github.event.release.tag_name }}-win64.zip"
+          powershell "Compress-Archive bin/* \"${archive}\""
+          echo "archive=${archive}" >> $GITHUB_ENV
+          echo "asset_name=${asset_name}" >> $GITHUB_ENV
+
+      - name: Build on MacOS
+        if: runner.os == 'macOS'
+        run: |
+          cargo build --bin spectred --release
+          cargo build --bin simpa --release
+          cargo build --bin rothschild --release
+          cargo build --bin spectre-wallet --release
+          mkdir bin || true
+          cp target/release/spectred bin/
+          cp target/release/simpa bin/
+          cp target/release/rothschild bin/
+          cp target/release/spectre-wallet bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-osx.zip"
+          asset_name="rusty-spectre-${{ github.event.release.tag_name }}-osx.zip"
+          zip -r "${archive}" ./bin/*
+          echo "archive=${archive}" >> $GITHUB_ENV
+          echo "asset_name=${asset_name}" >> $GITHUB_ENV
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: "./${{ env.archive }}"
+          asset_name: "${{ env.asset_name }}"
+          asset_content_type: application/zip
+
+  build-wasm:
+    runs-on: ubuntu-latest
+    name: Building WASM32 SDK
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install llvm
+        id: install_llvm
+        continue-on-error: true
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          sudo apt-get install -y clang-15 lldb-15 lld-15 clangd-15 clang-tidy-15 clang-format-15 clang-tools-15 llvm-15-dev lld-15 lldb-15 llvm-15-tools libomp-15-dev libc++-15-dev libc++abi-15-dev libclang-common-15-dev libclang-15-dev libclang-cpp15-dev libunwind-15-dev
+          # Make Clang 15 default
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-15/bin/clang++ 100
+          sudo update-alternatives --install /usr/bin/clang clang /usr/lib/llvm-15/bin/clang 100
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/lib/llvm-15/bin/clang-format 100
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/lib/llvm-15/bin/clang-tidy 100
+          sudo update-alternatives --install /usr/bin/run-clang-tidy run-clang-tidy /usr/lib/llvm-15/bin/run-clang-tidy 100
+          # Alias cc to clang
+          sudo update-alternatives --install /usr/bin/cc cc /usr/lib/llvm-15/bin/clang 0
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/lib/llvm-15/bin/clang++ 0
+
+      - name: Install gcc-multilib
+        # gcc-multilib allows clang to find gnu libraries properly
+        run: sudo apt install -y gcc-multilib
+
+      - name: Install stable toolchain
+        if: steps.install_llvm.outcome == 'success' && steps.install_llvm.conclusion == 'success'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+
+      - name: Add wasm32 target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Install NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install NodeJS dependencies
+        run: npm install --global typedoc typescript
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build WASM32 SDK
+        run: |
+          cd wasm
+          bash build-release
+          mv release/spectre-wasm32-sdk.zip ../spectre-wasm32-sdk-${{ github.event.release.tag_name }}.zip
+
+          archive="spectre-wasm32-sdk-${{ github.event.release.tag_name }}.zip"
+          asset_name="spectre-wasm32-sdk-${{ github.event.release.tag_name }}.zip"
+          echo "archive=${archive}" >> $GITHUB_ENV
+          echo "asset_name=${asset_name}" >> $GITHUB_ENV
+
+      - name: Upload WASM32 SDK
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: "./${{ env.archive }}"
+          asset_name: "${{ env.asset_name }}"
+          asset_content_type: application/zip

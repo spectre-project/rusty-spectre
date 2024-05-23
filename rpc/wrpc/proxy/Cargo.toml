@@ -1,0 +1,28 @@
+[package]
+name = "spectre-wrpc-proxy"
+description = "Spectre wRPC to gRPC proxy"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+clap.workspace = true
+spectre-consensus-core.workspace = true
+spectre-grpc-client.workspace = true
+spectre-rpc-core.workspace = true
+spectre-rpc-macros.workspace = true
+spectre-wrpc-server.workspace = true
+num_cpus.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+workflow-core.workspace = true
+workflow-log.workspace = true
+workflow-rpc.workspace = true
+
+[package.metadata.emanate.build]
+folder = "setup"

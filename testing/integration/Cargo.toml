@@ -1,0 +1,77 @@
+[package]
+name = "spectre-testing-integration"
+publish = false
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+spectre-alloc.workspace = true            # This changes the global allocator for all of the next dependencies so should be kept first
+
+spectre-addresses.workspace = true
+spectre-bip32.workspace = true
+spectre-consensus-core.workspace = true
+spectre-consensus-notify.workspace = true
+spectre-consensus.workspace = true
+spectre-consensusmanager.workspace = true
+spectre-core.workspace = true
+spectre-database.workspace = true
+spectre-grpc-client.workspace = true
+spectre-grpc-core.workspace = true
+spectre-grpc-server.workspace = true
+spectre-hashes.workspace = true
+spectre-index-processor.workspace = true
+spectre-math.workspace = true
+spectre-merkle.workspace = true
+spectre-muhash.workspace = true
+spectre-notify.workspace = true
+spectre-pow.workspace = true
+spectre-rpc-core.workspace = true
+spectre-rpc-service.workspace = true
+spectre-txscript.workspace = true
+spectre-utils.workspace = true
+spectre-utxoindex.workspace = true
+spectre-wrpc-server.workspace = true
+spectred.workspace = true
+
+async-channel.workspace = true
+async-trait.workspace = true
+bincode.workspace = true
+clap.workspace = true
+chrono.workspace = true
+crossbeam-channel.workspace = true
+dhat = { workspace = true, optional = true }
+faster-hex.workspace = true
+flate2.workspace = true
+futures-util.workspace = true
+indexmap.workspace = true
+itertools.workspace = true
+log.workspace = true
+parking_lot.workspace = true
+rand_distr.workspace = true
+rand.workspace = true
+rayon.workspace = true
+rocksdb.workspace = true
+secp256k1.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+smallvec.workspace = true
+tempfile.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+workflow-perf-monitor.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+rand = { workspace = true, features = ["small_rng"] }
+tokio = { workspace = true, features = ["rt", "macros", "process"] }
+spectre-txscript-errors.workspace = true
+
+[features]
+heap = ["dhat"]
+html_reports = []
+devnet-prealloc = ["spectred/devnet-prealloc"]
