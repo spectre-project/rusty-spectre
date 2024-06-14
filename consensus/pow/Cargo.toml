@@ -19,6 +19,7 @@ spectre-consensus-client.workspace = true
 spectre-hashes.workspace = true
 spectre-math.workspace = true
 spectre-utils.workspace = true
+spectrex.workspace = true
 wasm-bindgen.workspace = true
 workflow-wasm.workspace = true
 num.workspace = true

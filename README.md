@@ -25,7 +25,7 @@ in the Spectre network.
 ## Overview
 
 Spectre on Rust is a fork of [Kaspa on Rust](https://github.com/kaspanet/rusty-kaspa)
-introducing CPU-only mining algorithm [SpectreX](https://github.com/spectre-project/go-spectrex).
+introducing CPU-only mining algorithm [SpectreX](https://github.com/spectre-project/rusty-spectrex).
 
 SpectreX is based on [AstroBWTv3](https://github.com/deroproject/derohe/tree/main/astrobwt/astrobwtv3)
 and proof-of-work calculation is done in the following steps:
@@ -271,6 +271,16 @@ instruction format that runs in web browsers and NodeJs. This allows
 for easy development using JavaScript and TypeScript programming
 languages while retaining the benefits of Rust.
 
+Spectre on Rust utilizes the SpectreX mining algorithm library for Rust
+and leverages `cdivsufsort` for enhanced performance. To compile the
+WASM32 SDK using `clang`, additional environment variables need to be
+configured:
+
+```
+export TARGET_CC=clang
+export TARGET_CFLAGS=-I/usr/include
+```
+
 WASM SDK components can be built from sources by running:
 
 - `./build-release` - build a full release package (includes both
@@ -409,18 +419,14 @@ available as a part of the Spectre WASM framework.
 
 ## Mining
 
-Mining is currently supported only on testnet, so once you've setup a
-test node, follow these instructions. Download and unzip the latest
-binaries bundle of [spectre-project/spectred](https://github.com/spectre-project/spectred/releases).
-In a separate terminal run the spectre-project/spectred miner:
+Mining is currently supported on all networks, so once you've setup a
+node, follow these instructions. Download and unzip the latest miner
+binaries from [spectre-project/spectre-miner](https://github.com/spectre-project/spectre-miner/releases).
+In a separate terminal run the miner:
 
 ```
-spectreminer --testnet --miningaddr spectretest:qrcqat6l9zcjsu7swnaztqzrv0s7hu04skpaezxk43y4etj8ncwfk308jlcew
+./spectre-miner --mining-address spectre:qrxf48dgrdkjxllxczek3uweuldtan9nanzjsavk0ak9ynwn0zsayjjh7upez
 ```
 
-This will create and feed a DAG with the miner getting block templates
-from the node and submitting them back when mined. The node processes
-and stores the blocks while applying all currently implemented logic.
-Execution can be stopped and resumed, the data is persisted in a
-database. You can replace the above mining address with your own
-address by creating one.
+You can replace the above mining address with your own address by
+creating one.

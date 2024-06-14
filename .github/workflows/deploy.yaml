@@ -173,6 +173,9 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build WASM32 SDK
+        env:
+          TARGET_CC: clang
+          TARGET_CFLAGS: -I/usr/include
         run: |
           cd wasm
           bash build-release

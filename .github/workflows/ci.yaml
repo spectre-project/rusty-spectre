@@ -212,12 +212,21 @@ jobs:
 
       # append here any new wasm32 crate not already covered by the existing checks
       - name: Run cargo check of spectre-wrpc-wasm for wasm32 target
+        env:
+          TARGET_CC: clang
+          TARGET_CFLAGS: -I/usr/include
         run: cargo clippy -p spectre-wrpc-wasm --target wasm32-unknown-unknown
 
       - name: Run cargo check of spectre-wallet-cli-wasm for wasm32 target
+        env:
+          TARGET_CC: clang
+          TARGET_CFLAGS: -I/usr/include
         run: cargo clippy -p spectre-wallet-cli-wasm --target wasm32-unknown-unknown
 
       - name: Run cargo check of spectre-wasm for wasm32 target
+        env:
+          TARGET_CC: clang
+          TARGET_CFLAGS: -I/usr/include
         run: cargo clippy -p spectre-wasm --target wasm32-unknown-unknown
 
   build-wasm32:
@@ -284,6 +293,9 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build wasm release
+        env:
+          TARGET_CC: clang
+          TARGET_CFLAGS: -I/usr/include
         run: cd wasm && bash build-release
 
   build-release:

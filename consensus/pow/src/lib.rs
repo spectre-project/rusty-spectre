@@ -12,6 +12,7 @@ use crate::matrix::Matrix;
 use spectre_consensus_core::{hashing, header::Header, BlockLevel};
 use spectre_hashes::PowHash;
 use spectre_math::Uint256;
+use spectrex::astrobwtv3;
 
 /// State is an intermediate data structure with pre-computed values to speed up mining.
 pub struct State {
@@ -40,7 +41,8 @@ impl State {
     pub fn calculate_pow(&self, nonce: u64) -> Uint256 {
         // Hasher already contains PRE_POW_HASH || TIME || 32 zero byte padding; so only the NONCE is missing
         let hash = self.hasher.clone().finalize_with_nonce(nonce);
-        let hash = self.matrix.heavy_hash(hash);
+        let bwt_hash = astrobwtv3::astrobwtv3_hash(&hash.as_bytes());
+        let hash = self.matrix.heavy_hash(bwt_hash.into());
         Uint256::from_le_bytes(hash.as_bytes())
     }
 
