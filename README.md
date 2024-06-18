@@ -70,11 +70,8 @@ High BPS                     | Yes      | Yes        | No      | No
 High TPS                     | Yes      | Yes        | No      | No
 
 Untraceable Mining is already achieved with AstroBWTv3 and a multicore
-miner is already being shipped with Spectre, working on ARM/x86. There
-is already a proof-of-concept Rust [AstroBWT](https://github.com/Slixe/astrobwt)
-implementation currently under review and investigation to merge it
-into Spectre Rust codebase. We leave it up to the community to build
-an highly optimized CPU-miner.
+miner is already being shipped with Spectre, working on ARM/x86. We
+leave it up to the community to build an highly optimized CPU-miner.
 
 ## Mathematics
 
