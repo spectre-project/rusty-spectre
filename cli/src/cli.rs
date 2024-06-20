@@ -8,7 +8,7 @@ use crate::result::Result;
 use spectre_daemon::{DaemonEvent, DaemonKind, Daemons};
 use spectre_wallet_core::rpc::DynRpcApi;
 use spectre_wallet_core::storage::{IdT, PrvKeyDataInfo};
-use spectre_wrpc_client::SpectreRpcClient;
+use spectre_wrpc_client::{Resolver, SpectreRpcClient};
 use workflow_core::channel::*;
 use workflow_core::time::Instant;
 use workflow_log::*;
@@ -102,7 +102,7 @@ impl SpectreCli {
     }
 
     pub async fn try_new_arc(options: Options) -> Result<Arc<Self>> {
-        let wallet = Arc::new(Wallet::try_new(Wallet::local_store()?, None, None)?);
+        let wallet = Arc::new(Wallet::try_new(Wallet::local_store()?, Some(Resolver::default()), None)?);
 
         let spectre_cli = Arc::new(SpectreCli {
             term: Arc::new(Mutex::new(None)),

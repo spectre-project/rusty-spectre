@@ -89,7 +89,7 @@ The first released version is `0.3.14`, the famous Pi divided by 10.
 1. Install general prerequisites
 
    ```bash
-   sudo apt install curl git build-essential libssl-dev pkg-config 
+   sudo apt install curl git build-essential libssl-dev pkg-config
    ```
 
 2. Install Protobuf (required for gRPC)
