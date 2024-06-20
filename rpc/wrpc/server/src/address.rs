@@ -74,7 +74,6 @@ impl TryFrom<String> for WrpcNetAddress {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -83,7 +82,7 @@ mod tests {
     #[test]
     fn test_wrpc_net_address_from_str() {
         // Addresses
-        let port: u16 = 18110;
+        let port: u16 = 8080;
         let addr = format!("1.2.3.4:{port}").parse::<WrpcNetAddress>().unwrap();
         let addr_without_port = "1.2.3.4".parse::<WrpcNetAddress>().unwrap();
         let ip_addr = "1.2.3.4".parse::<IpAddress>().unwrap();
