@@ -1,4 +1,5 @@
 name: Tests
+
 on: [push, pull_request]
 
 jobs:
@@ -7,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
@@ -18,7 +19,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -75,10 +76,11 @@ jobs:
           # see: https://github.com/jlumbroso/free-disk-space/issues/6
           # TODO: use the discussed whitelist feature when available
           large-packages: false
+
           swap-storage: true
 
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Fix CRLF on Windows
         if: runner.os == 'Windows'
@@ -99,7 +101,7 @@ jobs:
         run: cargo install cargo-nextest
 
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -124,12 +126,61 @@ jobs:
       - name: Run cargo doc tests with features=no-asm on spectre-hashes
         run: cargo test --doc --release -p spectre-hashes --features=no-asm
 
+  # test-release:
+  #   name: Test Suite Release
+  #   runs-on: ${{ matrix.os }}
+
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [ ubuntu-latest, macos-latest, windows-latest ]
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@v2
+
+  #     - name: Fix CRLF on Windows
+  #       if: runner.os == 'Windows'
+  #       run: git config --global core.autocrlf false
+
+  #     - name: Install protoc
+  #       run: sudo apt install -y protobuf-compiler
+
+  #     - name: Install stable toolchain
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         profile: minimal
+  #         toolchain: stable
+  #         override: true
+
+  #     - name: Cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/registry/index/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/git/db/
+  #           target/
+  #         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+  #     - name: Run cargo test release regular features
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: test
+  #         args: --release
+
+  #     - name: Run cargo test release on hashes without asm
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: test
+  #         args: -p hashes --features=no-asm --benches --release
+
   lints:
     name: Lints
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
@@ -142,7 +193,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -158,12 +209,13 @@ jobs:
       - name: Run cargo clippy
         run: cargo clippy --workspace --tests --benches -- -D warnings
 
+
   check-wasm32:
     name: Check Wasm32
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
@@ -200,7 +252,7 @@ jobs:
         run: rustup target add wasm32-unknown-unknown
 
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -211,22 +263,14 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       # append here any new wasm32 crate not already covered by the existing checks
+
       - name: Run cargo check of spectre-wrpc-wasm for wasm32 target
-        env:
-          TARGET_CC: clang
-          TARGET_CFLAGS: -I/usr/include
         run: cargo clippy -p spectre-wrpc-wasm --target wasm32-unknown-unknown
 
       - name: Run cargo check of spectre-wallet-cli-wasm for wasm32 target
-        env:
-          TARGET_CC: clang
-          TARGET_CFLAGS: -I/usr/include
         run: cargo clippy -p spectre-wallet-cli-wasm --target wasm32-unknown-unknown
 
       - name: Run cargo check of spectre-wasm for wasm32 target
-        env:
-          TARGET_CC: clang
-          TARGET_CFLAGS: -I/usr/include
         run: cargo clippy -p spectre-wasm --target wasm32-unknown-unknown
 
   build-wasm32:
@@ -234,7 +278,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
@@ -282,7 +326,7 @@ jobs:
         run: npm install --global typedoc typescript
 
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -293,9 +337,6 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build wasm release
-        env:
-          TARGET_CC: clang
-          TARGET_CFLAGS: -I/usr/include
         run: cd wasm && bash build-release
 
   build-release:
@@ -303,7 +344,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
@@ -314,7 +355,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
