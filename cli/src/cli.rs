@@ -8,7 +8,7 @@ use crate::result::Result;
 use spectre_daemon::{DaemonEvent, DaemonKind, Daemons};
 use spectre_wallet_core::rpc::DynRpcApi;
 use spectre_wallet_core::storage::{IdT, PrvKeyDataInfo};
-use spectre_wrpc_client::{SpectreRpcClient, Resolver};
+use spectre_wrpc_client::{Resolver, SpectreRpcClient};
 use workflow_core::channel::*;
 use workflow_core::time::Instant;
 use workflow_log::*;
