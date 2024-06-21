@@ -323,3 +323,5 @@ inherits = "release"
 debug = true
 strip = false
 
+[workspace.lints.clippy]
+empty_docs = "allow"
