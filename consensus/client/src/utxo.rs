@@ -380,10 +380,6 @@ impl TryCastFromJs for UtxoEntryReference {
                 let address = object.get_cast::<Address>("address")?.into_owned();
                 let outpoint = TransactionOutpoint::try_from(object.get_value("outpoint")?.as_ref())?;
                 let utxo_entry = Object::from(object.get_value("utxoEntry")?);
-                let amount = utxo_entry.get_u64("amount")?;
-                let script_public_key = ScriptPublicKey::try_owned_from(utxo_entry.get_value("scriptPublicKey")?)?;
-                let block_daa_score = utxo_entry.get_u64("blockDaaScore")?;
-                let is_coinbase = utxo_entry.get_bool("isCoinbase")?;
 
                 let utxo_entry = if !utxo_entry.is_undefined() {
                     let amount = utxo_entry.get_u64("amount").map_err(|_| {

@@ -1,6 +1,5 @@
 use crate::matrix::Matrix;
 use js_sys::BigInt;
-use num::Float;
 use spectre_consensus_client::Header;
 use spectre_consensus_client::HeaderT;
 use spectre_consensus_core::hashing;
@@ -9,6 +8,8 @@ use spectre_hashes::PowHash;
 use spectre_math::Uint256;
 use spectre_utils::hex::FromHex;
 use spectre_utils::hex::ToHex;
+use num::Float;
+use wasm_bindgen::prelude::*;
 use workflow_wasm::convert::TryCastFromJs;
 use workflow_wasm::error::Error;
 use workflow_wasm::result::Result;
@@ -21,6 +22,11 @@ extern "C" {
 
 /// Represents a Spectre header PoW manager
 /// @category Mining
+#[wasm_bindgen(inspectable)]
+pub struct PoW {
+    inner: crate::State,
+    pre_pow_hash: Hash,
+}
 
 #[wasm_bindgen]
 impl PoW {
@@ -45,7 +51,7 @@ impl PoW {
         Ok(Self { inner: crate::State { matrix, target, hasher }, pre_pow_hash })
     }
 
-        /// The target based on the provided bits.
+    /// The target based on the provided bits.
 
     #[wasm_bindgen(getter)]
     pub fn target(&self) -> Result<BigInt> {
@@ -87,12 +93,8 @@ impl PoW {
     }
 }
 
-// https://github.com/tmrlvi/spectre-miner/blob/bf361d02a46c580f55f46b5dfa773477634a5753/src/client/stratum.rs#L36
 const DIFFICULTY_1_TARGET: (u64, i16) = (0xffffu64, 208); // 0xffff 2^208
 
-/// Calculates target from difficulty, based on set_difficulty function on
-/// <https://github.com/tmrlvi/kaspa-miner/blob/bf361d02a46c580f55f46b5dfa773477634a5753/src/client/stratum.rs#L375>
-/// @category Mining
 #[wasm_bindgen(js_name = calculateTarget)]
 pub fn calculate_target(difficulty: f32) -> Result<BigInt> {
     let mut buf = [0u64, 0u64, 0u64, 0u64];

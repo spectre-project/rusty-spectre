@@ -798,7 +798,7 @@ impl TransactionRecord {
     }
 
     #[wasm_bindgen(getter, js_name = "binding")]
-        pub fn binding_as_js_value(&self) -> BindingT {
+    pub fn binding_as_js_value(&self) -> BindingT {
         serde_wasm_bindgen::to_value(&self.binding).unwrap().unchecked_into()
     }
 

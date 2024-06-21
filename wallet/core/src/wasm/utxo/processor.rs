@@ -153,7 +153,7 @@ impl UtxoProcessor {
         self.inner.processor.set_network_id(network_id.as_ref());
         Ok(())
     }
-    
+
     #[wasm_bindgen(getter, js_name = "isActive")]
     pub fn is_active(&self) -> bool {
         let processor = &self.inner.processor;
