@@ -1,5 +1,6 @@
 use crate::matrix::Matrix;
 use js_sys::BigInt;
+use num::Float;
 use spectre_consensus_client::Header;
 use spectre_consensus_client::HeaderT;
 use spectre_consensus_core::hashing;
@@ -8,7 +9,6 @@ use spectre_hashes::PowHash;
 use spectre_math::Uint256;
 use spectre_utils::hex::FromHex;
 use spectre_utils::hex::ToHex;
-use num::Float;
 use wasm_bindgen::prelude::*;
 use workflow_wasm::convert::TryCastFromJs;
 use workflow_wasm::error::Error;
