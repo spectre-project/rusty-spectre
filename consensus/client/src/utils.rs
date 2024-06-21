@@ -1,10 +1,10 @@
 use crate::imports::*;
 use crate::result::Result;
-use kaspa_addresses::*;
-use kaspa_consensus_core::tx::ScriptPublicKeyT;
-use kaspa_txscript::{script_class::ScriptClass, standard};
-use kaspa_utils::hex::ToHex;
-use kaspa_wasm_core::types::{BinaryT, HexString};
+use spectre_addresses::*;
+use spectre_consensus_core::tx::ScriptPublicKeyT;
+use spectre_txscript::{script_class::ScriptClass, standard};
+use spectre_utils::hex::ToHex;
+use spectre_wasm_core::types::{BinaryT, HexString};
 
 /// Creates a new script to pay a transaction output to the specified address.
 /// @category Wallet SDK
