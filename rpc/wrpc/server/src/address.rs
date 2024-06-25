@@ -42,6 +42,7 @@ impl WrpcNetAddress {
             }
         }
     }
+}
 
 impl FromStr for WrpcNetAddress {
     type Err = AddrParseError;
