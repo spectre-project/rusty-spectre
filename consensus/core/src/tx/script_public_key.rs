@@ -1,6 +1,7 @@
 use alloc::borrow::Cow;
 use borsh::{BorshDeserialize, BorshSerialize};
 use core::fmt::Formatter;
+use js_sys::Object;
 use serde::{
     de::{Error, Visitor},
     Deserialize, Deserializer, Serialize, Serializer,
@@ -41,6 +42,7 @@ const TS_SCRIPT_PUBLIC_KEY: &'static str = r#"
  * @category Consensus
  */
 export interface IScriptPublicKey {
+    version : number;
     script: HexString;
 }
 "#;
@@ -376,6 +378,29 @@ impl TryCastFromJs for ScriptPublicKey {
         Self::resolve(&value, || {
             if let Some(hex_str) = value.as_ref().as_string() {
                 Ok(Self::from_str(&hex_str).map_err(CastError::custom)?)
+            } else if let Some(object) = Object::try_from(value.as_ref()) {
+                let version = object.try_get_value("version")?.ok_or(CastError::custom(
+                    "ScriptPublicKey must be a hex string or an object with 'version' and 'script' properties",
+                ))?;
+
+                let version = if let Ok(version) = version.try_as_u16() {
+                    version
+                } else if let Some(version) = version.as_string() {
+                    if version.len() != 2 {
+                        return Err(CastError::custom("Invalid version data: must be a number or a 2-character hex string"));
+                    }
+
+                    let mut version_bytes = vec![0u8; 2];
+                    faster_hex::hex_decode(version.as_bytes(), version_bytes.as_mut_slice())
+                        .map_err(|err| CastError::custom(format!("Error decoding version: {err}")))?;
+                    u16::from_be_bytes(version_bytes.try_into().unwrap())
+                } else {
+                    return Err(CastError::custom("Invalid version value '{version:?}'"));
+                };
+
+                let script = object.get_vec_u8("script")?;
+
+                Ok(ScriptPublicKey::from_vec(version, script))
             } else {
                 Err(CastError::custom(format!("Unable to convert ScriptPublicKey from: {:?}", value.as_ref())))
             }

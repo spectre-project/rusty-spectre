@@ -30,19 +30,18 @@ impl WrpcNetAddress {
                 format!("0.0.0.0:{port}").parse().unwrap()
             }
             WrpcNetAddress::Custom(address) => {
-                if address.has_port() {
-                    *address
-                } else {
+                if address.port_not_specified() {
                     let port = match encoding {
                         WrpcEncoding::Borsh => network_type.default_borsh_rpc_port(),
                         WrpcEncoding::SerdeJson => network_type.default_json_rpc_port(),
                     };
-                    format!("{address}:{port}").parse().unwrap()
+                    address.with_port(port)
+                } else {
+                    *address
                 }
             }
         }
     }
-}
 
 impl FromStr for WrpcNetAddress {
     type Err = AddrParseError;
