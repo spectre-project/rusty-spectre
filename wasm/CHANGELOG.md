@@ -1,3 +1,11 @@
+### Latest Release
+
+- Fix issues with deserializing manually-created objects matching `IUtxoEntry` interface.
+- Allow arguments expecting ScriptPublicKey to receive `{ version, script }` object or a hex string.
+- Fix `Transaction::serializeToObject()` return type (now returning `ISerializeTransaction` interface).
+- Adding `setUserTransactionMaturityDAA()` and `setCoinbaseTransactionMaturityDAA()` that allow customizing
+the maturity DAA periods for user and coinbase transactions.
+
 ### Release 2024-05-24
 
 - First version with Spectre Network support
