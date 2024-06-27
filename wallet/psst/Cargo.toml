@@ -1,6 +1,6 @@
 [package]
-name = "spectre-wallet-pskt"
-keywords = ["spectre", "wallet", "pskt", "psbt", "bip-370"]
+name = "spectre-wallet-psst"
+keywords = ["spectre", "wallet", "psst", "psbt", "bip-370"]
 description = "Partially Signed Spectre Transaction"
 categories = ["cryptography::cryptocurrencies"]
 rust-version.workspace = true

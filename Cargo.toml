@@ -10,7 +10,7 @@ members = [
     "wallet/wasm",
     "wallet/bip32",
     "wallet/keys",
-    "wallet/pskt",
+    "wallet/psst",
     "consensus",
     "consensus/core",
     "consensus/client",
@@ -124,7 +124,7 @@ spectre-utxoindex = { version = "0.3.15", path = "indexes/utxoindex" }
 spectre-wallet = { version = "0.3.15", path = "wallet/native" }
 spectre-wallet-cli-wasm = { version = "0.3.15", path = "wallet/wasm" }
 spectre-wallet-keys = { version = "0.3.15", path = "wallet/keys" }
-spectre-wallet-pskt = { version = "0.3.15", path = "wallet/pskt" }
+spectre-wallet-psst = { version = "0.3.15", path = "wallet/psst" }
 spectre-wallet-core = { version = "0.3.15", path = "wallet/core" }
 spectre-wallet-macros = { version = "0.3.15", path = "wallet/macros" }
 spectre-wasm = { version = "0.3.15", path = "wasm" }

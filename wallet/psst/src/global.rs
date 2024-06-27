@@ -12,7 +12,7 @@ type Xpub = spectre_bip32::ExtendedPublicKey<secp256k1::PublicKey>;
 #[derive(Debug, Clone, Builder, Serialize, Deserialize)]
 #[builder(default)]
 pub struct Global {
-    /// The version number of this PSKT.
+    /// The version number of this PSST.
     pub version: Version,
     /// The version number of the transaction being built.
     pub tx_version: u16,
@@ -23,9 +23,9 @@ pub struct Global {
     pub inputs_modifiable: bool,
     pub outputs_modifiable: bool,
 
-    /// The number of inputs in this PSKT.
+    /// The number of inputs in this PSST.
     pub input_count: usize,
-    /// The number of outputs in this PSKT.
+    /// The number of outputs in this PSST.
     pub output_count: usize,
     /// A map from xpub to the used key fingerprint and derivation path as defined by BIP 32.
     pub xpubs: BTreeMap<Xpub, KeySource>,
@@ -127,34 +127,34 @@ pub enum CombineError {
     #[error("The version numbers are not the same")]
     /// The version numbers are not the same.
     VersionMismatch {
-        /// Attempted to combine a PSKT with `this` version.
+        /// Attempted to combine a PSST with `this` version.
         this: Version,
-        /// Into a PSKT with `that` version.
+        /// Into a PSST with `that` version.
         that: Version,
     },
     #[error("The transaction version numbers are not the same")]
     TxVersionMismatch {
-        /// Attempted to combine a PSKT with `this` tx version.
+        /// Attempted to combine a PSST with `this` tx version.
         this: u16,
-        /// Into a PSKT with `that` tx version.
+        /// Into a PSST with `that` tx version.
         that: u16,
     },
     #[error("The transaction lock times are not the same")]
     LockTimeMismatch {
-        /// Attempted to combine a PSKT with `this` lock times.
+        /// Attempted to combine a PSST with `this` lock times.
         this: u64,
-        /// Into a PSKT with `that` lock times.
+        /// Into a PSST with `that` lock times.
         that: u64,
     },
     #[error("The transaction ids are not the same")]
     TransactionIdMismatch {
-        /// Attempted to combine a PSKT with `this` tx id.
+        /// Attempted to combine a PSST with `this` tx id.
         this: TransactionId,
-        /// Into a PSKT with `that` tx id.
+        /// Into a PSST with `that` tx id.
         that: TransactionId,
     },
 
-    #[error("combining PSKT, key-source conflict for xpub {0}")]
+    #[error("combining PSST, key-source conflict for xpub {0}")]
     /// Xpubs have inconsistent key sources.
     InconsistentKeySources(Xpub),
 
