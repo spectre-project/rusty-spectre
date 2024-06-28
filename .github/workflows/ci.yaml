@@ -299,6 +299,11 @@ jobs:
           TARGET_CFLAGS: -I/usr/include
         run: cd wasm && bash build-release
 
+      - name: Upload wasm binary to GitHub 
+        uses: actions/upload-artifact@v4
+        with: 
+          name: spectre-wasm32-sdk
+          path: wasm/release/spectre-wasm32-sdk.zip
   build-release:
     name: Build Ubuntu Release
     runs-on: ubuntu-latest
