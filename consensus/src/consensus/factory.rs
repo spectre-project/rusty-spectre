@@ -95,8 +95,12 @@ impl MultiConsensusManagementStore {
         if self.metadata.read().unwrap_option().is_none() {
             let mut batch = WriteBatch::default();
             let metadata = MultiConsensusMetadata::default();
-            self.metadata.write(BatchDbWriter::new(&mut batch), &metadata).unwrap();
-            self.db.write(batch).unwrap();
+            self.metadata.write(BatchDbWriter::new(&mut batch), &metadata).unwrap_or_else(|e| {
+                warn!("Failed to write initial metadata: {}", e);
+            });
+            self.db.write(batch).unwrap_or_else(|e| {
+                warn!("Failed to write batch: {}", e);
+            });
         }
     }
 
@@ -104,7 +108,7 @@ impl MultiConsensusManagementStore {
     pub fn active_consensus_dir_name(&self) -> StoreResult<Option<String>> {
         let metadata = self.metadata.read()?;
         match metadata.current_consensus_key {
-            Some(key) => Ok(Some(self.entries.read(key.into()).unwrap().directory_name)),
+            Some(key) => Ok(Some(self.entries.read(key.into())?.directory_name)),
             None => Ok(None),
         }
     }
@@ -215,7 +219,9 @@ impl MultiConsensusManagementStore {
         if metadata.is_archival_node != is_archival_node {
             metadata.is_archival_node = is_archival_node;
             let mut batch = WriteBatch::default();
-            self.metadata.write(BatchDbWriter::new(&mut batch), &metadata).unwrap();
+            self.metadata.write(BatchDbWriter::new(&mut batch), &metadata).unwrap_or_else(|e| {
+                warn!("Failed to update archival node status: {}", e);
+            });
         }
     }
 
@@ -270,6 +276,15 @@ impl Factory {
         factory.delete_inactive_consensus_entries();
         factory
     }
+
+    fn build_db_connection(&self, dir: PathBuf) -> Result<Arc<DB>, Box<dyn Error>> {
+        let db = spectre_database::prelude::ConnBuilder::default()
+            .with_db_path(dir)
+            .with_parallelism(self.db_parallelism)
+            .with_files_limit(self.fd_budget / 2) // active and staging consensuses should have equal budgets
+            .build()?;
+        Ok(db)
+    }
 }
 
 impl ConsensusFactory for Factory {
@@ -292,12 +307,9 @@ impl ConsensusFactory for Factory {
         };
 
         let dir = self.db_root_dir.join(entry.directory_name.clone());
-        let db = spectre_database::prelude::ConnBuilder::default()
-            .with_db_path(dir)
-            .with_parallelism(self.db_parallelism)
-            .with_files_limit(self.fd_budget / 2) // active and staging consensuses should have equal budgets
-            .build()
-            .unwrap();
+        let db = self.build_db_connection(dir.clone()).unwrap_or_else(|e| {
+            panic!("Failed to build database connection at {:?}: {}", dir, e);
+        });
 
         let session_lock = SessionLock::new();
         let consensus = Arc::new(Consensus::new(
@@ -326,12 +338,9 @@ impl ConsensusFactory for Factory {
 
         let entry = self.management_store.write().new_staging_consensus_entry().unwrap();
         let dir = self.db_root_dir.join(entry.directory_name);
-        let db = spectre_database::prelude::ConnBuilder::default()
-            .with_db_path(dir)
-            .with_parallelism(self.db_parallelism)
-            .with_files_limit(self.fd_budget / 2) // active and staging consensuses should have equal budgets
-            .build()
-            .unwrap();
+        let db = self.build_db_connection(dir.clone()).unwrap_or_else(|e| {
+            panic!("Failed to build database connection at {:?}: {}", dir, e);
+        });
 
         let session_lock = SessionLock::new();
         let consensus = Arc::new(Consensus::new(
