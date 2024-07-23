@@ -383,13 +383,11 @@ impl Display for UtxosChangedSubscription {
 
 impl Drop for UtxosChangedSubscription {
     fn drop(&mut self) {
-        let result =
-            UTXOS_CHANGED_SUBSCRIPTIONS.fetch_update(Ordering::SeqCst, Ordering::SeqCst, |x| if x > 0 { Some(x - 1) } else { None });
-
-        match result {
-            Ok(new_count) => trace!("UtxosChangedSubscription: {} in total (drop {})", new_count, self),
-            Err(_) => trace!("UtxosChangedSubscription: 0 in total (drop {})", self),
-        }
+        trace!(
+            "UtxosChangedSubscription: {} in total (drop {})",
+            UTXOS_CHANGED_SUBSCRIPTIONS.fetch_sub(1, Ordering::SeqCst) - 1,
+            self
+        );
     }
 }
 
