@@ -2,6 +2,7 @@ use crate::result::Result;
 use crate::{script_builder as native, standard};
 use spectre_consensus_core::tx::ScriptPublicKey;
 use spectre_utils::hex::ToHex;
+use spectre_wasm_core::hex::{HexViewConfig, HexViewConfigT};
 use spectre_wasm_core::types::{BinaryT, HexString};
 use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
@@ -167,5 +168,14 @@ impl ScriptBuilder {
         let generated_script = standard::pay_to_script_hash_signature_script(script.into(), signature)?;
 
         Ok(generated_script.to_hex().into())
+    }
+
+    #[wasm_bindgen(js_name = "hexView")]
+    pub fn hex_view(&self, args: Option<HexViewConfigT>) -> Result<String> {
+        let inner = self.inner();
+        let script = inner.script();
+
+        let config = args.map(HexViewConfig::try_from).transpose()?.unwrap_or_default();
+        Ok(config.build(script).to_string())
     }
 }
