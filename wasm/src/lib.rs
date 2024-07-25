@@ -13,7 +13,7 @@ codebase within JavaScript environments such as Node.js and Web Browsers.
 
 ## Documentation
 
-As of now the code is compatible with Kaspa and its documentation can be used from the official links.
+As of now the code is compatible with Spectre and its documentation can be used from the official links.
 Please note that while WASM directly binds JavaScript and Rust resources, their names on JavaScript side
 are different from their name in Rust as they conform to the 'camelCase' convention in JavaScript and
 to the 'snake_case' convention in Rust.
@@ -144,6 +144,7 @@ cfg_if::cfg_if! {
         pub use spectre_addresses::{Address, Version as AddressVersion};
         pub use spectre_consensus_core::tx::{ScriptPublicKey, Transaction, TransactionInput, TransactionOutpoint, TransactionOutput};
         pub use spectre_pow::wasm::*;
+        pub use spectre_txscript::wasm::*;
 
         pub mod rpc {
             //! Spectre RPC interface
@@ -170,6 +171,7 @@ cfg_if::cfg_if! {
         pub use spectre_addresses::{Address, Version as AddressVersion};
         pub use spectre_consensus_core::tx::{ScriptPublicKey, Transaction, TransactionInput, TransactionOutpoint, TransactionOutput};
         pub use spectre_pow::wasm::*;
+        pub use spectre_txscript::wasm::*;
 
         pub mod rpc {
             //! Spectre RPC interface
