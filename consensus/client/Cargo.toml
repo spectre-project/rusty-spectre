@@ -38,5 +38,5 @@ itertools.workspace = true
 workflow-wasm.workspace = true
 workflow-log.workspace = true
 
-[lints]
-workspace = true
+[lints.clippy]
+empty_docs = "allow"

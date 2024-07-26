@@ -67,7 +67,6 @@ pub mod as_slice;
 /// assert_eq!(test_struct, from_json);
 /// ```
 pub mod serde_bytes;
-pub mod serde_bytes_optional;
 
 /// # Examples
 ///
