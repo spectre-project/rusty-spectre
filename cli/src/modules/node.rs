@@ -8,9 +8,9 @@ use workflow_store::fs;
 #[derive(Describe, Debug, Clone, Serialize, Deserialize, Hash, Eq, PartialEq, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub enum SpectredSettings {
-    #[describe("Binary location")]
+    #[describe("Specify the binary location")]
     Location,
-    #[describe("Mute logs")]
+    #[describe("Toggle logging output")]
     Mute,
 }
 
@@ -57,7 +57,7 @@ impl Handler for Node {
     }
 
     fn help(&self, _ctx: &Arc<dyn Context>) -> &'static str {
-        "Manage the local Spectre node instance"
+        "Manage the local Spectre node instance."
     }
 
     async fn start(self: Arc<Self>, _ctx: &Arc<dyn Context>) -> cli::Result<()> {
@@ -83,9 +83,9 @@ impl Node {
         let location: String = self
             .settings
             .get(SpectredSettings::Location)
-            .ok_or_else(|| Error::Custom("No miner binary specified, please use `miner select` to select a binary.".into()))?;
+            .ok_or_else(|| Error::Custom("No miner binary specified, please use `node select` to select a binary.".into()))?;
         let network_id = ctx.wallet().network_id()?;
-        // disabled for prompt update (until progress events are implemented)
+        // Disabled for prompt update (until progress events are implemented)
         // let mute = self.mute.load(Ordering::SeqCst);
         let mute = false;
         let config = SpectredConfig::new(location.as_str(), network_id, mute);
@@ -101,9 +101,9 @@ impl Node {
             "start" => {
                 let mute = self.mute.load(Ordering::SeqCst);
                 if mute {
-                    tprintln!(ctx, "starting spectre node... {}", style("(logs are muted, use 'node mute' to toggle)").dim());
+                    tprintln!(ctx, "Starting Spectre node... {}", style("(logs are muted, use 'node mute' to toggle)").dim());
                 } else {
-                    tprintln!(ctx, "starting spectre node... {}", style("(use 'node mute' to mute logging)").dim());
+                    tprintln!(ctx, "Starting Spectre node... {}", style("(use 'node mute' to mute logging)").dim());
                 }
 
                 let wrpc_client = ctx.wallet().try_wrpc_client().ok_or(Error::custom("Unable to start node with non-wRPC client"))?;
@@ -111,7 +111,7 @@ impl Node {
                 spectred.configure(self.create_config(&ctx).await?).await?;
                 spectred.start().await?;
 
-                // temporary setup for auto-connect
+                // Temporary setup for auto-connect
                 let url = ctx.wallet().settings().get(WalletSettings::Server);
                 let network_type = ctx.wallet().network_id()?;
                 if let Some(url) = url
@@ -151,11 +151,10 @@ impl Node {
                 let mute = !self.mute.load(Ordering::SeqCst);
                 self.mute.store(mute, Ordering::SeqCst);
                 if mute {
-                    tprintln!(ctx, "{}", style("node is muted").dim());
+                    tprintln!(ctx, "{}", style("Node logging is now muted").dim());
                 } else {
-                    tprintln!(ctx, "{}", style("node is unmuted").dim());
+                    tprintln!(ctx, "{}", style("Node logging is now unmuted").dim());
                 }
-                // spectred.mute(mute).await?;
                 self.settings.set(SpectredSettings::Mute, mute).await?;
             }
             "status" => {
@@ -173,7 +172,7 @@ impl Node {
                 tprintln!(ctx, "{}", version);
             }
             v => {
-                tprintln!(ctx, "unknown command: '{v}'\r\n");
+                tprintln!(ctx, "Unknown command: '{v}'\r\n");
 
                 return self.display_help(ctx, argv).await;
             }
@@ -185,14 +184,14 @@ impl Node {
     async fn display_help(self: Arc<Self>, ctx: Arc<SpectreCli>, _argv: Vec<String>) -> Result<()> {
         ctx.term().help(
             &[
-                ("select", "Select Spectred executable (binary) location"),
-                ("version", "Display Spectred executable version"),
+                ("select", "Select the Spectred executable (binary) location"),
+                ("version", "Display the Spectred executable version"),
                 ("start", "Start the local Spectre node instance"),
                 ("stop", "Stop the local Spectre node instance"),
                 ("restart", "Restart the local Spectre node instance"),
                 ("kill", "Kill the local Spectre node instance"),
                 ("status", "Get the status of the local Spectre node instance"),
-                ("mute", "Toggle log output"),
+                ("mute", "Toggle logging output"),
             ],
             None,
         )?;
@@ -208,27 +207,27 @@ impl Node {
                 let binaries = spectre_daemon::locate_binaries(root.as_str(), "spectred").await?;
 
                 if binaries.is_empty() {
-                    tprintln!(ctx, "No spectred binaries found");
+                    tprintln!(ctx, "No Spectred binaries found.");
                 } else {
                     let binaries = binaries.iter().map(|p| p.display().to_string()).collect::<Vec<_>>();
-                    if let Some(selection) = ctx.term().select("Please select a spectred binary", &binaries).await? {
-                        tprintln!(ctx, "selecting: {}", selection);
+                    if let Some(selection) = ctx.term().select("Please select a Spectred binary", &binaries).await? {
+                        tprintln!(ctx, "Selecting: {}", selection);
                         self.settings.set(SpectredSettings::Location, selection.as_str()).await?;
                     } else {
-                        tprintln!(ctx, "no selection is made");
+                        tprintln!(ctx, "No selection made.");
                     }
                 }
             }
             Some(path) => {
                 if fs::exists(&path).await? {
                     let version = process::version(&path).await?;
-                    tprintln!(ctx, "detected binary version: {}", version);
-                    tprintln!(ctx, "selecting: {path}");
+                    tprintln!(ctx, "Detected binary version: {}", version);
+                    tprintln!(ctx, "Selecting: {path}");
                     self.settings.set(SpectredSettings::Location, path.as_str()).await?;
                 } else {
-                    twarnln!(ctx, "destination binary not found, please specify full path including the binary name");
-                    twarnln!(ctx, "example: 'node select /home/user/testnet/spectred'");
-                    tprintln!(ctx, "no selection is made");
+                    twarnln!(ctx, "Destination binary not found, please specify the full path including the binary name.");
+                    twarnln!(ctx, "Example: 'node select /home/user/testnet/spectred'");
+                    tprintln!(ctx, "No selection made.");
                 }
             }
         }

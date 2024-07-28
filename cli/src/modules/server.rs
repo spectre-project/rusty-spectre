@@ -2,7 +2,7 @@ use crate::imports::*;
 use spectre_wrpc_client::parse::parse_host;
 
 #[derive(Default, Handler)]
-#[help("Set RPC server address")]
+#[help("Configure the RPC server address")]
 pub struct Server;
 
 impl Server {
@@ -16,10 +16,10 @@ impl Server {
             };
 
             ctx.wallet().settings().set(WalletSettings::Server, url).await?;
-            tprintln!(ctx, "Setting RPC server to: {url}");
+            tprintln!(ctx, "RPC server address set to: {url}");
         } else {
             let server = ctx.wallet().settings().get(WalletSettings::Server).unwrap_or_else(|| "n/a".to_string());
-            tprintln!(ctx, "Current RPC server is: {server}");
+            tprintln!(ctx, "Current RPC server address: {server}");
         }
 
         Ok(())

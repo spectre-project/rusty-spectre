@@ -1,7 +1,7 @@
 use crate::imports::*;
 
 #[derive(Default, Handler)]
-#[help("Connect to a Spectre network")]
+#[help("Connect to a Spectre network (mainnet or testnet)")]
 pub struct Connect;
 
 impl Connect {
@@ -30,8 +30,7 @@ impl Connect {
                     ctx,
                     "Please note that public node infrastructure is community-operated and \
                     accessing it may expose your IP address to different node providers. \
-                    Consider running your own node for better privacy. \
-                    ",
+                    Consider running your own node for enhanced privacy."
                 );
             }
 

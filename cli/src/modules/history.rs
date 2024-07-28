@@ -2,6 +2,7 @@ use crate::imports::*;
 use spectre_consensus_core::tx::TransactionId;
 use spectre_wallet_core::error::Error as WalletError;
 use spectre_wallet_core::storage::Binding;
+
 #[derive(Default, Handler)]
 #[help("Display transaction history")]
 pub struct History;
@@ -22,13 +23,11 @@ impl History {
 
         let (last, include_utxo) = match argv.remove(0).as_str() {
             "lookup" => {
-                let transaction_id = if argv.is_empty() {
-                    tprintln!(ctx, "usage: history lookup <transaction id>");
+                if argv.is_empty() {
+                    tprintln!(ctx, "Usage: history lookup <transaction id>");
                     return Ok(());
-                } else {
-                    argv.remove(0)
-                };
-
+                }
+                let transaction_id = argv.remove(0);
                 let txid = TransactionId::from_hex(transaction_id.as_str())?;
                 let store = ctx.wallet().store().as_transaction_record_store()?;
                 match store.load_single(&binding, &network_id, &txid).await {
@@ -39,10 +38,9 @@ impl History {
                         lines.iter().for_each(|line| tprintln!(ctx, "{line}"));
                     }
                     Err(_) => {
-                        tprintln!(ctx, "transaction not found");
+                        tprintln!(ctx, "Transaction not found");
                     }
                 }
-
                 return Ok(());
             }
             "list" => {
@@ -54,7 +52,7 @@ impl History {
                 (last, true)
             }
             v => {
-                tprintln!(ctx, "unknown command: '{v}'");
+                tprintln!(ctx, "Unknown command: '{v}'");
                 self.display_help(ctx, argv).await?;
                 return Ok(());
             }
@@ -65,15 +63,14 @@ impl History {
             Ok(ids) => ids,
             Err(err) => {
                 if matches!(err, WalletError::NoRecordsFound) {
-                    tprintln!(ctx);
                     tprintln!(ctx, "No transactions found for this account.");
-                    tprintln!(ctx);
                 } else {
                     terrorln!(ctx, "{err}");
                 }
                 return Ok(());
             }
         };
+
         let length = ids.size_hint().0;
         let skip = if let Some(last) = last {
             if last > length {
@@ -128,7 +125,6 @@ impl History {
             index += 1;
         }
 
-        tprintln!(ctx);
         tprintln!(ctx, "{} transactions", length.separated_string());
         tprintln!(ctx);
 
@@ -138,13 +134,12 @@ impl History {
     async fn display_help(self: Arc<Self>, ctx: Arc<SpectreCli>, _argv: Vec<String>) -> Result<()> {
         ctx.term().help(
             &[
-                ("list [<last N transactions>]", "List transactions"),
-                ("details [<last N transactions>]", "List transactions with UTXO details"),
-                ("lookup <transaction id>", "Lookup transaction in the history"),
+                ("list [<last N transactions>]", "List the last N transactions"),
+                ("details [<last N transactions>]", "List the last N transactions with UTXO details"),
+                ("lookup <transaction id>", "Look up a transaction by its ID"),
             ],
             None,
         )?;
-
         Ok(())
     }
 }

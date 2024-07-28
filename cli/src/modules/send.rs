@@ -12,7 +12,7 @@ impl Send {
         let account = ctx.wallet().account()?;
 
         if argv.len() < 2 {
-            tprintln!(ctx, "usage: send <address> <amount> <priority fee>");
+            tprintln!(ctx, "Usage: send <address> <amount> <priority fee>");
             return Ok(());
         }
 
@@ -38,8 +38,8 @@ impl Send {
             )
             .await?;
 
-        tprintln!(ctx, "Send - {summary}");
-        // tprintln!(ctx, "\nSending {} SPR to {address}, tx ids:", sompi_to_spectre_string(amount_sompi));
+        tprintln!(ctx, "Transaction sent - {summary}");
+        // tprintln!(ctx, "\nSending {} SPR to {address}, transaction IDs:", sompi_to_spectre_string(amount_sompi));
         // tprintln!(ctx, "{}\n", ids.into_iter().map(|a| a.to_string()).collect::<Vec<_>>().join("\n"));
 
         Ok(())

@@ -12,7 +12,7 @@ impl Estimate {
         let account = ctx.wallet().account()?;
 
         if argv.is_empty() {
-            tprintln!(ctx, "usage: estimate <amount> [<priority fee>]");
+            tprintln!(ctx, "usage: estimate <amount> [<priority fee>]\n\nArguments:\n  <amount>        The amount for which you want to estimate the transaction fees.\n  [<priority fee>]  (Optional) The additional fee to prioritize the transaction.");
             return Ok(());
         }
 
@@ -25,7 +25,7 @@ impl Estimate {
         let destination = PaymentDestination::PaymentOutputs(PaymentOutputs::from((change_address.clone(), amount_sompi)));
         let estimate = account.estimate(destination, priority_fee_sompi.into(), None, &abortable).await?;
 
-        tprintln!(ctx, "Estimate - {estimate}");
+        tprintln!(ctx, "Estimated Fees: {estimate}");
 
         Ok(())
     }

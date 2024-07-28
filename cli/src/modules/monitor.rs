@@ -20,7 +20,7 @@ impl Handler for Monitor {
     }
 
     fn help(&self, _ctx: &Arc<dyn Context>) -> &'static str {
-        "Balance monitor"
+        "Monitors and displays the balance and synchronization status of the Spectre wallet."
     }
 
     async fn stop(self: Arc<Self>, _ctx: &Arc<dyn Context>) -> cli::Result<()> {
@@ -58,7 +58,6 @@ impl Monitor {
         spawn(async move {
             loop {
                 select! {
-
                     event = events_rx.recv().fuse() => {
                         if let Ok(event) = event {
                             let mut events = events.lock().unwrap();
@@ -77,7 +76,6 @@ impl Monitor {
                     _ = shutdown_rx.recv().fuse() => {
                         break;
                     }
-
                 }
             }
 

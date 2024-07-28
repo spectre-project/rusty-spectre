@@ -1,7 +1,7 @@
 use crate::imports::*;
 
 #[derive(Default, Handler)]
-#[help("Broadcast signed transaction to the network")]
+#[help("Broadcasts a signed transaction to the network.")]
 pub struct Broadcast;
 
 impl Broadcast {

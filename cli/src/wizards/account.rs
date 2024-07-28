@@ -49,7 +49,7 @@ pub(crate) async fn create(
     let account =
         wallet.create_account_bip32(&wallet_secret, prv_key_data_info.id, payment_secret.as_ref(), account_create_args_bip32).await?;
 
-    tprintln!(ctx, "\naccount created: {}\n", account.get_list_string()?);
+    tprintln!(ctx, "\nAccount created: {}\n", account.get_list_string()?);
     wallet.select(Some(&account)).await?;
     Ok(())
 }
@@ -75,13 +75,13 @@ async fn create_multisig(ctx: &Arc<SpectreCli>, account_name: Option<String>, mn
     let additional_xpub_keys_len: usize = term.ask(false, "Enter the number of additional extended public keys: ").await?.parse()?;
     let mut xpub_keys = Vec::with_capacity(additional_xpub_keys_len + prv_keys_len);
     for i in 1..=additional_xpub_keys_len {
-        let xpub_key = term.ask(false, &format!("Enter extended public {i} key: ")).await?;
+        let xpub_key = term.ask(false, &format!("Enter extended public key {i}: ")).await?;
         xpub_keys.push(xpub_key.trim().to_owned());
     }
     let account =
         wallet.create_account_multisig(&wallet_secret, prv_key_data_args, xpub_keys, account_name, minimum_signatures).await?;
 
-    tprintln!(ctx, "\naccount created: {}\n", account.get_list_string()?);
+    tprintln!(ctx, "\nAccount created: {}\n", account.get_list_string()?);
     wallet.select(Some(&account)).await?;
     Ok(())
 }
