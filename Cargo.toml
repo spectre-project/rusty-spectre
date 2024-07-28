@@ -125,7 +125,7 @@ spectre-wallet = { version = "0.3.15", path = "wallet/native" }
 spectre-wallet-cli-wasm = { version = "0.3.15", path = "wallet/wasm" }
 spectre-wallet-keys = { version = "0.3.15", path = "wallet/keys" }
 spectre-wallet-core = { version = "0.3.15", path = "wallet/core" }
-spectre-wallet-pskt = { version = "0.3.15", path = "wallet/psst" }
+spectre-wallet-psst = { version = "0.3.15", path = "wallet/psst" }
 spectre-wallet-macros = { version = "0.3.15", path = "wallet/macros" }
 spectre-wasm = { version = "0.3.15", path = "wasm" }
 spectre-wasm-core = { version = "0.3.15", path = "wasm/core" }
