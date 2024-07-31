@@ -1,9 +1,7 @@
 mod script_public_key;
 
 use borsh::{BorshDeserialize, BorshSerialize};
-pub use script_public_key::{
-    scriptvec, ScriptPublicKey, ScriptPublicKeyT, ScriptPublicKeyVersion, ScriptPublicKeys, ScriptVec, SCRIPT_VECTOR_SIZE,
-};
+pub use script_public_key::{scriptvec, ScriptPublicKey, ScriptPublicKeyVersion, ScriptPublicKeys, ScriptVec, SCRIPT_VECTOR_SIZE};
 use serde::{Deserialize, Serialize};
 use spectre_utils::hex::ToHex;
 use spectre_utils::mem_size::MemSizeEstimator;

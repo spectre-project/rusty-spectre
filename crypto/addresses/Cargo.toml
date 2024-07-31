@@ -28,5 +28,5 @@ web-sys.workspace = true
 name = "bench"
 harness = false
 
-[lints]
-workspace = true
+[lints.clippy]
+empty_docs = "allow"

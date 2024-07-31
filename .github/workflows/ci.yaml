@@ -304,6 +304,7 @@ jobs:
         with: 
           name: spectre-wasm32-sdk
           path: wasm/release/spectre-wasm32-sdk.zip
+
   build-release:
     name: Build Ubuntu Release
     runs-on: ubuntu-latest

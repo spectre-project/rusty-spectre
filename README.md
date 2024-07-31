@@ -328,19 +328,6 @@ your web browser and load http://localhost:4000
 
 The framework is compatible with all major desktop and mobile browsers.
 
-## Build the project for release:
-
-```bash
-cargo build --release --bin spectred
-```
-
-Navigate to the release directory and run the node with UTXO index:
-
-```bash
-cd target/release
-./spectred --utxoindex
-```
-
 ## Running the node
 
 Start a mainnet node:

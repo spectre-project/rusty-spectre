@@ -3,10 +3,8 @@ use crate::result::Result;
 use crate::tx::generator as native;
 use crate::wasm::PrivateKeyArrayT;
 use spectre_consensus_client::{numeric, string};
-use spectre_consensus_client::{Transaction, TransactionT};
-use spectre_consensus_core::hashing::wasm::SighashType;
+use spectre_consensus_client::{ITransaction, Transaction};
 use spectre_wallet_keys::privatekey::PrivateKey;
-use spectre_wasm_core::types::{BinaryT, HexString};
 use spectre_wrpc_wasm::RpcClient;
 
 /// @category Wallet SDK
@@ -72,29 +70,16 @@ impl PendingTransaction {
         self.inner.utxo_entries().values().map(|utxo_entry| JsValue::from(utxo_entry.clone())).collect()
     }
 
-    #[wasm_bindgen(js_name = signInput)]
-    pub fn sign_input(&self, input_index: u8, private_key: &PrivateKey, sighash_type: Option<SighashType>) -> Result<HexString> {
-        let signature =
-            self.inner.sign_input(input_index.into(), &private_key.secret_bytes(), sighash_type.unwrap_or(SighashType::All).into())?;
-
-        Ok(signature.to_hex().into())
-    }
-
-    #[wasm_bindgen(js_name = fillInput)]
-    pub fn fill_input(&self, input_index: u8, signature_script: BinaryT) -> Result<()> {
-        self.inner.fill_input(input_index.into(), signature_script.try_as_vec_u8()?)
-    }
-
     /// Sign transaction with supplied [`Array`] or [`PrivateKey`] or an array of
     /// raw private key bytes (encoded as `Uint8Array` or as hex strings)
-    pub fn sign(&self, js_value: PrivateKeyArrayT, check_fully_signed: Option<bool>) -> Result<()> {
+    pub fn sign(&self, js_value: PrivateKeyArrayT) -> Result<()> {
         if let Ok(keys) = js_value.dyn_into::<Array>() {
             let keys = keys
                 .iter()
                 .map(PrivateKey::try_cast_from)
                 .collect::<std::result::Result<Vec<_>, spectre_wallet_keys::error::Error>>()?;
             let mut keys = keys.iter().map(|key| key.as_ref().secret_bytes()).collect::<Vec<_>>();
-            self.inner.try_sign_with_keys(&keys, check_fully_signed)?;
+            self.inner.try_sign_with_keys(&keys)?;
             keys.zeroize();
             Ok(())
         } else {
@@ -125,7 +110,7 @@ impl PendingTransaction {
     /// @see {@link ISerializableTransaction}
     /// @see {@link Transaction}, {@link ISerializableTransaction}
     #[wasm_bindgen(js_name = "serializeToObject")]
-    pub fn serialize_to_object(&self) -> Result<TransactionT> {
+    pub fn serialize_to_object(&self) -> Result<ITransaction> {
         Ok(numeric::SerializableTransaction::from_cctx_transaction(&self.inner.transaction(), self.inner.utxo_entries())?
             .serialize_to_object()?
             .into())
