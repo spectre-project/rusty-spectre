@@ -53,5 +53,5 @@ web-sys.workspace = true
 name = "serde_benchmark"
 harness = false
 
-[lints]
-workspace = true
+[lints.clippy]
+empty_docs = "allow"

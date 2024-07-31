@@ -74,7 +74,6 @@ spectre-wallet-macros.workspace = true
 spectre-wasm-core.workspace = true
 spectre-wrpc-client.workspace = true
 spectre-wrpc-wasm.workspace = true
-lazy_static.workspace = true
 md-5.workspace = true
 pad.workspace = true
 pbkdf2.workspace = true
@@ -126,5 +125,5 @@ serde_repr.workspace = true
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 tokio.workspace = true
 
-[lints]
-workspace = true
+[lints.clippy]
+empty_docs = "allow"

@@ -23,7 +23,6 @@ spectre-consensus-wasm.workspace = true
 spectre-core.workspace = true
 spectre-math.workspace = true
 spectre-pow.workspace = true
-spectre-txscript.workspace = true
 spectre-rpc-core.workspace = true
 spectre-utils.workspace = true
 spectre-wasm-core.workspace = true
@@ -41,12 +40,10 @@ workflow-wasm.workspace = true
 wasm32-sdk = [
     "spectre-wallet-core/wasm32-sdk",
     "spectre-pow/wasm32-sdk",
-    "spectre-txscript/wasm32-sdk",
 ]
 wasm32-core = [
     "spectre-wallet-core/wasm32-core",
     "spectre-pow/wasm32-sdk",
-    "spectre-txscript/wasm32-sdk",
 ]
 wasm32-rpc = [
     "spectre-consensus-core/wasm32-sdk",

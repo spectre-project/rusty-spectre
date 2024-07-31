@@ -15,7 +15,7 @@ use crate::error::Error;
 use crate::imports::*;
 use crate::result::Result;
 use spectre_bip32::{AddressType, DerivationPath, ExtendedPrivateKey, ExtendedPublicKey, Language, Mnemonic, SecretKeyExt};
-use spectre_consensus_core::network::{NetworkType, NetworkTypeT};
+use spectre_consensus_core::network::NetworkType;
 use spectre_txscript::{
     extract_script_pub_key_address, multisig_redeem_script, multisig_redeem_script_ecdsa, pay_to_script_hash_script,
 };
@@ -459,18 +459,12 @@ pub fn create_multisig_address(
 #[wasm_bindgen(js_name=createAddress)]
 pub fn create_address_js(
     key: PublicKeyT,
-    network: &NetworkTypeT,
+    network_type: NetworkType,
     ecdsa: Option<bool>,
     account_kind: Option<AccountKind>,
 ) -> Result<Address> {
     let public_key = PublicKey::try_cast_from(key)?;
-    create_address(
-        1,
-        vec![public_key.as_ref().try_into()?],
-        NetworkType::try_from(network)?.into(),
-        ecdsa.unwrap_or(false),
-        account_kind,
-    )
+    create_address(1, vec![public_key.as_ref().try_into()?], network_type.into(), ecdsa.unwrap_or(false), account_kind)
 }
 
 /// @category Wallet SDK

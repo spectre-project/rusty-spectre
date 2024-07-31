@@ -1,7 +1,6 @@
 use alloc::borrow::Cow;
 use borsh::{BorshDeserialize, BorshSerialize};
 use core::fmt::Formatter;
-use js_sys::Object;
 use serde::{
     de::{Error, Visitor},
     Deserialize, Deserializer, Serialize, Serializer,
@@ -42,7 +41,6 @@ const TS_SCRIPT_PUBLIC_KEY: &'static str = r#"
  * @category Consensus
  */
 export interface IScriptPublicKey {
-    version : number;
     script: HexString;
 }
 "#;
@@ -94,39 +92,6 @@ impl Serialize for ScriptPublicKey {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
-#[serde(untagged)]
-pub enum Value<'a> {
-    U16(u16),
-    #[serde(borrow)]
-    String(Cow<'a, String>),
-}
-
-impl From<Value<'_>> for u16 {
-    fn from(value: Value<'_>) -> Self {
-        let Value::U16(v) = value else { panic!("unexpected conversion: {value:?}") };
-        v
-    }
-}
-
-impl TryFrom<Value<'_>> for Vec<u8> {
-    type Error = faster_hex::Error;
-
-    fn try_from(value: Value) -> Result<Self, Self::Error> {
-        match value {
-            Value::U16(_) => {
-                panic!("unexpected conversion: {value:?}")
-            }
-            Value::String(script) => {
-                let mut script_bytes = vec![0u8; script.len() / 2];
-                faster_hex::hex_decode(script.as_bytes(), script_bytes.as_mut_slice())?;
-
-                Ok(script_bytes)
-            }
-        }
-    }
-}
-
 impl<'de: 'a, 'a> Deserialize<'de> for ScriptPublicKey {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -138,7 +103,6 @@ impl<'de: 'a, 'a> Deserialize<'de> for ScriptPublicKey {
             marker: std::marker::PhantomData<ScriptPublicKey>,
             lifetime: std::marker::PhantomData<&'de ()>,
         }
-
         impl<'de> Visitor<'de> for ScriptPublicKeyVisitor<'de> {
             type Value = ScriptPublicKey;
 
@@ -168,7 +132,6 @@ impl<'de: 'a, 'a> Deserialize<'de> for ScriptPublicKey {
             {
                 self.visit_u32(v as u32)
             }
-
             #[cfg(target_arch = "wasm32")]
             fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
             where
@@ -184,7 +147,6 @@ impl<'de: 'a, 'a> Deserialize<'de> for ScriptPublicKey {
             {
                 self.visit_u32(v as u32)
             }
-
             #[cfg(target_arch = "wasm32")]
             fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
             where
@@ -192,7 +154,6 @@ impl<'de: 'a, 'a> Deserialize<'de> for ScriptPublicKey {
             {
                 self.visit_u32(v as u32)
             }
-
             #[cfg(target_arch = "wasm32")]
             fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E>
             where
@@ -202,7 +163,6 @@ impl<'de: 'a, 'a> Deserialize<'de> for ScriptPublicKey {
                 let instance_ref = unsafe { Self::Value::ref_from_abi(v) }; // todo add checks for safecast
                 Ok(instance_ref.clone())
             }
-
             #[cfg(target_arch = "wasm32")]
             fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
             where
@@ -271,6 +231,38 @@ impl<'de: 'a, 'a> Deserialize<'de> for ScriptPublicKey {
                     Script,
                 }
 
+                #[derive(Debug, Clone, Deserialize)]
+                #[serde(untagged)]
+                pub enum Value<'a> {
+                    U16(u16),
+                    #[serde(borrow)]
+                    String(Cow<'a, String>),
+                }
+                impl From<Value<'_>> for u16 {
+                    fn from(value: Value<'_>) -> Self {
+                        let Value::U16(v) = value else { panic!("unexpected conversion: {value:?}") };
+                        v
+                    }
+                }
+
+                impl TryFrom<Value<'_>> for Vec<u8> {
+                    type Error = faster_hex::Error;
+
+                    fn try_from(value: Value) -> Result<Self, Self::Error> {
+                        match value {
+                            Value::U16(_) => {
+                                panic!("unexpected conversion: {value:?}")
+                            }
+                            Value::String(script) => {
+                                let mut script_bytes = vec![0u8; script.len() / 2];
+                                faster_hex::hex_decode(script.as_bytes(), script_bytes.as_mut_slice())?;
+
+                                Ok(script_bytes)
+                            }
+                        }
+                    }
+                }
+
                 let mut version: Option<u16> = None;
                 let mut script: Option<Vec<u8>> = None;
 
@@ -337,12 +329,6 @@ impl ScriptPublicKey {
 }
 
 #[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(typescript_type = "ScriptPublicKey | HexString")]
-    pub type ScriptPublicKeyT;
-}
-
-#[wasm_bindgen]
 impl ScriptPublicKey {
     #[wasm_bindgen(constructor)]
     pub fn constructor(version: u16, script: JsValue) -> Result<ScriptPublicKey, JsError> {
@@ -384,20 +370,6 @@ impl TryCastFromJs for ScriptPublicKey {
         Self::resolve(&value, || {
             if let Some(hex_str) = value.as_ref().as_string() {
                 Ok(Self::from_str(&hex_str).map_err(CastError::custom)?)
-            } else if let Some(object) = Object::try_from(value.as_ref()) {
-                let version = object.try_get_value("version")?.ok_or(CastError::custom(
-                    "ScriptPublicKey must be a hex string or an object with 'version' and 'script' properties",
-                ))?;
-
-                let version = if let Ok(version) = version.try_as_u16() {
-                    version
-                } else {
-                    return Err(CastError::custom("Invalid version value '{version:?}'"));
-                };
-
-                let script = object.get_vec_u8("script")?;
-
-                Ok(ScriptPublicKey::from_vec(version, script))
             } else {
                 Err(CastError::custom(format!("Unable to convert ScriptPublicKey from: {:?}", value.as_ref())))
             }

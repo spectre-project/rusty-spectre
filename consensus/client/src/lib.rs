@@ -13,18 +13,21 @@ cfg_if::cfg_if! {
         mod header;
         mod input;
         mod transaction;
-        mod utils;
+        mod vtx;
         mod hash;
         mod sign;
+        mod script;
         mod serializable;
+
 
         pub use header::*;
         pub use input::*;
         pub use transaction::*;
         pub use serializable::*;
-        pub use utils::*;
+        pub use vtx::*;
         pub use hash::*;
         // pub use signing::*;
+        pub use script::*;
         pub use sign::sign_with_multiple_v3;
     }
 }

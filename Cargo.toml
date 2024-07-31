@@ -124,8 +124,8 @@ spectre-utxoindex = { version = "0.3.15", path = "indexes/utxoindex" }
 spectre-wallet = { version = "0.3.15", path = "wallet/native" }
 spectre-wallet-cli-wasm = { version = "0.3.15", path = "wallet/wasm" }
 spectre-wallet-keys = { version = "0.3.15", path = "wallet/keys" }
-spectre-wallet-psst = { version = "0.3.15", path = "wallet/psst" }
 spectre-wallet-core = { version = "0.3.15", path = "wallet/core" }
+spectre-wallet-psst = { version = "0.3.15", path = "wallet/psst" }
 spectre-wallet-macros = { version = "0.3.15", path = "wallet/macros" }
 spectre-wasm = { version = "0.3.15", path = "wasm" }
 spectre-wasm-core = { version = "0.3.15", path = "wasm/core" }
@@ -178,14 +178,15 @@ faster-hex = "0.6.1" # TODO "0.8.1" - fails unit tests
 fixedstr = { version = "0.5.4", features = ["serde"] }
 flate2 = "1.0.28"
 futures = { version = "0.3.29" }
-futures-util = { version = "0.3.29", default-features = false, features = ["alloc"] }
+futures-util = { version = "0.3.29", default-features = false, features = [
+    "alloc",
+] }
 getrandom = { version = "0.2.10", features = ["js"] }
 h2 = "0.3.21"
 heapless = "0.7.16"
 hex = { version = "0.4.3", features = ["serde"] }
 hex-literal = "0.4.1"
 hmac = { version = "0.12.1", default-features = false }
-hexplay = "0.3.0"
 home = "0.5.5"
 igd-next = { version = "0.14.2", features = ["aio_tokio"] }
 indexmap = "2.1.0"
@@ -194,7 +195,6 @@ ipnet = "2.9.0"
 itertools = "0.11.0"
 js-sys = "0.3.67"
 keccak = "0.1.4"
-lazy_static = "1.4.0"
 local-ip-address = "0.5.6"
 log = "0.4.20"
 log4rs = "1.2.0"
@@ -275,17 +275,17 @@ workflow-perf-monitor = "0.0.2"
 nw-sys = "0.1.6"
 
 # workflow dependencies
-# workflow-core = { version = "0.12.1" }
-# workflow-d3 = { version = "0.12.1" }
-# workflow-dom = { version = "0.12.1" }
-# workflow-http = { version = "0.12.1" }
-# workflow-log = { version = "0.12.1" }
-# workflow-node = { version = "0.12.1" }
-# workflow-nw = { version = "0.12.1" }
-# workflow-rpc = { version = "0.12.1" }
-# workflow-store = { version = "0.12.1" }
-# workflow-terminal = { version = "0.12.1" }
-# workflow-wasm = { version = "0.12.1" }
+workflow-core = { version = "0.12.1" }
+workflow-d3 = { version = "0.12.1" }
+workflow-dom = { version = "0.12.1" }
+workflow-http = { version = "0.12.1" }
+workflow-log = { version = "0.12.1" }
+workflow-node = { version = "0.12.1" }
+workflow-nw = { version = "0.12.1" }
+workflow-rpc = { version = "0.12.1" }
+workflow-store = { version = "0.12.1" }
+workflow-terminal = { version = "0.12.1" }
+workflow-wasm = { version = "0.12.1" }
 
 # if below is enabled, this means that there is an ongoing work
 # on the workflow-rs crate. This requires that you clone workflow-rs
@@ -303,18 +303,6 @@ nw-sys = "0.1.6"
 # workflow-wasm = { path = "../workflow-rs/wasm" }
 
 # ---
-workflow-core = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "pre-borsh-1-5-1" }
-workflow-d3 = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "pre-borsh-1-5-1" }
-workflow-dom = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "pre-borsh-1-5-1" }
-workflow-http = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "pre-borsh-1-5-1" }
-workflow-log = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "pre-borsh-1-5-1" }
-workflow-node = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "pre-borsh-1-5-1" }
-workflow-nw = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "pre-borsh-1-5-1" }
-workflow-rpc = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "pre-borsh-1-5-1" }
-workflow-store = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "pre-borsh-1-5-1" }
-workflow-terminal = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "pre-borsh-1-5-1" }
-workflow-wasm = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "pre-borsh-1-5-1" }
-
 # workflow-core = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
 # workflow-d3 = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
 # workflow-dom = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
@@ -339,5 +327,3 @@ inherits = "release"
 debug = true
 strip = false
 
-[workspace.lints.clippy]
-empty_docs = "allow"

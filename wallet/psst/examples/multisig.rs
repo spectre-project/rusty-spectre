@@ -22,13 +22,13 @@ fn main() {
     // let in_0 = dummy_out_point();
     let input_0 = InputBuilder::default()
         .utxo_entry(UtxoEntry {
-            amount: 12793000000000,
+            amount: 10000000,
             script_public_key: pay_to_script_hash_script(&redeem_script),
-            block_daa_score: 36151168,
+            block_daa_score: 8110164,
             is_coinbase: false,
         })
         .previous_outpoint(TransactionOutpoint {
-            transaction_id: TransactionId::from_str("63020db736215f8b1105a9281f7bcbb6473d965ecc45bb2fb5da59bd35e6ff84").unwrap(),
+            transaction_id: TransactionId::from_str("76ab09236a7aa13fe8f5389c74545c0110d4bba1ca778e49367d4d8de827834b").unwrap(),
             index: 0,
         })
         .sig_op_count(2)
