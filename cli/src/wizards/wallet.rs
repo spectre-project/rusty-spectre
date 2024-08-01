@@ -67,10 +67,12 @@ pub(crate) async fn create(ctx: &Arc<SpectreCli>, name: Option<&str>, import_wit
     }
 
     let payment_secret = term.ask(true, "Enter bip39 mnemonic passphrase (optional): ").await?;
-    let payment_secret = if payment_secret.trim().is_empty() { None } else { Some(Secret::new(payment_secret.trim().as_bytes().to_vec())) };
+    let payment_secret =
+        if payment_secret.trim().is_empty() { None } else { Some(Secret::new(payment_secret.trim().as_bytes().to_vec())) };
 
     if let Some(payment_secret) = payment_secret.as_ref() {
-        let payment_secret_validate = Secret::new(term.ask(true, "Please re-enter mnemonic passphrase: ").await?.trim().as_bytes().to_vec());
+        let payment_secret_validate =
+            Secret::new(term.ask(true, "Please re-enter mnemonic passphrase: ").await?.trim().as_bytes().to_vec());
         if payment_secret_validate.as_ref() != payment_secret.as_ref() {
             return Err(Error::PaymentSecretMatch);
         }
