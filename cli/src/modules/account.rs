@@ -27,7 +27,7 @@ impl Account {
         match action.as_str() {
             "name" => {
                 if argv.len() != 1 {
-                    tprintln!(ctx, "usage: 'account name <name>' or 'account name remove'");
+                    tprintln!(ctx, "Usage: 'account name <name>' or 'account name remove'");
                     return Ok(());
                 } else {
                     let (wallet_secret, _) = ctx.ask_wallet_secret(None).await?;
@@ -52,9 +52,7 @@ impl Account {
                 let account_name = if argv.is_empty() {
                     None
                 } else {
-                    let name = argv.remove(0);
-                    let name = name.trim().to_string();
-
+                    let name = argv.remove(0).trim().to_string();
                     Some(name)
                 };
 
@@ -65,9 +63,8 @@ impl Account {
             }
             "import" => {
                 if argv.is_empty() {
-                    tprintln!(ctx, "usage: 'account import <import-type> <key-type> [extra keys]'");
-                    tprintln!(ctx, "");
-                    tprintln!(ctx, "examples:");
+                    tprintln!(ctx, "Usage: 'account import <import-type> <key-type> [extra keys]'");
+                    tprintln!(ctx, "\nExamples:");
                     tprintln!(ctx, "");
                     ctx.term().help(
                         &[
@@ -90,7 +87,6 @@ impl Account {
                         ],
                         None,
                     )?;
-
                     return Ok(());
                 }
 
@@ -98,8 +94,8 @@ impl Account {
                 match import_kind.as_ref() {
                     "legacy-data" => {
                         if !argv.is_empty() {
-                            tprintln!(ctx, "usage: 'account import legacy-data'");
-                            tprintln!(ctx, "too many arguments: {}\r\n", argv.join(" "));
+                            tprintln!(ctx, "Usage: 'account import legacy-data'");
+                            tprintln!(ctx, "Too many arguments: {}\r\n", argv.join(" "));
                             return Ok(());
                         }
 
@@ -150,9 +146,9 @@ impl Account {
                     }
                     "mnemonic" => {
                         if argv.is_empty() {
-                            tprintln!(ctx, "usage: 'account import mnemonic <bip32|legacy|multisig>'");
-                            tprintln!(ctx, "please specify the mnemonic type");
-                            tprintln!(ctx, "please use 'legacy' for 12-word Spectre Desktop and web wallet mnemonics\r\n");
+                            tprintln!(ctx, "Usage: 'account import mnemonic <bip32|legacy|multisig>'");
+                            tprintln!(ctx, "Please specify the mnemonic type");
+                            tprintln!(ctx, "Use 'legacy' for 12-word Spectre Desktop and web wallet mnemonics\r\n");
                             return Ok(());
                         }
 
@@ -162,7 +158,7 @@ impl Account {
                         match account_kind.as_ref() {
                             LEGACY_ACCOUNT_KIND | BIP32_ACCOUNT_KIND => {
                                 if !argv.is_empty() {
-                                    tprintln!(ctx, "too many arguments: {}\r\n", argv.join(" "));
+                                    tprintln!(ctx, "Too many arguments: {}\r\n", argv.join(" "));
                                     return Ok(());
                                 }
                                 crate::wizards::import::import_with_mnemonic(&ctx, account_kind, &argv).await?;
@@ -171,7 +167,7 @@ impl Account {
                                 crate::wizards::import::import_with_mnemonic(&ctx, account_kind, &argv).await?;
                             }
                             _ => {
-                                tprintln!(ctx, "account import is not supported for this account type: '{account_kind}'\r\n");
+                                tprintln!(ctx, "Account import is not supported for this account type: '{}'\r\n", account_kind);
                                 return Ok(());
                             }
                         }
@@ -179,8 +175,8 @@ impl Account {
                         return Ok(());
                     }
                     _ => {
-                        tprintln!(ctx, "unknown account import type: '{import_kind}'");
-                        tprintln!(ctx, "supported import types are: 'mnemonic' or 'legacy-data'\r\n");
+                        tprintln!(ctx, "Unknown account import type: '{}'", import_kind);
+                        tprintln!(ctx, "Supported import types are: 'mnemonic' or 'legacy-data'\r\n");
                         return Ok(());
                     }
                 }
@@ -204,7 +200,7 @@ impl Account {
                 self.derivation_scan(&ctx, start, count, window, sweep).await?;
             }
             v => {
-                tprintln!(ctx, "unknown command: '{v}'\r\n");
+                tprintln!(ctx, "Unknown command: '{}'\r\n", v);
                 return self.display_help(ctx, argv).await;
             }
         }
@@ -221,13 +217,12 @@ impl Account {
                     "Import accounts from a private key using 24 or 12 word mnemonic or legacy data \
                 (Spectre Desktop and web wallet). Use 'account import' for additional help.",
                 ),
-                ("name <name>", "Name or rename the selected account (use 'remove' to remove the name"),
+                ("name <name>", "Name or rename the selected account (use 'remove' to remove the name)"),
                 ("scan [<derivations>] or scan [<start>] [<derivations>]", "Scan extended address derivation chain (legacy accounts)"),
                 (
                     "sweep [<derivations>] or sweep [<start>] [<derivations>]",
                     "Sweep extended address derivation chain (legacy accounts)",
                 ),
-                // ("purge", "Purge an account from the wallet"),
             ],
             None,
         )?;

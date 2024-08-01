@@ -175,7 +175,7 @@ impl From<NetworkIdError> for JsValue {
 }
 
 ///
-/// NetworkId is a unique identifier for a spectre network instance.
+/// NetworkId is a unique identifier for a Spectre network instance.
 /// It is composed of a network type and an optional suffix.
 ///
 /// @category Consensus

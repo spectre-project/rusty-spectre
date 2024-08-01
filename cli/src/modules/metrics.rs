@@ -25,7 +25,7 @@ pub struct Metrics {
 impl Default for Metrics {
     fn default() -> Self {
         Metrics {
-            settings: SettingsStore::try_new("metrics").expect("Failed to create miner settings store"),
+            settings: SettingsStore::try_new("metrics").expect("Failed to create metrics settings store"),
             mute: Arc::new(AtomicBool::new(true)),
             metrics: Arc::new(MetricsProcessor::default()),
         }
@@ -39,7 +39,7 @@ impl Handler for Metrics {
     }
 
     fn help(&self, _ctx: &Arc<dyn Context>) -> &'static str {
-        "Manage metrics monitoring"
+        "Manage metrics monitoring. Use this command to start, stop, and configure metrics collection."
     }
 
     async fn start(self: Arc<Self>, ctx: &Arc<dyn Context>) -> cli::Result<()> {

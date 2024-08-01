@@ -1,7 +1,7 @@
 use crate::imports::*;
 
 #[derive(Default, Handler)]
-#[help("Import a wallet, mnemonic, or a private key")]
+#[help("Import a wallet using a mnemonic or a private key")]
 pub struct Import;
 
 impl Import {
@@ -14,27 +14,16 @@ impl Import {
             return Ok(());
         }
 
-        let what = argv.get(0).unwrap();
-        match what.as_str() {
+        let command = argv.get(0).unwrap();
+        match command.as_str() {
             "mnemonic" => {
-                let account_kind =
-                    if let Some(account_kind) = argv.get(1) { account_kind.parse::<AccountKind>()? } else { AccountKind::Bip32 };
-                if argv.len() > 1 {
-                    crate::wizards::import::import_with_mnemonic(&ctx, account_kind, &argv[2..]).await?;
-                } else {
-                    crate::wizards::import::import_with_mnemonic(&ctx, account_kind, &[]).await?;
-                }
+                let account_kind = argv.get(1).map_or(Ok(AccountKind::Bip32), |arg| arg.parse::<AccountKind>())?;
+                let additional_keys = if argv.len() > 2 { &argv[2..] } else { &[] };
+                crate::wizards::import::import_with_mnemonic(&ctx, account_kind, additional_keys).await?;
             }
             "legacy" => {
                 if exists_legacy_v0_keydata().await? {
-                    let import_secret = Secret::new(
-                        ctx.term()
-                            .ask(true, "Enter the password for the account you are importing: ")
-                            .await?
-                            .trim()
-                            .as_bytes()
-                            .to_vec(),
-                    );
+                    let import_secret = Secret::new(ctx.term().ask(true, "Enter the password for the account you are importing: ").await?.trim().as_bytes().to_vec());
                     let wallet_secret = Secret::new(ctx.term().ask(true, "Enter wallet password: ").await?.trim().as_bytes().to_vec());
                     wallet.import_gen0_keydata(import_secret, wallet_secret, None).await?;
                 } else if application_runtime::is_web() {
@@ -45,8 +34,8 @@ impl Import {
             }
             // todo "read-only" => {}
             // "core" => {}
-            v => {
-                tprintln!(ctx, "unknown command: '{v}'\r\n");
+            unknown => {
+                tprintln!(ctx, "Unknown command: '{unknown}'\r\n");
                 return self.display_help(ctx).await;
             }
         }
@@ -57,12 +46,9 @@ impl Import {
     async fn display_help(self: Arc<Self>, ctx: Arc<SpectreCli>) -> Result<()> {
         ctx.term().help(
             &[
-                (
-                    "mnemonic [<type>] [<additional xpub keys>] ",
-                    "Import a 24 or 12 word mnemonic (types: 'bip32' (default), 'legacy', 'multisig'), ",
-                ),
-                ("legacy", "Import a legacy (local Spectre Desktop) wallet"),
-                // ("purge", "Purge an account from the wallet"),
+                ("mnemonic [<type>] [<additional xpub keys>]", "Import a mnemonic (12 or 24 words). Supported types: 'bip32' (default), 'legacy', 'multisig'."),
+                ("legacy", "Import a legacy wallet (local Spectre Desktop)."),
+                // ("purge", "Purge an account from the wallet."),
             ],
             None,
         )?;

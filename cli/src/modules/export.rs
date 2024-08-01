@@ -10,7 +10,7 @@ impl Export {
         let ctx = ctx.clone().downcast_arc::<SpectreCli>()?;
 
         if argv.is_empty() || argv.first() == Some(&"help".to_string()) {
-            tprintln!(ctx, "usage: export [mnemonic]");
+            tprintln!(ctx, "Usage: export [mnemonic]");
             return Ok(());
         }
 
@@ -40,7 +40,7 @@ async fn export_multisig_account(ctx: Arc<SpectreCli>, account: Arc<MultiSig>) -
                 return Err(Error::WalletSecretRequired);
             }
 
-            tprintln!(ctx, "required signatures: {}", account.minimum_signatures());
+            tprintln!(ctx, "Required signatures: {}", account.minimum_signatures());
             tprintln!(ctx, "");
 
             let prv_key_data_store = ctx.store().as_prv_key_data_store()?;
@@ -49,7 +49,7 @@ async fn export_multisig_account(ctx: Arc<SpectreCli>, account: Arc<MultiSig>) -
                 let prv_key_data = prv_key_data_store.load_key_data(&wallet_secret, prv_key_data_id).await?.unwrap();
                 let mnemonic = prv_key_data.as_mnemonic(None).unwrap().unwrap();
 
-                tprintln!(ctx, "mnemonic {}:", id + 1);
+                tprintln!(ctx, "Mnemonic {}:", id + 1);
                 tprintln!(ctx, "");
                 tprintln!(ctx, "{}", mnemonic.phrase());
                 tprintln!(ctx, "");
@@ -61,7 +61,7 @@ async fn export_multisig_account(ctx: Arc<SpectreCli>, account: Arc<MultiSig>) -
             let additional = account.xpub_keys().iter().filter(|xpub| !generated_xpub_keys.contains(xpub));
             additional.enumerate().for_each(|(idx, xpub)| {
                 if idx == 0 {
-                    tprintln!(ctx, "additional xpubs: ");
+                    tprintln!(ctx, "Additional xpubs: ");
                 }
                 tprintln!(ctx, "{xpub}");
             });
@@ -96,10 +96,10 @@ async fn export_single_key_account(ctx: Arc<SpectreCli>, account: Arc<dyn Accoun
 
     match mnemonic {
         None => {
-            tprintln!(ctx, "mnemonic is not available for this private key");
+            tprintln!(ctx, "Mnemonic is not available for this private key.");
         }
         Some(mnemonic) if payment_secret.is_none() => {
-            tprintln!(ctx, "mnemonic:");
+            tprintln!(ctx, "Mnemonic:");
             tprintln!(ctx, "");
             tprintln!(ctx, "{}", mnemonic.phrase());
             tprintln!(ctx, "");
@@ -107,13 +107,11 @@ async fn export_single_key_account(ctx: Arc<SpectreCli>, account: Arc<dyn Accoun
         Some(mnemonic) => {
             tpara!(
                 ctx,
-                "\
-                                IMPORTANT: to recover your private key using this mnemonic in the future \
-                                you will need your payment password. Your payment password is permanently associated with \
-                                this mnemonic.",
+                "IMPORTANT: To recover your private key using this mnemonic in the future, 
+                you will need your payment password. Your payment password is permanently associated with this mnemonic.",
             );
             tprintln!(ctx, "");
-            tprintln!(ctx, "mnemonic:");
+            tprintln!(ctx, "Mnemonic:");
             tprintln!(ctx, "");
             tprintln!(ctx, "{}", mnemonic.phrase());
             tprintln!(ctx, "");

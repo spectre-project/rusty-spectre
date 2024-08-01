@@ -20,9 +20,7 @@ impl Wallet {
                 if wallets.is_empty() {
                     tprintln!(ctx, "No wallets found");
                 } else {
-                    tprintln!(ctx, "");
-                    tprintln!(ctx, "Wallets:");
-                    tprintln!(ctx, "");
+                    tprintln!(ctx, "\nWallets:\n");
                     for wallet in wallets {
                         if let Some(title) = wallet.title {
                             tprintln!(ctx, "  {}: {}", wallet.filename, title);
@@ -37,26 +35,22 @@ impl Wallet {
                 let wallet_name = if argv.is_empty() {
                     None
                 } else {
-                    let name = argv.remove(0);
-                    let name = name.trim().to_string();
-                    let name_check = name.to_lowercase();
-                    if name_check.as_str() == "wallet" {
+                    let name = argv.remove(0).trim().to_string();
+                    if name.to_lowercase() == "wallet" {
                         return Err(Error::custom("Wallet name cannot be 'wallet'"));
                     }
                     Some(name)
                 };
 
                 let wallet_name = wallet_name.as_deref();
-                let import_with_mnemonic = op.as_str() == "import";
+                let import_with_mnemonic = op == "import";
                 wizards::wallet::create(&ctx, wallet_name, import_with_mnemonic).await?;
             }
             "open" => {
                 let name = if let Some(name) = argv.first().cloned() {
-                    let name_check = name.to_lowercase();
-
-                    if name_check.as_str() == "wallet" {
-                        tprintln!(ctx, "you can not have a wallet named 'wallet'...");
-                        tprintln!(ctx, "perhaps you are looking to use 'open <name>'");
+                    if name.to_lowercase() == "wallet" {
+                        tprintln!(ctx, "You cannot have a wallet named 'wallet'.");
+                        tprintln!(ctx, "Perhaps you are looking to use 'open <name>'");
                         return Ok(());
                     }
                     Some(name)
@@ -76,21 +70,20 @@ impl Wallet {
             "hint" => {
                 if !argv.is_empty() {
                     let re = regex::Regex::new(r"wallet\s+hint\s+").unwrap();
-                    let hint = re.replace(cmd, "");
-                    let hint = hint.trim();
+                    let hint = re.replace(cmd, "").trim().to_string();
                     let store = ctx.store();
                     if hint == "remove" {
                         tprintln!(ctx, "Hint is empty - removing wallet hint");
                         store.set_user_hint(None).await?;
                     } else {
-                        store.set_user_hint(Some(hint.into())).await?;
+                        store.set_user_hint(Some(spectre_wallet_core::storage::Hint { text: hint })).await?;
                     }
                 } else {
-                    tprintln!(ctx, "usage:\n'wallet hint <text>' or 'wallet hint remove' to remove the hint");
+                    tprintln!(ctx, "Usage:\n'wallet hint <text>' or 'wallet hint remove' to remove the hint");
                 }
             }
             v => {
-                tprintln!(ctx, "unknown command: '{v}'");
+                tprintln!(ctx, "Unknown command: '{}'", v);
                 return self.display_help(ctx, argv).await;
             }
         }
@@ -101,15 +94,14 @@ impl Wallet {
     async fn display_help(self: Arc<Self>, ctx: Arc<SpectreCli>, _argv: Vec<String>) -> Result<()> {
         ctx.term().help(
             &[
-                ("list", "List available local wallet files"),
-                ("create [<name>]", "Create a new bip32 wallet"),
+                ("list", "List available local wallet files."),
+                ("create [<name>]", "Create a new BIP32 wallet."),
                 (
                     "import [<name>]",
-                    "Create a wallet from an existing mnemonic (bip32 only). \r\n\r\n\
-                To import legacy wallets (Spectre Desktop or web wallet) please create \
-                a new bip32 wallet and use the 'account import' command. \
-                Legacy wallets can only be imported as accounts. \
-                \r\n",
+                    "Create a wallet from an existing mnemonic (BIP32 only). \n\n\
+                    To import legacy wallets (Spectre Desktop or web wallet), please create \
+                    a new BIP32 wallet and use the 'account import' command. \
+                    Legacy wallets can only be imported as accounts.\n",
                 ),
                 ("open [<name>]", "Open an existing wallet (shorthand: 'open [<name>]')"),
                 ("close", "Close an opened wallet (shorthand: 'close')"),

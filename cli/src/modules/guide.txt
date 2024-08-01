@@ -1,7 +1,6 @@
 Please note - this is an alpha version of the software; not all features are currently functional.
 
-If using a desktop or a web version of this software, you can use Ctrl+'+' or Ctrl+'-' (Command on macOS) to
-change the terminal font size.
+For desktop or web versions of this software, you can use Ctrl+'+' or Ctrl+'-' (Command on macOS) to change the terminal font size.
 
 If using a desktop version, you can use Ctrl+M (Command on macOS) to bring up metrics.
 
@@ -9,27 +8,17 @@ Type `help` to see the complete list of commands. Type `exit` to exit this appli
 
 ---
 
-Before you start, you must configure the default network setting. There are currently
-3 networks available.  `mainnet`, `testnet-10` and `testnet-11`.  If you wish to experiment,
-you should select `testnet-11` by entering `network testnet-11`
+Before you start, you must configure the default network settings. There is only one network currently available: `mainnet`.
 
-The `server` command configures the target server.  You can connect to any Rusty Spectre
-node that has wRPC enabled with `--rpclisten-borsh=0.0.0.0`. If the server setting 
-is set to 'public' the node will connect to the public node infrastructure.
+The `server` command configures the target server. You can connect to any Rusty Spectre node that has wRPC enabled with `--rpclisten-borsh=0.0.0.0`. If the server setting is set to 'public', the node will connect to the public node infrastructure.
 
-Both network and server values are stored in the application settings and are 
-used when running a local node or connecting to a remote node.
+Both network and server values are stored in the application settings and are used when running a local node or connecting to a remote node.
 
 ---
 
-`wallet create [<name>]` - Use this command to create a local wallet. The <name> argument 
-is optional (the default wallet name is "spectre") and allows you to create multiple 
-named wallets. Only one wallet can be opened at a time. Keep in mind that a wallet can have multiple
-accounts, so you only need one wallet, unless, for example, you want to separate wallets for 
-personal and business needs (but you can also create isolated accounts within a wallet).
+`wallet create [<name>]` - Use this command to create a local wallet. The <name> argument is optional (the default wallet name is "spectre") and allows you to create multiple named wallets. Only one wallet can be opened at a time. Keep in mind that a wallet can have multiple accounts, so you only need one wallet unless, for example, you want to separate wallets for personal and business needs (but you can also create isolated accounts within a wallet).
 
-Make sure to record your mnemonic, even if working with a testnet, not to lose your
-testnet SPR.
+Make sure to record your mnemonic, even if working with a testnet, to avoid losing your testnet SPR.
 
 `open <name>` - Opens the wallet (the wallet is open automatically after creation).
 
@@ -39,19 +28,11 @@ testnet SPR.
 
 `account create bip32 [<name>]` - Allows you to create additional HD wallet accounts linked to the default private key of your wallet.
 
-`address` - Shows your selected account address.
+`address` - Shows your selected account address. Note - you can click on the address to copy it to the clipboard. (When on mainnet, Ctrl+Click on addresses, transactions, and block hashes will open a new browser window with an explorer.)
 
-Note - you can click on the address to copy it to the clipboard. (When on mainnet, Ctrl+Click on addresses, transactions, and 
-block hashes will open a new browser window with an explorer.)
+Before you transact: The `mute` option (enabled by default) toggles mute on/off. Mute enables terminal output of internal framework events. Rust and JavaScript/TypeScript applications integrating with this platform are meant to update their state by monitoring event notifications. Mute allows you to see these events in the terminal. When mute is off, all events are displayed in the terminal. When mute is on, you can use the 'track' command to enable specific event notifications.
 
-Before you transact: The `mute` option (enabled by default) toggles mute on/off. Mute enables terminal
-output of internal framework events. Rust and JavaScript/TypeScript applications integrating with this platform 
-are meant to update their state by monitoring event notifications. Mute allows you to see these events in
-the terminal. When mute is off, all events are displayed in the terminal. When mute is on, you can use the 'track'
-command to enable specific event notifications.
-
-`transfer <account-name> <amount>` - Transfers from the active account to a different account. For example, `transfer p 1` will transfer 1 SPR from
-the selected account to an account named 'pete' (starts with a 'p' letter).
+`transfer <account-name> <amount>` - Transfers from the active account to a different account. For example, `transfer p 1` will transfer 1 SPR from the selected account to an account named 'pete' (starting with the letter 'p').
 
 `send <address> <amount>` - Sends funds to a destination address.
 

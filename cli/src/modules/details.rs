@@ -1,7 +1,7 @@
 use crate::imports::*;
 
 #[derive(Default, Handler)]
-#[help("Displays the detailed information about the currently selected account.")]
+#[help("Displays detailed information about the currently selected account.")]
 pub struct Details;
 
 impl Details {

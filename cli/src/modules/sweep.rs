@@ -1,7 +1,7 @@
 use crate::imports::*;
 
 #[derive(Default, Handler)]
-#[help("Reduces account UTXO size by re-sending all funds to the account's default address")]
+#[help("Consolidates account UTXOs by re-sending all funds to the account's default address")]
 pub struct Sweep;
 
 impl Sweep {

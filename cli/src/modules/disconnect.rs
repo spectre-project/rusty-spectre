@@ -1,7 +1,7 @@
 use crate::imports::*;
 
 #[derive(Default, Handler)]
-#[help("Disconnect from the spectre network")]
+#[help("Disconnect from the Spectre network")]
 pub struct Disconnect;
 
 impl Disconnect {

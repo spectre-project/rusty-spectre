@@ -56,7 +56,7 @@ impl Message {
                 self.verify(ctx, spectre_address, signature, message).await?;
             }
             v => {
-                tprintln!(ctx, "unknown command: '{v}'\r\n");
+                tprintln!(ctx, "Unknown command: '{v}'\r\n");
                 return self.display_help(ctx, argv).await;
             }
         }
@@ -67,10 +67,13 @@ impl Message {
     async fn display_help(self: Arc<Self>, ctx: Arc<SpectreCli>, _argv: Vec<String>) -> Result<()> {
         ctx.term().help(
             &[
-                ("sign <spectre_address>", "Sign a message with the private key that matches the given address. Prompts for message."),
+                (
+                    "sign <spectre_address>",
+                    "Sign a message using the private key associated with the given address. The message will be prompted.",
+                ),
                 (
                     "verify <spectre_address> <signature>",
-                    "Verify the signature against the message and spectre_address. Prompts for message.",
+                    "Verify the provided signature against the message and the given address. The message will be prompted.",
                 ),
             ],
             None,
@@ -82,7 +85,7 @@ impl Message {
     async fn sign(self: Arc<Self>, ctx: Arc<SpectreCli>, spectre_address: &str, message: &str) -> Result<()> {
         let spectre_address = Address::try_from(spectre_address)?;
         if spectre_address.version != Version::PubKey {
-            return Err(Error::custom("Address not supported for message signing. Only supports PubKey addresses"));
+            return Err(Error::custom("Unsupported address for message signing. Only PubKey addresses are supported."));
         }
 
         let pm = PersonalMessage(message);
@@ -96,14 +99,14 @@ impl Message {
                 tprintln!(ctx, "Signature: {}", sig_hex);
                 Ok(())
             }
-            Err(_) => Err(Error::custom("Message signing failed")),
+            Err(_) => Err(Error::custom("Failed to sign the message.")),
         }
     }
 
     async fn verify(self: Arc<Self>, ctx: Arc<SpectreCli>, spectre_address: &str, signature: &str, message: &str) -> Result<()> {
         let spectre_address = Address::try_from(spectre_address)?;
         if spectre_address.version != Version::PubKey {
-            return Err(Error::custom("Address not supported for message signing. Only supports PubKey addresses"));
+            return Err(Error::custom("Unsupported address for message verification. Only PubKey addresses are supported."));
         }
 
         let pubkey = XOnlyPublicKey::from_slice(&spectre_address.payload[0..32]).unwrap();
@@ -119,7 +122,7 @@ impl Message {
                 tprintln!(ctx, "Message verified successfully!");
             }
             Err(_) => {
-                return Err(Error::custom("Verification failed"));
+                return Err(Error::custom("Message verification failed."));
             }
         }
 
@@ -133,7 +136,7 @@ impl Message {
             BIP32_ACCOUNT_KIND => {
                 let (wallet_secret, payment_secret) = ctx.ask_wallet_secret(Some(&account)).await?;
                 let keydata = account.prv_key_data(wallet_secret).await?;
-                let account = account.clone().as_derivation_capable().expect("expecting derivation capable");
+                let account = account.clone().as_derivation_capable().expect("Account should support derivation.");
 
                 let (receive, change) = account.derivation().addresses_indexes(&[&spectre_address])?;
                 let private_keys = account.create_private_keys(&keydata, &payment_secret, &receive, &change)?;
@@ -143,7 +146,7 @@ impl Message {
                     }
                 }
 
-                Err(Error::custom("Could not find address in any derivation path in account"))
+                Err(Error::custom("Address not found in any derivation path of the account."))
             }
             KEYPAIR_ACCOUNT_KIND => {
                 let (wallet_secret, payment_secret) = ctx.ask_wallet_secret(Some(&account)).await?;
@@ -152,7 +155,7 @@ impl Message {
                 let secretkey = decrypted_privkey.as_secret_key()?.unwrap();
                 Ok(secretkey.secret_bytes())
             }
-            _ => Err(Error::custom("Unsupported account kind")),
+            _ => Err(Error::custom("Unsupported account type.")),
         }
     }
 }

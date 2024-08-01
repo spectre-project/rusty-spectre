@@ -8,26 +8,26 @@ pub(crate) async fn create(ctx: &Arc<SpectreCli>, name: Option<&str>, import_wit
     let term = ctx.term();
     let wallet = ctx.wallet();
 
-    // TODO @aspect
+    // TODO
     let word_count = WordCount::Words12;
 
     if let Err(err) = wallet.network_id() {
         tprintln!(ctx);
         tprintln!(ctx, "Before creating a wallet, you need to select a Spectre network.");
-        tprintln!(ctx, "Please use 'network <name>' command to select a network.");
-        tprintln!(ctx, "Currently available networks are 'mainnet', 'testnet-10' and 'testnet-11'");
+        tprintln!(ctx, "Please use the 'network <name>' command to select a network.");
+        tprintln!(ctx, "Currently available networks: 'mainnet'");
         tprintln!(ctx);
         return Err(err.into());
     }
+
     let filename = make_filename(&name.map(String::from), &None);
     if wallet.exists(Some(&filename)).await? {
         tprintln!(ctx, "{}", style("WARNING - A previously created wallet already exists!").red().to_string());
         tprintln!(ctx, "NOTE: You can create a differently named wallet by using 'wallet create <name>'");
         tprintln!(ctx);
 
-        let overwrite =
-            term.ask(false, "Are you sure you want to overwrite it (type 'y' to approve)?: ").await?.trim().to_string().to_lowercase();
-        if overwrite.ne("y") {
+        let overwrite = term.ask(false, "Are you sure you want to overwrite it (type 'y' to approve)?: ").await?.trim().to_lowercase();
+        if overwrite != "y" {
             return Ok(());
         }
     }
@@ -37,20 +37,11 @@ pub(crate) async fn create(ctx: &Arc<SpectreCli>, name: Option<&str>, import_wit
 
     tpara!(
         ctx,
-        "\n\
-        \"Phishing hint\" is a secret word or a phrase that is displayed \
-        when you open your wallet. If you do not see the hint when opening \
-        your wallet, you may be accessing a fake wallet designed to steal \
-        your private key. If this occurs, stop using the wallet immediately, \
-        check the browser URL domain name and seek help on social networks \
-        (Spectre Discord or Telegram). \
-        \n\
-        ",
+        "\n\"Phishing hint\" is a secret word or phrase displayed when you open your wallet. If you do not see the hint when opening your wallet, you may be accessing a fake wallet designed to steal your private key. If this occurs, stop using the wallet immediately, check the browser URL domain name, and seek help on social networks (Spectre Discord or Telegram).\n"
     );
 
     let hint = term.ask(false, "Create phishing hint (optional, press <enter> to skip): ").await?.trim().to_string();
-    let hint = hint.is_not_empty().then_some(hint).map(Hint::from);
-    //if hint.is_empty() { None } else { Some(hint) };
+    let hint = if hint.is_empty() { None } else { Some(Hint::from(hint)) };
 
     let wallet_secret = Secret::new(term.ask(true, "Enter wallet encryption password: ").await?.trim().as_bytes().to_vec());
     if wallet_secret.as_ref().is_empty() {
@@ -66,31 +57,12 @@ pub(crate) async fn create(ctx: &Arc<SpectreCli>, name: Option<&str>, import_wit
     if import_with_mnemonic {
         tpara!(
             ctx,
-            "\
-            \
-            If your original wallet has a bip39 recovery passphrase, please enter it now.\
-            \
-            Specifically, this is not a wallet password. This is a secondary mnemonic passphrase\
-            used to encrypt your mnemonic. This is known as a 'payment passphrase'\
-            'mnemonic passphrase', or a 'recovery passphrase'. If your mnemonic was created\
-            with a payment passphrase and you do not enter it now, the import process\
-            will generate a different private key.\
-            \
-            If you do not have a bip39 recovery passphrase, press ENTER.\
-            \
-            ",
+            "If your original wallet has a bip39 recovery passphrase, please enter it now. This is not a wallet password. This is a secondary mnemonic passphrase used to encrypt your mnemonic. This is known as a 'payment passphrase', 'mnemonic passphrase', or 'recovery passphrase'. If your mnemonic was created with a payment passphrase and you do not enter it now, the import process will generate a different private key. If you do not have a bip39 recovery passphrase, press ENTER."
         );
     } else {
         tpara!(
             ctx,
-            "\
-            PLEASE NOTE: The optional bip39 mnemonic passphrase, if provided, will be required to \
-            issue transactions. This passphrase will also be required when recovering your wallet \
-            in addition to your private key or mnemonic. If you loose this passphrase, you will not \
-            be able to use or recover your wallet! \
-            \
-            If you do not want to use bip39 recovery passphrase, press ENTER.\
-            ",
+            "PLEASE NOTE: The optional bip39 mnemonic passphrase, if provided, will be required to issue transactions. This passphrase will also be required when recovering your wallet in addition to your private key or mnemonic. If you lose this passphrase, you will not be able to use or recover your wallet! If you do not want to use a bip39 recovery passphrase, press ENTER."
         );
     }
 
@@ -147,17 +119,8 @@ pub(crate) async fn create(ctx: &Arc<SpectreCli>, name: Option<&str>, import_wit
 
         tpara!(
             ctx,
-            "Your mnemonic phrase allows you to re-create your private key. \
-            The person who has access to this mnemonic will have full control of \
-            the Spectre stored in it. Keep your mnemonic safe. Write it down and \
-            store it in a safe, preferably in a fire-resistant location. Do not \
-            store your mnemonic on this computer or a mobile device. This wallet \
-            will never ask you for this mnemonic phrase unless you manually \
-            initiate a private key recovery. \
-            ",
+            "Your mnemonic phrase allows you to recreate your private key. The person who has access to this mnemonic will have full control of the Spectre stored in it. Keep your mnemonic safe. Write it down and store it in a safe, preferably in a fire-resistant location. Do not store your mnemonic on this computer or a mobile device. This wallet will never ask you for this mnemonic phrase unless you manually initiate a private key recovery."
         );
-
-        // descriptor
 
         ["", "Never share your mnemonic with anyone!", "---", "", "Your default wallet account mnemonic:", mnemonic_phrase.as_str()?]
             .into_iter()

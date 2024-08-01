@@ -1,7 +1,7 @@
 use crate::imports::*;
 
 #[derive(Default, Handler)]
-#[help("Show or generate a new address for the current wallet account")]
+#[help("Display or generate a new address for the current wallet account.")]
 pub struct Address;
 
 impl Address {
@@ -10,7 +10,7 @@ impl Address {
 
         if argv.is_empty() {
             let address = ctx.account().await?.receive_address()?.to_string();
-            tprintln!(ctx, "\n{address}\n");
+            tprintln!(ctx, "\nCurrent address for the wallet account:\n{address}\n");
         } else {
             let op = argv.first().unwrap();
             match op.as_str() {
@@ -18,11 +18,11 @@ impl Address {
                     let account = ctx.wallet().account()?.as_derivation_capable()?;
                     let ident = account.name_with_id();
                     let new_address = account.new_receive_address().await?;
-                    tprintln!(ctx, "Generating new address for account {}", style(ident).cyan());
-                    tprintln!(ctx, "{}", style(new_address).blue());
+                    tprintln!(ctx, "Generating a new address for account: {}", style(ident).cyan());
+                    tprintln!(ctx, "New address:\n{}", style(new_address).blue());
                 }
                 v => {
-                    tprintln!(ctx, "unknown command: '{v}'\r\n");
+                    tprintln!(ctx, "Unknown command: '{v}'\n");
                     return self.display_help(ctx, argv).await;
                 }
             }
@@ -32,7 +32,10 @@ impl Address {
     }
 
     async fn display_help(self: Arc<Self>, ctx: Arc<SpectreCli>, _argv: Vec<String>) -> Result<()> {
-        ctx.term().help(&[("address [new]", "Show current or generate a new account address")], None)?;
+        ctx.term().help(
+            &[("address [new]", "Display the current address or generate a new address for the current wallet account.")],
+            None,
+        )?;
 
         Ok(())
     }
