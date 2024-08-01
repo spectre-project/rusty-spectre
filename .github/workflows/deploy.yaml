@@ -9,28 +9,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Build gnu-linux on ubuntu-18.04 and musl on ubuntu latest
-        # os: [ ubuntu-18.04, ubuntu-latest, windows-latest, macos-latest ]
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-    name: Building, ${{ matrix.os }}
+        include:
+          - os: ubuntu-latest
+            TARGET: linux-gnu/amd64
+          - os: ubuntu-latest
+            TARGET: linux-musl/amd64
+          - os: ubuntu-latest
+            TARGET: linux-gnu/aarch64
+          - os: ubuntu-latest
+            TARGET: linux-musl/aarch64
+          - os: windows-latest
+            TARGET: windows-gnullvm/amd64
+          - os: windows-latest
+            TARGET: windows-msvc/amd64
+          - os: macos-latest
+            TARGET: macos/amd64
+          - os: macos-latest
+            TARGET: macos/aarch64
+    name: Building, ${{ matrix.TARGET }}
     steps:
       - name: Fix CRLF on Windows
         if: runner.os == 'Windows'
         run: git config --global core.autocrlf false
 
       - name: Checkout sources
-        uses: actions/checkout@v3
-
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/checkout@v4
 
       - name: Install stable toolchain
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -40,14 +49,33 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install zig on linux
+      - name: Install zig on Linux
         if: runner.os == 'Linux'
         uses: goto-bus-stop/setup-zig@v2 # needed for cargo-zigbuild
 
-      - name: Build on Linux
+      - name: Install protoc on Linux
         if: runner.os == 'Linux'
-        # We're using musl to make the binaries statically linked and portable
+        uses: taiki-e/install-action@v2
+        with:
+          tool: protoc
+
+      - name: Install protoc on macOS
+        if: runner.os == 'macOS'
+        uses: taiki-e/install-action@v2
+        with:
+          tool: protoc
+
+      - name: Install msys2 on Windows
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: clang64
+          install: mingw-w64-clang-x86_64-clang mingw-w64-clang-x86_64-protobuf zip
+
+      - name: Build on Linux for linux-gnu/amd64
+        if: matrix.TARGET == 'linux-gnu/amd64'
         run: |
+          rustup target add x86_64-unknown-linux-gnu
           cargo install cargo-zigbuild
           cargo --verbose zigbuild --bin spectred --bin simpa --bin rothschild --bin spectre-wallet --release --target x86_64-unknown-linux-gnu.2.27 # Use an older glibc version
           mkdir bin || true
@@ -56,69 +84,147 @@ jobs:
           cp target/x86_64-unknown-linux-gnu/release/rothschild bin/
           cp target/x86_64-unknown-linux-gnu/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-amd64.zip"
-          asset_name="rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-amd64.zip"
           zip -r "${archive}" ./bin/*
-          echo "archive=${archive}" >> $GITHUB_ENV
-          echo "asset_name=${asset_name}" >> $GITHUB_ENV
 
-      - name: Build on Windows
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          cargo build --bin spectred --release
-          cargo build --bin simpa --release
-          cargo build --bin rothschild --release
-          cargo build --bin spectre-wallet --release
-          mkdir bin || true
-          cp target/release/spectred.exe bin/
-          cp target/release/simpa.exe bin/
-          cp target/release/rothschild.exe bin/
-          cp target/release/spectre-wallet.exe bin/
-          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-win64.zip"
-          asset_name="rusty-spectre-${{ github.event.release.tag_name }}-win64.zip"
-          powershell "Compress-Archive bin/* \"${archive}\""
-          echo "archive=${archive}" >> $GITHUB_ENV
-          echo "asset_name=${asset_name}" >> $GITHUB_ENV
+      - name: Build on Linux for linux-musl/amd64
+        if: matrix.TARGET == 'linux-musl/amd64'
 
-      - name: Build on MacOS
-        if: runner.os == 'macOS'
+        # We're using musl to make the binaries statically linked and portable.
+        env:
+          RUSTFLAGS: -C target-feature=-crt-static
         run: |
-          cargo build --bin spectred --release
-          cargo build --bin simpa --release
-          cargo build --bin rothschild --release
-          cargo build --bin spectre-wallet --release
+          rustup target add x86_64-unknown-linux-musl
+          cargo install cargo-zigbuild
+          cargo --verbose zigbuild --bin spectred --bin simpa --bin rothschild --bin spectre-wallet --release --target x86_64-unknown-linux-musl
           mkdir bin || true
-          cp target/release/spectred bin/
-          cp target/release/simpa bin/
-          cp target/release/rothschild bin/
-          cp target/release/spectre-wallet bin/
-          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-osx.zip"
-          asset_name="rusty-spectre-${{ github.event.release.tag_name }}-osx.zip"
+          cp target/x86_64-unknown-linux-musl/release/spectred bin/
+          cp target/x86_64-unknown-linux-musl/release/simpa bin/
+          cp target/x86_64-unknown-linux-musl/release/rothschild bin/
+          cp target/x86_64-unknown-linux-musl/release/spectre-wallet bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-musl-amd64.zip"
           zip -r "${archive}" ./bin/*
-          echo "archive=${archive}" >> $GITHUB_ENV
-          echo "asset_name=${asset_name}" >> $GITHUB_ENV
+
+      - name: Build on Linux for linux-gnu/aarch64
+        if: matrix.TARGET == 'linux-gnu/aarch64'
+        run: |
+          rustup target add aarch64-unknown-linux-gnu
+          cargo install cargo-zigbuild
+          cargo --verbose zigbuild --bin spectred --bin simpa --bin rothschild --bin spectre-wallet --release --target aarch64-unknown-linux-gnu.2.27 # Use an older glibc version
+          mkdir bin || true
+          cp target/aarch64-unknown-linux-gnu/release/spectred bin/
+          cp target/aarch64-unknown-linux-gnu/release/simpa bin/
+          cp target/aarch64-unknown-linux-gnu/release/rothschild bin/
+          cp target/aarch64-unknown-linux-gnu/release/spectre-wallet bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-aarch64.zip"
+          zip -r "${archive}" ./bin/*
+
+      - name: Build on Linux for linux-musl/aarch64
+        if: matrix.TARGET == 'linux-musl/aarch64'
+
+        # We're using musl to make the binaries statically linked and portable.
+        env:
+          RUSTFLAGS: -C target-feature=-crt-static
+        run: |
+          rustup target add aarch64-unknown-linux-musl
+          cargo install cargo-zigbuild
+          cargo --verbose zigbuild --bin spectred --bin simpa --bin rothschild --bin spectre-wallet --release --target aarch64-unknown-linux-musl
+          mkdir bin || true
+          cp target/aarch64-unknown-linux-musl/release/spectred bin/
+          cp target/aarch64-unknown-linux-musl/release/simpa bin/
+          cp target/aarch64-unknown-linux-musl/release/rothschild bin/
+          cp target/aarch64-unknown-linux-musl/release/spectre-wallet bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-musl-aarch64.zip"
+          zip -r "${archive}" ./bin/*
+
+      - name: Build on Windows for windows-gnullvm/amd64
+        if: matrix.TARGET == 'windows-gnullvm/amd64'
+
+        # We're using clang to link only the ucrt library statically.
+        env:
+          RUSTFLAGS: -L/clang64/lib -lstatic=c++
+        shell: msys2 {0}
+        run: |
+          export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin" # manually override path to select proper msys2 build tools.
+          rustup target add x86_64-pc-windows-gnullvm
+          cargo build --target x86_64-pc-windows-gnullvm --bin spectred --release
+          cargo build --target x86_64-pc-windows-gnullvm --bin simpa --release
+          cargo build --target x86_64-pc-windows-gnullvm --bin rothschild --release
+          cargo build --target x86_64-pc-windows-gnullvm --bin spectre-wallet --release
+          mkdir bin || true
+          cp target/x86_64-pc-windows-gnullvm/release/spectred.exe bin/
+          cp target/x86_64-pc-windows-gnullvm/release/simpa.exe bin/
+          cp target/x86_64-pc-windows-gnullvm/release/rothschild.exe bin/
+          cp target/x86_64-pc-windows-gnullvm/release/spectre-wallet.exe bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-windows-gnullvm-amd64.zip"
+          zip -r "${archive}" ./bin/*
+
+      - name: Build on Windows for windows-msvc/amd64
+        if: matrix.TARGET == 'windows-msvc/amd64'
+        shell: msys2 {0}
+        run: |
+          export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin" # manually override path to select proper msys2 build tools.
+          rustup target add x86_64-pc-windows-msvc
+          cargo build --target x86_64-pc-windows-msvc --bin spectred --release
+          cargo build --target x86_64-pc-windows-msvc --bin simpa --release
+          cargo build --target x86_64-pc-windows-msvc --bin rothschild --release
+          cargo build --target x86_64-pc-windows-msvc --bin spectre-wallet --release
+          mkdir bin || true
+          cp target/x86_64-pc-windows-msvc/release/spectred.exe bin/
+          cp target/x86_64-pc-windows-msvc/release/simpa.exe bin/
+          cp target/x86_64-pc-windows-msvc/release/rothschild.exe bin/
+          cp target/x86_64-pc-windows-msvc/release/spectre-wallet.exe bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-windows-msvc-amd64.zip"
+          zip -r "${archive}" ./bin/*
+
+      - name: Build on macOS for macos/amd64
+        if: matrix.TARGET == 'macos/amd64'
+        run: |
+          rustup target add x86_64-apple-darwin
+          cargo build --target x86_64-apple-darwin --bin spectred --release
+          cargo build --target x86_64-apple-darwin --bin simpa --release
+          cargo build --target x86_64-apple-darwin --bin rothschild --release
+          cargo build --target x86_64-apple-darwin --bin spectre-wallet --release
+          mkdir bin || true
+          cp target/x86_64-apple-darwin/release/spectred bin/
+          cp target/x86_64-apple-darwin/release/simpa bin/
+          cp target/x86_64-apple-darwin/release/rothschild bin/
+          cp target/x86_64-apple-darwin/release/spectre-wallet bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-macos-amd64.zip"
+          zip -r "${archive}" ./bin/*
+
+      - name: Build on macOS for macos/aarch64
+        if: matrix.TARGET == 'macos/aarch64'
+        run: |
+          rustup target add aarch64-apple-darwin
+          cargo build --target aarch64-apple-darwin --bin spectred --release
+          cargo build --target aarch64-apple-darwin --bin simpa --release
+          cargo build --target aarch64-apple-darwin --bin rothschild --release
+          cargo build --target aarch64-apple-darwin --bin spectre-wallet --release
+          mkdir bin || true
+          cp target/aarch64-apple-darwin/release/spectred bin/
+          cp target/aarch64-apple-darwin/release/simpa bin/
+          cp target/aarch64-apple-darwin/release/rothschild bin/
+          cp target/aarch64-apple-darwin/release/spectre-wallet bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-macos-aarch64.zip"
+          zip -r "${archive}" ./bin/*
 
       - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: "./${{ env.archive }}"
-          asset_name: "${{ env.asset_name }}"
-          asset_content_type: application/zip
+          files: |
+            bin/*.zip
 
   build-wasm:
     runs-on: ubuntu-latest
     name: Building WASM32 SDK
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Protoc
-        uses: arduino/setup-protoc@v3
+        uses: taiki-e/install-action@v2
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          tool: protoc
 
       - name: Install stable toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -140,7 +246,8 @@ jobs:
           sudo update-alternatives --install /usr/bin/c++ c++ /usr/lib/llvm-15/bin/clang++ 0
 
       - name: Install gcc-multilib
-        # gcc-multilib allows clang to find gnu libraries properly
+
+        # gcc-multilib allows clang to find gnu libraries properly.
         run: sudo apt install -y gcc-multilib
 
       - name: Install stable toolchain
@@ -162,7 +269,7 @@ jobs:
         run: npm install --global typedoc typescript
 
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -177,21 +284,13 @@ jobs:
           TARGET_CC: clang
           TARGET_CFLAGS: -I/usr/include
         run: |
+          mkdir sdk || true
           cd wasm
           bash build-release
-          mv release/spectre-wasm32-sdk.zip ../spectre-wasm32-sdk-${{ github.event.release.tag_name }}.zip
-
-          archive="spectre-wasm32-sdk-${{ github.event.release.tag_name }}.zip"
-          asset_name="spectre-wasm32-sdk-${{ github.event.release.tag_name }}.zip"
-          echo "archive=${archive}" >> $GITHUB_ENV
-          echo "asset_name=${asset_name}" >> $GITHUB_ENV
+          mv release/spectre-wasm32-sdk.zip ../sdk/spectre-wasm32-sdk-${{ github.event.release.tag_name }}.zip
 
       - name: Upload WASM32 SDK
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: "./${{ env.archive }}"
-          asset_name: "${{ env.asset_name }}"
-          asset_content_type: application/zip
+          files: |
+            sdk/*.zip
