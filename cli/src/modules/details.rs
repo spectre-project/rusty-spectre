@@ -25,7 +25,7 @@ impl Details {
                     tprintln!(ctx.term(), "Feature: {}", style(feature).cyan());
                 }
                 tprintln!(ctx.term(), "Extended public keys:");
-                xpub_keys.iter().enumerate().for_each(|(_idx, xpub)| {
+                xpub_keys.iter().for_each(|xpub| {
                     tprintln!(ctx.term(), "{:>4}{}", "", style(ctx.wallet().network_format_xpub(xpub)).dim());
                 });
             }
