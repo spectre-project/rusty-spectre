@@ -205,7 +205,7 @@ impl Account {
                     }
                     _ => {
                         tprintln!(ctx, "Unknown account import type: '{}'", import_kind);
-                        tprintln!(ctx, "supported import types are: 'mnemonic', 'legacy-data' or 'multisig-watch'\r\n");
+                        tprintln!(ctx, "Supported import types are: 'mnemonic', 'legacy-data' or 'multisig-watch'\r\n");
                         return Ok(());
                     }
                 }
