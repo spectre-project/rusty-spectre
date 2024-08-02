@@ -4,6 +4,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/spectre-project/rusty-spectre.svg)](https://github.com/spectre-project/rusty-spectre/releases)
 [![GitHub license](https://img.shields.io/github/license/spectre-project/rusty-spectre.svg)](https://github.com/spectre-project/rusty-spectre/blob/main/LICENSE)
 [![GitHub downloads](https://img.shields.io/github/downloads/spectre-project/rusty-spectre/total.svg)](https://github.com/spectre-project/rusty-spectre/releases)
+[![Join the Spectre Discord Server](https://img.shields.io/discord/1233113243741061240.svg?label=&logo=discord&logoColor=ffffff&color=5865F2)](https://discord.com/invite/FZPYpwszcF)
 
 Welcome to the Rust-based implementation of the Spectre full-node and
 its ancillary libraries. The contained node release serves as a
