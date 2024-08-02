@@ -13,9 +13,9 @@ jobs:
           - os: ubuntu-latest
             TARGET: linux-gnu/amd64
           - os: ubuntu-latest
-            TARGET: linux-musl/amd64
-          - os: ubuntu-latest
             TARGET: linux-gnu/aarch64
+          - os: ubuntu-latest
+            TARGET: linux-musl/amd64
           - os: ubuntu-latest
             TARGET: linux-musl/aarch64
           - os: windows-latest
@@ -74,16 +74,39 @@ jobs:
 
       - name: Build on Linux for linux-gnu/amd64
         if: matrix.TARGET == 'linux-gnu/amd64'
+        env:
+          RUSTFLAGS: -C linker=x86_64-linux-gnu-gcc
         run: |
           rustup target add x86_64-unknown-linux-gnu
-          cargo install cargo-zigbuild
-          cargo --verbose zigbuild --bin spectred --bin simpa --bin rothschild --bin spectre-wallet --release --target x86_64-unknown-linux-gnu.2.27 # Use an older glibc version
+          cargo build --target x86_64-unknown-linux-gnu --bin spectred --release
+          cargo build --target x86_64-unknown-linux-gnu --bin simpa --release
+          cargo build --target x86_64-unknown-linux-gnu --bin rothschild --release
+          cargo build --target x86_64-unknown-linux-gnu --bin spectre-wallet --release
           mkdir bin || true
           cp target/x86_64-unknown-linux-gnu/release/spectred bin/
           cp target/x86_64-unknown-linux-gnu/release/simpa bin/
           cp target/x86_64-unknown-linux-gnu/release/rothschild bin/
           cp target/x86_64-unknown-linux-gnu/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-amd64.zip"
+          zip -r "${archive}" ./bin/*
+
+      - name: Build on Linux for linux-gnu/aarch64
+        if: matrix.TARGET == 'linux-gnu/aarch64'
+        env:
+          RUSTFLAGS: -C linker=aarch64-linux-gnu-gcc
+        run: |
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          rustup target add aarch64-unknown-linux-gnu
+          cargo build --target aarch64-unknown-linux-gnu --bin spectred --release
+          cargo build --target aarch64-unknown-linux-gnu --bin simpa --release
+          cargo build --target aarch64-unknown-linux-gnu --bin rothschild --release
+          cargo build --target aarch64-unknown-linux-gnu --bin spectre-wallet --release
+          mkdir bin || true
+          cp target/aarch64-unknown-linux-gnu/release/spectred bin/
+          cp target/aarch64-unknown-linux-gnu/release/simpa bin/
+          cp target/aarch64-unknown-linux-gnu/release/rothschild bin/
+          cp target/aarch64-unknown-linux-gnu/release/spectre-wallet bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-aarch64.zip"
           zip -r "${archive}" ./bin/*
 
       - name: Build on Linux for linux-musl/amd64
@@ -102,20 +125,6 @@ jobs:
           cp target/x86_64-unknown-linux-musl/release/rothschild bin/
           cp target/x86_64-unknown-linux-musl/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-musl-amd64.zip"
-          zip -r "${archive}" ./bin/*
-
-      - name: Build on Linux for linux-gnu/aarch64
-        if: matrix.TARGET == 'linux-gnu/aarch64'
-        run: |
-          rustup target add aarch64-unknown-linux-gnu
-          cargo install cargo-zigbuild
-          cargo --verbose zigbuild --bin spectred --bin simpa --bin rothschild --bin spectre-wallet --release --target aarch64-unknown-linux-gnu.2.27 # Use an older glibc version
-          mkdir bin || true
-          cp target/aarch64-unknown-linux-gnu/release/spectred bin/
-          cp target/aarch64-unknown-linux-gnu/release/simpa bin/
-          cp target/aarch64-unknown-linux-gnu/release/rothschild bin/
-          cp target/aarch64-unknown-linux-gnu/release/spectre-wallet bin/
-          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-aarch64.zip"
           zip -r "${archive}" ./bin/*
 
       - name: Build on Linux for linux-musl/aarch64
