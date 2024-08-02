@@ -2,7 +2,7 @@ use crate::imports::*;
 use spectre_wallet_core::account::{multisig::MultiSig, Account, BIP32_ACCOUNT_KIND, MULTISIG_ACCOUNT_KIND};
 
 #[derive(Default, Handler)]
-#[help("Export transactions, a wallet or a private key")]
+#[help("Export transactions, a wallet, a private key, or an extended public key (kpub)")]
 pub struct Export;
 
 impl Export {
