@@ -6,6 +6,7 @@ use crate::modules::node::Node;
 use crate::notifier::{Notification, Notifier};
 use crate::result::Result;
 use spectre_daemon::{DaemonEvent, DaemonKind, Daemons};
+use spectre_wallet_core::account::Account;
 use spectre_wallet_core::rpc::DynRpcApi;
 use spectre_wallet_core::storage::{IdT, PrvKeyDataInfo};
 use spectre_wrpc_client::{Resolver, SpectreRpcClient};
@@ -550,6 +551,16 @@ impl SpectreCli {
             list_by_key.push((key.clone(), prv_key_accounts));
         }
 
+        let mut watch_accounts = Vec::<(usize, Arc<dyn Account>)>::new();
+        let mut unfiltered_accounts = self.wallet.accounts(None).await?;
+
+        while let Some(account) = unfiltered_accounts.try_next().await? {
+            if account.feature().is_some() {
+                watch_accounts.push((flat_list.len(), account.clone()));
+                flat_list.push(account.clone());
+            }
+        }
+
         if flat_list.is_empty() {
             return Err(Error::NoAccounts);
         } else if autoselect && flat_list.len() == 1 {
@@ -567,6 +578,16 @@ impl SpectreCli {
                     let ls_string = account.get_list_string().unwrap_or_else(|err| panic!("{err}"));
                     tprintln!(self, "    {seq}: {ls_string}");
                 })
+            });
+
+            if !watch_accounts.is_empty() {
+                tprintln!(self, "• watch-only");
+            }
+
+            watch_accounts.iter().for_each(|(seq, account)| {
+                let seq = style(seq.to_string()).cyan();
+                let ls_string = account.get_list_string().unwrap_or_else(|err| panic!("{err}"));
+                tprintln!(self, "    {seq}: {ls_string}");
             });
 
             tprintln!(self);
@@ -653,6 +674,19 @@ impl SpectreCli {
                 let receive_address = account.receive_address()?;
                 tprintln!(self, "    • {}", account.get_list_string()?);
                 tprintln!(self, "      {}", style(receive_address.to_string()).blue());
+            }
+        }
+
+        let mut unfiltered_accounts = self.wallet.accounts(None).await?;
+        let mut feature_header_printed = false;
+        while let Some(account) = unfiltered_accounts.try_next().await? {
+            if let Some(feature) = account.feature() {
+                if !feature_header_printed {
+                    tprintln!(self, "{}", style("• watch-only").dim());
+                    feature_header_printed = true;
+                }
+                tprintln!(self, "  • {}", account.get_list_string().unwrap());
+                tprintln!(self, "      • {}", style(feature).cyan());
             }
         }
         tprintln!(self);
