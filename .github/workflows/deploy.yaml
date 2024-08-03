@@ -15,6 +15,12 @@ jobs:
           - os: ubuntu-latest
             TARGET: linux-gnu/aarch64
           - os: ubuntu-latest
+            TARGET: linux-gnu/riscv64
+          - os: ubuntu-latest
+            TARGET: linux-gnu/powerpc64
+          - os: ubuntu-latest
+            TARGET: linux-gnu/powerpc64le
+          - os: ubuntu-latest
             TARGET: linux-musl/amd64
           - os: ubuntu-latest
             TARGET: linux-musl/aarch64
@@ -75,6 +81,8 @@ jobs:
       - name: Build on Linux for linux-gnu/amd64
         if: matrix.TARGET == 'linux-gnu/amd64'
         env:
+          TARGET_CC: x86_64-linux-gnu-gcc
+          TARGET_CXX: x86_64-linux-gnu-g++
           RUSTFLAGS: -C linker=x86_64-linux-gnu-gcc
         run: |
           rustup target add x86_64-unknown-linux-gnu
@@ -93,6 +101,8 @@ jobs:
       - name: Build on Linux for linux-gnu/aarch64
         if: matrix.TARGET == 'linux-gnu/aarch64'
         env:
+          TARGET_CC: aarch64-linux-gnu-gcc
+          TARGET_CXX: aarch64-linux-gnu-g++
           RUSTFLAGS: -C linker=aarch64-linux-gnu-gcc
         run: |
           sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
@@ -107,6 +117,69 @@ jobs:
           cp target/aarch64-unknown-linux-gnu/release/rothschild bin/
           cp target/aarch64-unknown-linux-gnu/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-aarch64.zip"
+          zip -r "${archive}" ./bin/*
+
+      - name: Build on Linux for linux-gnu/riscv64
+        if: matrix.TARGET == 'linux-gnu/riscv64'
+        env:
+          TARGET_CC: riscv64-linux-gnu-gcc
+          TARGET_CXX: riscv64-linux-gnu-g++
+          RUSTFLAGS: -C linker=riscv64-linux-gnu-gcc -latomic
+        run: |
+          sudo apt-get install -y gcc-riscv64-linux-gnu g++-riscv64-linux-gnu
+          rustup target add riscv64gc-unknown-linux-gnu
+          cargo build --target riscv64gc-unknown-linux-gnu --bin spectred --release
+          cargo build --target riscv64gc-unknown-linux-gnu --bin simpa --release
+          cargo build --target riscv64gc-unknown-linux-gnu --bin rothschild --release
+          cargo build --target riscv64gc-unknown-linux-gnu --bin spectre-wallet --release
+          mkdir bin || true
+          cp target/riscv64gc-unknown-linux-gnu/release/spectred bin/
+          cp target/riscv64gc-unknown-linux-gnu/release/simpa bin/
+          cp target/riscv64gc-unknown-linux-gnu/release/rothschild bin/
+          cp target/riscv64gc-unknown-linux-gnu/release/spectre-wallet bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-riscv64gc.zip"
+          zip -r "${archive}" ./bin/*
+
+      - name: Build on Linux for linux-gnu/powerpc64
+        if: matrix.TARGET == 'linux-gnu/powerpc64'
+        env:
+          TARGET_CC: powerpc64-linux-gnu-gcc
+          TARGET_CXX: powerpc64-linux-gnu-g++
+          RUSTFLAGS: -C linker=powerpc64-linux-gnu-gcc
+        run: |
+          sudo apt-get install -y gcc-powerpc64-linux-gnu g++-powerpc64-linux-gnu
+          rustup target add powerpc64-unknown-linux-gnu
+          cargo build --target powerpc64-unknown-linux-gnu --bin spectred --release
+          cargo build --target powerpc64-unknown-linux-gnu --bin simpa --release
+          cargo build --target powerpc64-unknown-linux-gnu --bin rothschild --release
+          cargo build --target powerpc64-unknown-linux-gnu --bin spectre-wallet --release
+          mkdir bin || true
+          cp target/powerpc64-unknown-linux-gnu/release/spectred bin/
+          cp target/powerpc64-unknown-linux-gnu/release/simpa bin/
+          cp target/powerpc64-unknown-linux-gnu/release/rothschild bin/
+          cp target/powerpc64-unknown-linux-gnu/release/spectre-wallet bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-powerpc64.zip"
+          zip -r "${archive}" ./bin/*
+
+      - name: Build on Linux for linux-gnu/powerpc64le
+        if: matrix.TARGET == 'linux-gnu/powerpc64le'
+        env:
+          TARGET_CC: powerpc64le-linux-gnu-gcc
+          TARGET_CXX: powerpc64le-linux-gnu-g++
+          RUSTFLAGS: -C linker=powerpc64le-linux-gnu-gcc
+        run: |
+          sudo apt-get install -y gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu
+          rustup target add powerpc64le-unknown-linux-gnu
+          cargo build --target powerpc64le-unknown-linux-gnu --bin spectred --release
+          cargo build --target powerpc64le-unknown-linux-gnu --bin simpa --release
+          cargo build --target powerpc64le-unknown-linux-gnu --bin rothschild --release
+          cargo build --target powerpc64le-unknown-linux-gnu --bin spectre-wallet --release
+          mkdir bin || true
+          cp target/powerpc64le-unknown-linux-gnu/release/spectred bin/
+          cp target/powerpc64le-unknown-linux-gnu/release/simpa bin/
+          cp target/powerpc64le-unknown-linux-gnu/release/rothschild bin/
+          cp target/powerpc64le-unknown-linux-gnu/release/spectre-wallet bin/
+          archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-powerpc64le.zip"
           zip -r "${archive}" ./bin/*
 
       - name: Build on Linux for linux-musl/amd64
