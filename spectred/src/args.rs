@@ -90,6 +90,7 @@ pub struct Args {
     #[serde(rename = "nogrpc")]
     pub disable_grpc: bool,
     pub ram_scale: f64,
+    pub rocksdb_consensus_cache_size: Option<usize>,
 }
 
 impl Default for Args {
@@ -140,6 +141,7 @@ impl Default for Args {
             disable_dns_seeding: false,
             disable_grpc: false,
             ram_scale: 1.0,
+            rocksdb_consensus_cache_size: None,
         }
     }
 }
@@ -159,6 +161,7 @@ impl Args {
         config.p2p_listen_address = self.listen.unwrap_or(ContextualNetAddress::unspecified());
         config.externalip = self.externalip.map(|v| v.normalize(config.default_p2p_port()));
         config.ram_scale = self.ram_scale;
+        config.rocksdb_cache_size = self.rocksdb_consensus_cache_size;
 
         #[cfg(feature = "devnet-prealloc")]
         if let Some(num_prealloc_utxos) = self.num_prealloc_utxos {
@@ -369,7 +372,13 @@ Setting to 0 prevents the preallocation and sets the maximum to {}, leading to 0
                 .help("Apply a scale factor to memory allocation bounds. Nodes with limited RAM (~4-8GB) should set this to ~0.3-0.5 respectively. Nodes with
 a large RAM (~64GB) can set this value to ~3.0-4.0 and gain superior performance especially for syncing peers faster"),
         )
-        ;
+        .arg(
+            Arg::new("rocksdb-consensus-cache-size")
+                .long("rocksdb-consensus-cache-size")
+                .require_equals(true)
+                .value_parser(clap::value_parser!(usize))
+                .help("Set the cache size for RocksDB consensus in bytes. Example: --rocksdb-consensus-cache-size=1073741824 (for 1GB)"),
+        );
 
     #[cfg(feature = "devnet-prealloc")]
     let cmd = cmd
@@ -448,6 +457,7 @@ impl Args {
             disable_dns_seeding: arg_match_unwrap_or::<bool>(&m, "nodnsseed", defaults.disable_dns_seeding),
             disable_grpc: arg_match_unwrap_or::<bool>(&m, "nogrpc", defaults.disable_grpc),
             ram_scale: arg_match_unwrap_or::<f64>(&m, "ram-scale", defaults.ram_scale),
+            rocksdb_consensus_cache_size: m.get_one::<usize>("rocksdb-consensus-cache-size").cloned(),
 
             #[cfg(feature = "devnet-prealloc")]
             num_prealloc_utxos: m.get_one::<u64>("num-prealloc-utxos").cloned(),
@@ -480,84 +490,82 @@ fn arg_match_many_unwrap_or<T: Clone + Send + Sync + 'static>(m: &clap::ArgMatch
 
 /*
 
-  -V, --version                             Display version information and exit
-  -C, --configfile=                         Path to configuration file (default: /Users/aspect/Library/Application
-                                            Support/Spectred/spectred.conf)
-  -b, --appdir=                             Directory to store data (default: /Users/aspect/Library/Application
-                                            Support/Spectred)
-      --logdir=                             Directory to log output.
-  -a, --addpeer=                            Add a peer to connect with at startup
-      --connect=                            Connect only to the specified peers at startup
-      --nolisten                            Disable listening for incoming connections -- NOTE: Listening is
-                                            automatically disabled if the --connect or --proxy options are used
-                                            without also specifying listen interfaces via --listen
-      --listen=                             Add an interface/port to listen for connections (default all interfaces
-                                            port: 18111, testnet: 18211)
-      --outpeers=                           Target number of outbound peers (default: 8)
-      --maxinpeers=                         Max number of inbound peers (default: 117)
-      --enablebanning                       Enable banning of misbehaving peers
-      --banduration=                        How long to ban misbehaving peers. Valid time units are {s, m, h}. Minimum
-                                            1 second (default: 24h0m0s)
-      --banthreshold=                       Maximum allowed ban score before disconnecting and banning misbehaving
-                                            peers. (default: 100)
-      --whitelist=                          Add an IP network or IP that will not be banned. (eg. 192.168.1.0/24 or
-                                            ::1)
-      --rpclisten=                          Add an interface/port to listen for RPC connections (default port: 18110,
-                                            testnet: 18210)
-      --rpccert=                            File containing the certificate file (default:
-                                            /Users/aspect/Library/Application Support/Spectred/rpc.cert)
-      --rpckey=                             File containing the certificate key (default:
-                                            /Users/aspect/Library/Application Support/Spectred/rpc.key)
-      --rpcmaxclients=                      Max number of RPC clients for standard connections (default: 128)
-      --rpcmaxwebsockets=                   Max number of RPC websocket connections (default: 25)
-      --rpcmaxconcurrentreqs=               Max number of concurrent RPC requests that may be processed concurrently
-                                            (default: 20)
-      --norpc                               Disable built-in RPC server
-      --saferpc                             Disable RPC commands which affect the state of the node
-      --nodnsseed                           Disable DNS seeding for peers
-      --dnsseed=                            Override DNS seeds with specified hostname (Only 1 hostname allowed)
-      --grpcseed=                           Hostname of gRPC server for seeding peers
-      --externalip=                         Add an ip to the list of local addresses we claim to listen on to peers
-      --proxy=                              Connect via SOCKS5 proxy (eg. 127.0.0.1:9050)
-      --proxyuser=                          Username for proxy server
-      --proxypass=                          Password for proxy server
-      --dbtype=                             Database backend to use for the Block DAG
-      --profile=                            Enable HTTP profiling on given port -- NOTE port must be between 1024 and
-                                            65536
-  -d, --loglevel=                           Logging level for all subsystems {trace, debug, info, warn, error,
-                                            critical} -- You may also specify
-                                            <subsystem>=<level>,<subsystem2>=<level>,... to set the log level for
-                                            individual subsystems -- Use show to list available subsystems (default:
-                                            info)
-      --upnp                                Use UPnP to map our listening port outside of NAT
-      --minrelaytxfee=                      The minimum transaction fee in SPR/kB to be considered a non-zero fee.
-                                            (default: 1e-05)
-      --maxorphantx=                        Max number of orphan transactions to keep in memory (default: 100)
-      --blockmaxmass=                       Maximum transaction mass to be used when creating a block (default:
-                                            10000000)
-      --uacomment=                          Comment to add to the user agent -- See BIP 14 for more information.
-      --nopeerbloomfilters                  Disable bloom filtering support
-      --sigcachemaxsize=                    The maximum number of entries in the signature verification cache
-                                            (default: 100000)
+  -V, --version                             Display version information and exit.
+  -C, --configfile=PATH                     Specify the path to the configuration file
+  -b, --appdir=DIR                          Specify the directory to store data (default:
+                                            Windows: %localappdata%\rusty-spectre\spectre-mainnet
+                                            Linux: ~/.rusty-spectre/spectre-mainnet)
+      --logdir=DIR                          Specify the directory to log output.
+  -a, --addpeer=ADDR                        Add a peer to connect with at startup.
+      --connect=ADDR                        Connect only to the specified peers at startup.
+      --nolisten                            Disable listening for incoming connections.
+                                            NOTE: Listening is automatically disabled if the --connect or --proxy options
+                                            are used without also specifying listen interfaces via --listen.
+      --listen=INTERFACE:PORT               Add an interface/port to listen for connections (default: all interfaces
+                                            port: 18111, testnet: 18211).
+      --outpeers=NUM                        Set the target number of outbound peers (default: 8).
+      --maxinpeers=NUM                      Set the maximum number of inbound peers (default: 117).
+      --enablebanning                       Enable banning of misbehaving peers.
+      --banduration=DURATION                Set the duration to ban misbehaving peers. Valid time units are {s, m, h}.
+                                            Minimum: 1 second (default: 24h0m0s).
+      --banthreshold=NUM                    Set the maximum allowed ban score before disconnecting and banning
+                                            misbehaving peers (default: 100).
+      --whitelist=ADDR                      Add an IP network or IP that will not be banned (e.g., 192.168.1.0/24 or ::1).
+      --rpclisten=INTERFACE:PORT            Add an interface/port to listen for RPC connections (default port: 18110,
+                                            testnet: 18210).
+      --rpccert=FILE                        Specify the file containing the certificate (default:
+                                            /Users/aspect/Library/Application Support/Spectred/rpc.cert).
+      --rpckey=FILE                         Specify the file containing the certificate key (default:
+                                            /Users/aspect/Library/Application Support/Spectred/rpc.key).
+      --rpcmaxclients=NUM                   Set the maximum number of RPC clients for standard connections (default: 128).
+      --rpcmaxwebsockets=NUM                Set the maximum number of RPC websocket connections (default: 25).
+      --rpcmaxconcurrentreqs=NUM            Set the maximum number of concurrent RPC requests that may be processed
+                                            concurrently (default: 20).
+      --norpc                               Disable the built-in RPC server.
+      --saferpc                             Disable RPC commands which affect the state of the node.
+      --nodnsseed                           Disable DNS seeding for peers.
+      --dnsseed=HOSTNAME                    Override DNS seeds with the specified hostname (only 1 hostname allowed).
+      --grpcseed=HOSTNAME                   Specify the hostname of the gRPC server for seeding peers.
+      --externalip=ADDR                     Add an IP to the list of local addresses claimed to listen on to peers.
+      --proxy=ADDR                          Connect via SOCKS5 proxy (e.g., 127.0.0.1:9050).
+      --proxyuser=USER                      Specify the username for the proxy server.
+      --proxypass=PASSWORD                  Specify the password for the proxy server.
+      --dbtype=TYPE                         Specify the database backend to use for the Block DAG.
+      --profile=PORT                        Enable HTTP profiling on the given port.
+                                            NOTE: Port must be between 1024 and 65536.
+  -d, --loglevel=LEVEL                      Set the logging level for all subsystems {trace, debug, info, warn, error,
+                                            critical}. You may also specify <subsystem>=<level>,<subsystem2>=<level>,...
+                                            to set the log level for individual subsystems. Use 'show' to list available
+                                            subsystems (default: info).
+      --upnp                                Use UPnP to map the listening port outside of NAT.
+      --minrelaytxfee=FEE                   Set the minimum transaction fee in SPR/kB to be considered a non-zero fee
+                                            (default: 1e-05).
+      --maxorphantx=NUM                     Set the maximum number of orphan transactions to keep in memory (default: 100).
+      --blockmaxmass=MASS                   Set the maximum transaction mass to be used when creating a block (default:
+                                            10000000).
+      --uacomment=COMMENT                   Add a comment to the user agent (see BIP 14 for more information).
+      --nopeerbloomfilters                  Disable bloom filtering support.
+      --sigcachemaxsize=SIZE                Set the maximum number of entries in the signature verification cache
+                                            (default: 100000).
       --blocksonly                          Do not accept transactions from remote peers.
       --relaynonstd                         Relay non-standard transactions regardless of the default settings for the
                                             active network.
-      --rejectnonstd                        Reject non-standard transactions regardless of the default settings for
-                                            the active network.
-      --reset-db                            Reset database before starting node. It's needed when switching between
-                                            subnetworks.
-      --maxutxocachesize=                   Max size of loaded UTXO into ram from the disk in bytes (default:
-                                            5000000000)
-      --utxoindex                           Enable the UTXO index
-      --archival                            Run as an archival node: don't delete old block data when moving the
-                                            pruning point (Warning: heavy disk usage)'
-      --protocol-version=                   Use non default p2p protocol version (default: 5)
-      --enable-unsynced-mining              Allow the node to accept blocks from RPC while not synced
-                                            (required when initiating a new network from genesis)
-      --testnet                             Use the test network
-      --simnet                              Use the simulation test network
-      --devnet                              Use the development test network
-      --override-dag-params-file=           Overrides DAG params (allowed only on devnet)
-  -s, --service=                            Service command {install, remove, start, stop}
-      --nogrpc                              Don't initialize the gRPC server
+      --rejectnonstd                        Reject non-standard transactions regardless of the default settings for the
+                                            active network.
+      --reset-db                            Reset the database before starting the node (needed when switching between
+                                            subnetworks).
+      --maxutxocachesize=SIZE               Set the maximum size of the loaded UTXO into RAM from the disk in bytes
+                                            (default: 5000000000).
+      --utxoindex                           Enable the UTXO index.
+      --archival                            Run as an archival node: do not delete old block data when moving the pruning
+                                            point (Warning: heavy disk usage).
+      --protocol-version=VERSION            Use a non-default p2p protocol version (default: 5).
+      --enable-unsynced-mining              Allow the node to accept blocks from RPC while not synced (required when
+                                            initiating a new network from genesis).
+      --testnet                             Use the test network.
+      --simnet                              Use the simulation test network.
+      --devnet                              Use the development test network.
+      --override-dag-params-file=FILE       Override DAG parameters (allowed only on devnet).
+  -s, --service=COMMAND                     Service command {install, remove, start, stop}.
+      --nogrpc                              Do not initialize the gRPC server.
 */
