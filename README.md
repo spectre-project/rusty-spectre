@@ -84,6 +84,40 @@ The first released version is `0.3.14`, the famous Pi divided by 10.
 
 ## Installation
 
+### Binaries
+
+We provide a comprehensive range of pre-compiled binaries for the
+Spectre full-node daemon, CLI wallet application, and testing
+utilities, all designed to promote decentralization. Here's an
+overview of the different builds:
+
+Build                 | Description
+----------------------|---------------------------------------------
+linux-gnu-aarch64     | Dynamically linked Linux (arm64)
+linux-gnu-powerpc64   | Dynamically linked Linux (ppc64)
+linux-gnu-powerpc64le | Dynamically linked Linux (ppc64le)
+linux-gnu-riscv64     | Dynamically linked Linux (riscv64)
+linux-gnu-amd64       | Dynamically linked Linux (x86_64)
+linux-musl-aarch64    | Statically linked Linux (arm64)
+linux-musl-amd64      | Statically linked Linux (x86_64)
+windows-gnullvm-amd64 | Windows version using GNU ABI from Clang/LLVM
+windows-msvc-amd64    | Windows version using Microsoft ABI, requires [MSVC runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170)
+macos-amd64           | macOS version for Intel-based systems
+macos-aarch64         | macOS version for Arm-based systems (M1, M2, etc.)
+
+The dynamically linked versions are always preferred for security
+reasons. However, for older Linux distributions, statically linked
+versions may be necessary due to glibc incompatibilities.
+
+The `windows-msvc-amd64` is recommended for most purposes as it offers
+the best interoperability with other Windows software. Note that this
+requires accepting the End User License Agreement (EULA) for the
+Microsoft Visual C++ Redistributable runtime. You can download and
+install the runtime from [here](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170).
+
+Use the `windows-gnullvm-amd64` version if you prefer not to accept
+the MSVC runtime EULA.
+
 ### Building on Linux
 
 1. Install general prerequisites
