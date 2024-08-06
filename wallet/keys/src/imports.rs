@@ -16,7 +16,7 @@ pub use js_sys::Array;
 pub use serde::{Deserialize, Serialize};
 pub use spectre_addresses::{Address, Version as AddressVersion};
 pub use spectre_bip32::{ChildNumber, ExtendedPrivateKey, ExtendedPublicKey, SecretKey};
-pub use spectre_consensus_core::network::NetworkTypeT;
+pub use spectre_consensus_core::network::{NetworkId, NetworkTypeT};
 pub use spectre_utils::hex::*;
 pub use spectre_wasm_core::types::*;
 pub use std::collections::HashMap;
