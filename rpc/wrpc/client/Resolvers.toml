@@ -1,5 +1,5 @@
 [[resolver]]
-url = "https://beacon.spectre-network.org"
+url = "https://resolver.spectre-network.org"
 enable = true
 
 [[resolver]]
