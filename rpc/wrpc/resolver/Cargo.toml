@@ -39,3 +39,7 @@ mime = "0.3.16"
 tower = { version = "0.4.13", features = ["buffer","limit"] }
 tower-http = { version = "0.5.1", features = ["cors"] }
 tracing-subscriber = "0.3.18"
+
+# Adding explicitely the openssl dependency here is needed for a successful build.
+[target.'cfg(unix)'.dependencies]
+openssl = { version = "0.10", features = ["vendored"] }
