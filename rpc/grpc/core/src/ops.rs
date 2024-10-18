@@ -61,6 +61,7 @@ pub enum SpectredPayloadOps {
     GetConnectedPeerInfo,
     AddPeer,
     SubmitTransaction,
+    SubmitTransactionReplacement,
     GetSubnetwork,
     GetVirtualChainFromBlock,
     GetBlockCount,

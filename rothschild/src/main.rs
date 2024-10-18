@@ -21,7 +21,7 @@ use spectre_txscript::pay_to_address_script;
 use tokio::time::{interval, MissedTickBehavior};
 
 const DEFAULT_SEND_AMOUNT: u64 = 10 * SOMPI_PER_SPECTRE;
-const FEE_PER_MASS: u64 = 10;
+const FEE_RATE: u64 = 10;
 const MILLIS_PER_TICK: u64 = 10;
 const ADDRESS_PREFIX: Prefix = Prefix::Testnet;
 const ADDRESS_VERSION: Version = Version::PubKey;
@@ -438,7 +438,7 @@ fn clean_old_pending_outpoints(pending: &mut HashMap<TransactionOutpoint, u64>) 
 }
 
 fn required_fee(num_utxos: usize, num_outs: u64) -> u64 {
-    FEE_PER_MASS * estimated_mass(num_utxos, num_outs)
+    FEE_RATE * estimated_mass(num_utxos, num_outs)
 }
 
 fn estimated_mass(num_utxos: usize, num_outs: u64) -> u64 {

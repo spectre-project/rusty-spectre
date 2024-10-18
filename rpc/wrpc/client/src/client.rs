@@ -617,6 +617,7 @@ impl RpcApi for SpectreRpcClient {
             Shutdown,
             SubmitBlock,
             SubmitTransaction,
+            SubmitTransactionReplacement,
             Unban,
         ]
     );

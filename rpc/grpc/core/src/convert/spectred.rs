@@ -36,6 +36,7 @@ pub mod spectred_request_convert {
     impl_into_spectred_request!(GetConnectedPeerInfo);
     impl_into_spectred_request!(AddPeer);
     impl_into_spectred_request!(SubmitTransaction);
+    impl_into_spectred_request!(SubmitTransactionReplacement);
     impl_into_spectred_request!(GetSubnetwork);
     impl_into_spectred_request!(GetVirtualChainFromBlock);
     impl_into_spectred_request!(GetBlocks);
@@ -167,6 +168,7 @@ pub mod spectred_response_convert {
     impl_into_spectred_response!(GetConnectedPeerInfo);
     impl_into_spectred_response!(AddPeer);
     impl_into_spectred_response!(SubmitTransaction);
+    impl_into_spectred_response!(SubmitTransactionReplacement);
     impl_into_spectred_response!(GetSubnetwork);
     impl_into_spectred_response!(GetVirtualChainFromBlock);
     impl_into_spectred_response!(GetBlocks);
