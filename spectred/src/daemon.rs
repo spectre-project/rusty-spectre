@@ -161,7 +161,13 @@ impl Runtime {
         let log_dir = get_log_dir(args);
 
         // Initialize the logger
-        spectre_core::log::init_logger(log_dir.as_deref(), &args.log_level);
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "semaphore-trace")] {
+                spectre_core::log::init_logger(log_dir.as_deref(), &format!("{},{}=debug", args.log_level, spectre_utils::sync::semaphore_module_path()));
+            } else {
+                spectre_core::log::init_logger(log_dir.as_deref(), &args.log_level);
+            }
+        };
 
         // Configure the panic behavior
         // As we log the panic, we want to set it up after the logger
