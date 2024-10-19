@@ -401,6 +401,25 @@ from!(item: RpcResult<&spectre_rpc_core::GetDaaScoreTimestampEstimateResponse>, 
     Self { timestamps: item.timestamps.clone(), error: None }
 });
 
+// Fee estimate API
+
+from!(&spectre_rpc_core::GetFeeEstimateRequest, protowire::GetFeeEstimateRequestMessage);
+from!(item: RpcResult<&spectre_rpc_core::GetFeeEstimateResponse>, protowire::GetFeeEstimateResponseMessage, {
+    Self { estimate: Some((&item.estimate).into()), error: None }
+});
+from!(item: &spectre_rpc_core::GetFeeEstimateExperimentalRequest, protowire::GetFeeEstimateExperimentalRequestMessage, {
+    Self {
+        verbose: item.verbose
+    }
+});
+from!(item: RpcResult<&spectre_rpc_core::GetFeeEstimateExperimentalResponse>, protowire::GetFeeEstimateExperimentalResponseMessage, {
+    Self {
+        estimate: Some((&item.estimate).into()),
+        verbose: item.verbose.as_ref().map(|x| x.into()),
+        error: None
+    }
+});
+
 from!(&spectre_rpc_core::PingRequest, protowire::PingRequestMessage);
 from!(RpcResult<&spectre_rpc_core::PingResponse>, protowire::PingResponseMessage);
 
@@ -816,6 +835,30 @@ try_from!(item: &protowire::GetDaaScoreTimestampEstimateRequestMessage, spectre_
 });
 try_from!(item: &protowire::GetDaaScoreTimestampEstimateResponseMessage, RpcResult<spectre_rpc_core::GetDaaScoreTimestampEstimateResponse>, {
     Self { timestamps: item.timestamps.clone() }
+});
+
+try_from!(&protowire::GetFeeEstimateRequestMessage, spectre_rpc_core::GetFeeEstimateRequest);
+try_from!(item: &protowire::GetFeeEstimateResponseMessage, RpcResult<spectre_rpc_core::GetFeeEstimateResponse>, {
+    Self {
+        estimate: item.estimate
+            .as_ref()
+            .ok_or_else(|| RpcError::MissingRpcFieldError("GetFeeEstimateResponseMessage".to_string(), "estimate".to_string()))?
+            .try_into()?
+    }
+});
+try_from!(item: &protowire::GetFeeEstimateExperimentalRequestMessage, spectre_rpc_core::GetFeeEstimateExperimentalRequest, {
+    Self {
+        verbose: item.verbose
+    }
+});
+try_from!(item: &protowire::GetFeeEstimateExperimentalResponseMessage, RpcResult<spectre_rpc_core::GetFeeEstimateExperimentalResponse>, {
+    Self {
+        estimate: item.estimate
+            .as_ref()
+            .ok_or_else(|| RpcError::MissingRpcFieldError("GetFeeEstimateExperimentalResponseMessage".to_string(), "estimate".to_string()))?
+            .try_into()?,
+        verbose: item.verbose.as_ref().map(|x| x.try_into()).transpose()?
+    }
 });
 
 try_from!(&protowire::PingRequestMessage, spectre_rpc_core::PingRequest);

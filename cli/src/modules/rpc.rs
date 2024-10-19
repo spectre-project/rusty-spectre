@@ -30,7 +30,7 @@ impl Rpc {
         let op_str_uc = op_str.to_case(Case::UpperCamel).to_string();
         // tprintln!(ctx, "uc: '{op_str_uc}'");
 
-        let op = RpcApiOps::from_str(op_str_uc.as_str()).ok_or(Error::custom(format!("No such RPC method: '{op_str}'")))?;
+        let op = RpcApiOps::from_str(op_str_uc.as_str()).ok_or(Error::custom(format!("No such rpc method: '{op_str}'")))?;
 
         match op {
             RpcApiOps::Ping => {
@@ -229,8 +229,17 @@ impl Rpc {
                     }
                 }
             }
+            RpcApiOps::GetFeeEstimate => {
+                let result = rpc.get_fee_estimate_call(GetFeeEstimateRequest {}).await?;
+                self.println(&ctx, result);
+            }
+            RpcApiOps::GetFeeEstimateExperimental => {
+                let verbose = if argv.is_empty() { false } else { argv.remove(0).parse().unwrap_or(false) };
+                let result = rpc.get_fee_estimate_experimental_call(GetFeeEstimateExperimentalRequest { verbose }).await?;
+                self.println(&ctx, result);
+            }
             _ => {
-                tprintln!(ctx, "RPC method exists but is not supported by the CLI: '{op_str}'\r\n");
+                tprintln!(ctx, "rpc method exists but is not supported by the cli: '{op_str}'\r\n");
                 return Ok(());
             }
         }
