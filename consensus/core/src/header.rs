@@ -2,6 +2,7 @@ use crate::{hashing, BlueWorkType};
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
 use spectre_hashes::Hash;
+use spectre_utils::mem_size::MemSizeEstimator;
 
 /// @category Consensus
 #[derive(Clone, Debug, Serialize, Deserialize, BorshSerialize, BorshDeserialize)]
@@ -89,6 +90,12 @@ impl Header {
             blue_score: 0,
             pruning_point: Default::default(),
         }
+    }
+}
+
+impl MemSizeEstimator for Header {
+    fn estimate_mem_bytes(&self) -> usize {
+        size_of::<Self>() + self.parents_by_level.iter().map(|l| l.len()).sum::<usize>() * size_of::<Hash>()
     }
 }
 

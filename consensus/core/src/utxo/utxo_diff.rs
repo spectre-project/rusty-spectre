@@ -5,7 +5,7 @@ use super::{
 use crate::tx::{TransactionOutpoint, UtxoEntry, VerifiableTransaction};
 use serde::{Deserialize, Serialize};
 use spectre_utils::mem_size::MemSizeEstimator;
-use std::{collections::hash_map::Entry::Vacant, mem::size_of};
+use std::collections::hash_map::Entry::Vacant;
 
 pub trait ImmutableUtxoDiff {
     fn added(&self) -> &UtxoCollection;
