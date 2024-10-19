@@ -11,6 +11,9 @@ impl History {
     async fn main(self: Arc<Self>, ctx: &Arc<dyn Context>, mut argv: Vec<String>, _cmd: &str) -> Result<()> {
         let ctx = ctx.clone().downcast_arc::<SpectreCli>()?;
 
+        let guard = ctx.wallet().guard();
+        let guard = guard.lock().await;
+
         if argv.is_empty() {
             self.display_help(ctx, argv).await?;
             return Ok(());
@@ -33,7 +36,15 @@ impl History {
                 match store.load_single(&binding, &network_id, &txid).await {
                     Ok(tx) => {
                         let lines = tx
-                            .format_transaction_with_args(&ctx.wallet(), None, current_daa_score, true, true, Some(account.clone()))
+                            .format_transaction_with_args(
+                                &ctx.wallet(),
+                                None,
+                                current_daa_score,
+                                true,
+                                true,
+                                Some(account.clone()),
+                                &guard,
+                            )
                             .await;
                         lines.iter().for_each(|line| tprintln!(ctx, "{line}"));
                     }
@@ -113,6 +124,7 @@ impl History {
                                 include_utxo,
                                 true,
                                 Some(account.clone()),
+                                &guard,
                             )
                             .await;
                         lines.iter().for_each(|line| tprintln!(ctx, "{line}"));

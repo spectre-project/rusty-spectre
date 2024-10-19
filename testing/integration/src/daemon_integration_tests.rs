@@ -8,6 +8,7 @@ use rand::thread_rng;
 use spectre_addresses::Address;
 use spectre_alloc::init_allocator_with_default_settings;
 use spectre_consensus::params::SIMNET_PARAMS;
+use spectre_consensus_core::header::Header;
 use spectre_consensusmanager::ConsensusManager;
 use spectre_core::{task::runtime::AsyncRuntime, trace};
 use spectre_grpc_client::GrpcClient;
@@ -77,7 +78,8 @@ async fn daemon_mining_test() {
             .get_block_template(Address::new(spectred1.network.into(), spectre_addresses::Version::PubKey, &[0; 32]), vec![])
             .await
             .unwrap();
-        last_block_hash = Some(template.block.header.hash);
+        let header: Header = (&template.block.header).into();
+        last_block_hash = Some(header.hash);
         rpc_client1.submit_block(template.block, false).await.unwrap();
 
         while let Ok(notification) = match tokio::time::timeout(Duration::from_secs(1), event_receiver.recv()).await {
@@ -180,7 +182,8 @@ async fn daemon_utxos_propagation_test() {
     let mut last_block_hash = None;
     for i in 0..initial_blocks {
         let template = rpc_client1.get_block_template(miner_address.clone(), vec![]).await.unwrap();
-        last_block_hash = Some(template.block.header.hash);
+        let header: Header = (&template.block.header).into();
+        last_block_hash = Some(header.hash);
         rpc_client1.submit_block(template.block, false).await.unwrap();
 
         while let Ok(notification) = match tokio::time::timeout(Duration::from_secs(1), event_receiver1.recv()).await {

@@ -16,7 +16,7 @@ use spectre_consensus_core::{
 use spectre_core::{info, spectred_env::version, time::unix_now, warn};
 use spectre_grpc_client::{ClientPool, GrpcClient};
 use spectre_notify::subscription::context::SubscriptionContext;
-use spectre_rpc_core::{api::rpc::RpcApi, notify::mode::NotificationMode};
+use spectre_rpc_core::{api::rpc::RpcApi, notify::mode::NotificationMode, RpcUtxoEntry};
 use spectre_txscript::pay_to_address_script;
 use tokio::time::{interval, MissedTickBehavior};
 
@@ -48,7 +48,7 @@ impl Args {
         Args {
             private_key: m.get_one::<String>("private-key").cloned(),
             tps: m.get_one::<u64>("tps").cloned().unwrap(),
-            rpc_server: m.get_one::<String>("rpcserver").cloned().unwrap_or("localhost:18210".to_owned()),
+            rpc_server: m.get_one::<String>("rpcserver").cloned().unwrap_or("localhost:16210".to_owned()),
             threads: m.get_one::<u8>("threads").cloned().unwrap(),
             unleashed: m.get_one::<bool>("unleashed").cloned().unwrap_or(false),
         }
@@ -74,7 +74,7 @@ pub fn cli() -> Command {
                 .long("rpcserver")
                 .short('s')
                 .value_name("rpcserver")
-                .default_value("localhost:18210")
+                .default_value("localhost:16210")
                 .help("RPC server"),
         )
         .arg(
@@ -323,7 +323,7 @@ async fn populate_pending_outpoints_from_mempool(
     for entry in entries {
         for entry in entry.sending {
             for input in entry.transaction.inputs {
-                pending_outpoints.insert(input.previous_outpoint, now);
+                pending_outpoints.insert(input.previous_outpoint.into(), now);
             }
         }
     }
@@ -337,20 +337,20 @@ async fn fetch_spendable_utxos(
 ) -> Vec<(TransactionOutpoint, UtxoEntry)> {
     let resp = rpc_client.get_utxos_by_addresses(vec![spectre_addr]).await.unwrap();
     let dag_info = rpc_client.get_block_dag_info().await.unwrap();
-    let mut utxos = Vec::with_capacity(resp.len());
-    for resp_entry in resp
-        .into_iter()
-        .filter(|resp_entry| is_utxo_spendable(&resp_entry.utxo_entry, dag_info.virtual_daa_score, coinbase_maturity))
+
+    let mut utxos = resp.into_iter()
+        .filter(|entry| {
+            is_utxo_spendable(&entry.utxo_entry, dag_info.virtual_daa_score, coinbase_maturity)
+        })
+        .map(|entry| (TransactionOutpoint::from(entry.outpoint), UtxoEntry::from(entry.utxo_entry)))
         // Eliminates UTXOs we already tried to spend so we don't try to spend them again in this period
-        .filter(|utxo| !pending.contains_key(&utxo.outpoint))
-    {
-        utxos.push((resp_entry.outpoint, resp_entry.utxo_entry));
-    }
+        .filter(|(outpoint,_)| !pending.contains_key(outpoint))
+        .collect::<Vec<_>>();
     utxos.sort_by(|a, b| b.1.amount.cmp(&a.1.amount));
     utxos
 }
 
-fn is_utxo_spendable(entry: &UtxoEntry, virtual_daa_score: u64, coinbase_maturity: u64) -> bool {
+fn is_utxo_spendable(entry: &RpcUtxoEntry, virtual_daa_score: u64, coinbase_maturity: u64) -> bool {
     let needed_confs = if !entry.is_coinbase {
         10
     } else {

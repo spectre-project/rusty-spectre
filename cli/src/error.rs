@@ -128,6 +128,12 @@ pub enum Error {
 
     #[error(transparent)]
     SpectreWalletKeys(#[from] spectre_wallet_keys::error::Error),
+
+    #[error(transparent)]
+    PssbLockScriptSigError(#[from] spectre_wallet_psst::error::Error),
+
+    #[error("To hex serialization error")]
+    PssbSerializeToHexError,
 }
 
 impl Error {

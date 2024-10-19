@@ -12,7 +12,6 @@ use spectre_database::prelude::{BatchDbWriter, CachedDbAccess, DirectDbWriter};
 use spectre_database::registry::DatabaseStorePrefixes;
 use spectre_hashes::Hash;
 use spectre_utils::mem_size::MemSizeEstimator;
-use std::mem::size_of;
 use std::sync::Arc;
 
 pub trait AcceptanceDataStoreReader {

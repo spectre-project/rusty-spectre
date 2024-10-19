@@ -55,6 +55,8 @@ pub mod spectred_request_convert {
     impl_into_spectred_request!(GetCoinSupply);
     impl_into_spectred_request!(Ping);
     impl_into_spectred_request!(GetMetrics);
+    impl_into_spectred_request!(GetConnections);
+    impl_into_spectred_request!(GetSystemInfo);
     impl_into_spectred_request!(GetServerInfo);
     impl_into_spectred_request!(GetSyncStatus);
     impl_into_spectred_request!(GetDaaScoreTimestampEstimate);
@@ -189,6 +191,8 @@ pub mod spectred_response_convert {
     impl_into_spectred_response!(GetCoinSupply);
     impl_into_spectred_response!(Ping);
     impl_into_spectred_response!(GetMetrics);
+    impl_into_spectred_response!(GetConnections);
+    impl_into_spectred_response!(GetSystemInfo);
     impl_into_spectred_response!(GetServerInfo);
     impl_into_spectred_response!(GetSyncStatus);
     impl_into_spectred_response!(GetDaaScoreTimestampEstimate);

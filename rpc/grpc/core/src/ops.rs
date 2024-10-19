@@ -79,6 +79,8 @@ pub enum SpectredPayloadOps {
     GetCoinSupply,
     Ping,
     GetMetrics,
+    GetConnections,
+    GetSystemInfo,
     GetServerInfo,
     GetSyncStatus,
     GetDaaScoreTimestampEstimate,

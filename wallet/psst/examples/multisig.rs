@@ -4,7 +4,7 @@ use spectre_consensus_core::{
     tx::{TransactionId, TransactionOutpoint, UtxoEntry},
 };
 use spectre_txscript::{multisig_redeem_script, opcodes::codes::OpData65, pay_to_script_hash_script, script_builder::ScriptBuilder};
-use spectre_wallet_psst::{
+use spectre_wallet_psst::prelude::{
     Combiner, Creator, Extractor, Finalizer, Inner, InputBuilder, SignInputOk, Signature, Signer, Updater, PSST,
 };
 use std::{iter, str::FromStr};

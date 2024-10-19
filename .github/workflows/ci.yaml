@@ -160,7 +160,7 @@ jobs:
         run: cargo clippy --workspace --tests --benches -- -D warnings
 
   check-wasm32:
-    name: Check Wasm32
+    name: Check WASM32
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -231,11 +231,15 @@ jobs:
         run: cargo clippy -p spectre-wasm --target wasm32-unknown-unknown
 
   build-wasm32:
-    name: Build Wasm32
+    name: Build WASM32 SDK
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+
+      - name: Setup Environment
+        shell: bash
+        run: echo "SHORT_SHA=`git rev-parse --short HEAD`" >> $GITHUB_ENV
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
@@ -293,17 +297,22 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Build wasm release
+      - name: Build WASM release
         env:
           TARGET_CC: clang
           TARGET_CFLAGS: -I/usr/include
-        run: cd wasm && bash build-release
+        run: |
+          pushd .
+          cd wasm
+          bash build-release
+          popd
+          mv wasm/release/spectre-wasm32-sdk.zip wasm/release/spectre-wasm32-sdk-${{ env.SHORT_SHA }}.zip
 
-      - name: Upload wasm binary to GitHub 
+      - name: Upload WASM build to GitHub 
         uses: actions/upload-artifact@v4
         with: 
-          name: spectre-wasm32-sdk
-          path: wasm/release/spectre-wasm32-sdk.zip
+          name: spectre-wasm32-sdk-${{ env.SHORT_SHA }}.zip
+          path: wasm/release/spectre-wasm32-sdk-${{ env.SHORT_SHA }}.zip
 
   build-release:
     name: Build Ubuntu Release

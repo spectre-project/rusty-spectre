@@ -1,8 +1,7 @@
 use crate::imports::*;
-use spectre_wrpc_client::Resolver;
 
 #[derive(Default, Handler)]
-#[help("Connect to a Spectre network (mainnet or testnet)")]
+#[help("Connect to a Spectre Network (mainnet or testnet)")]
 pub struct Connect;
 
 impl Connect {

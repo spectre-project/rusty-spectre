@@ -26,6 +26,7 @@ use spectre_rpc_core::{
     RpcContextualPeerAddress, RpcError, RpcExtraData, RpcHash, RpcIpAddress, RpcNetworkType, RpcPeerAddress, RpcResult,
     SubmitBlockRejectReason, SubmitBlockReport,
 };
+use spectre_utils::hex::*;
 use std::str::FromStr;
 
 macro_rules! from {
@@ -429,6 +430,8 @@ from!(item: &spectre_rpc_core::GetMetricsRequest, protowire::GetMetricsRequestMe
         connection_metrics: item.connection_metrics,
         bandwidth_metrics: item.bandwidth_metrics,
         consensus_metrics: item.consensus_metrics,
+        storage_metrics: item.storage_metrics,
+        custom_metrics: item.custom_metrics,
     }
 });
 from!(item: RpcResult<&spectre_rpc_core::GetMetricsResponse>, protowire::GetMetricsResponseMessage, {
@@ -438,13 +441,45 @@ from!(item: RpcResult<&spectre_rpc_core::GetMetricsResponse>, protowire::GetMetr
         connection_metrics: item.connection_metrics.as_ref().map(|x| x.into()),
         bandwidth_metrics: item.bandwidth_metrics.as_ref().map(|x| x.into()),
         consensus_metrics: item.consensus_metrics.as_ref().map(|x| x.into()),
+        storage_metrics: item.storage_metrics.as_ref().map(|x| x.into()),
+        // TODO
+        // custom_metrics : None,
         error: None,
     }
 });
+
+from!(item: &spectre_rpc_core::GetConnectionsRequest, protowire::GetConnectionsRequestMessage, {
+    Self {
+        include_profile_data : item.include_profile_data,
+    }
+});
+from!(item: RpcResult<&spectre_rpc_core::GetConnectionsResponse>, protowire::GetConnectionsResponseMessage, {
+    Self {
+        clients: item.clients,
+        peers: item.peers as u32,
+        profile_data: item.profile_data.as_ref().map(|x| x.into()),
+        error: None,
+    }
+});
+
+from!(&spectre_rpc_core::GetSystemInfoRequest, protowire::GetSystemInfoRequestMessage);
+from!(item: RpcResult<&spectre_rpc_core::GetSystemInfoResponse>, protowire::GetSystemInfoResponseMessage, {
+    Self {
+        version : item.version.clone(),
+        system_id : item.system_id.as_ref().map(|system_id|system_id.to_hex()).unwrap_or_default(),
+        git_hash : item.git_hash.as_ref().map(|git_hash|git_hash.to_hex()).unwrap_or_default(),
+        total_memory : item.total_memory,
+        core_num : item.cpu_physical_cores as u32,
+        fd_limit : item.fd_limit,
+        error: None,
+    }
+});
+
 from!(&spectre_rpc_core::GetServerInfoRequest, protowire::GetServerInfoRequestMessage);
 from!(item: RpcResult<&spectre_rpc_core::GetServerInfoResponse>, protowire::GetServerInfoResponseMessage, {
     Self {
-        rpc_api_version: item.rpc_api_version.iter().map(|x| *x as u32).collect(),
+        rpc_api_version: item.rpc_api_version as u32,
+        rpc_api_revision: item.rpc_api_revision as u32,
         server_version: item.server_version.clone(),
         network_id: item.network_id.to_string(),
         has_utxo_index: item.has_utxo_index,
@@ -865,7 +900,14 @@ try_from!(&protowire::PingRequestMessage, spectre_rpc_core::PingRequest);
 try_from!(&protowire::PingResponseMessage, RpcResult<spectre_rpc_core::PingResponse>);
 
 try_from!(item: &protowire::GetMetricsRequestMessage, spectre_rpc_core::GetMetricsRequest, {
-    Self { process_metrics: item.process_metrics, connection_metrics: item.connection_metrics, bandwidth_metrics:item.bandwidth_metrics, consensus_metrics: item.consensus_metrics }
+    Self {
+        process_metrics: item.process_metrics,
+        connection_metrics: item.connection_metrics,
+        bandwidth_metrics:item.bandwidth_metrics,
+        consensus_metrics: item.consensus_metrics,
+        storage_metrics: item.storage_metrics,
+        custom_metrics : item.custom_metrics,
+    }
 });
 try_from!(item: &protowire::GetMetricsResponseMessage, RpcResult<spectre_rpc_core::GetMetricsResponse>, {
     Self {
@@ -874,13 +916,40 @@ try_from!(item: &protowire::GetMetricsResponseMessage, RpcResult<spectre_rpc_cor
         connection_metrics: item.connection_metrics.as_ref().map(|x| x.try_into()).transpose()?,
         bandwidth_metrics: item.bandwidth_metrics.as_ref().map(|x| x.try_into()).transpose()?,
         consensus_metrics: item.consensus_metrics.as_ref().map(|x| x.try_into()).transpose()?,
+        storage_metrics: item.storage_metrics.as_ref().map(|x| x.try_into()).transpose()?,
+        // TODO
+        custom_metrics: None,
+    }
+});
+
+try_from!(item: &protowire::GetConnectionsRequestMessage, spectre_rpc_core::GetConnectionsRequest, {
+    Self { include_profile_data : item.include_profile_data }
+});
+try_from!(item: &protowire::GetConnectionsResponseMessage, RpcResult<spectre_rpc_core::GetConnectionsResponse>, {
+    Self {
+        clients: item.clients,
+        peers: item.peers as u16,
+        profile_data: item.profile_data.as_ref().map(|x| x.try_into()).transpose()?,
+    }
+});
+
+try_from!(&protowire::GetSystemInfoRequestMessage, spectre_rpc_core::GetSystemInfoRequest);
+try_from!(item: &protowire::GetSystemInfoResponseMessage, RpcResult<spectre_rpc_core::GetSystemInfoResponse>, {
+    Self {
+        version: item.version.clone(),
+        system_id: (!item.system_id.is_empty()).then(|| FromHex::from_hex(&item.system_id)).transpose()?,
+        git_hash: (!item.git_hash.is_empty()).then(|| FromHex::from_hex(&item.git_hash)).transpose()?,
+        total_memory: item.total_memory,
+        cpu_physical_cores: item.core_num as u16,
+        fd_limit: item.fd_limit,
     }
 });
 
 try_from!(&protowire::GetServerInfoRequestMessage, spectre_rpc_core::GetServerInfoRequest);
 try_from!(item: &protowire::GetServerInfoResponseMessage, RpcResult<spectre_rpc_core::GetServerInfoResponse>, {
     Self {
-        rpc_api_version: item.rpc_api_version.iter().map(|x| *x as u16).collect::<Vec<_>>().as_slice().try_into().map_err(|_| RpcError::RpcApiVersionFormatError)?,
+        rpc_api_version: item.rpc_api_version as u16,
+        rpc_api_revision: item.rpc_api_revision as u16,
         server_version: item.server_version.clone(),
         network_id: NetworkId::from_str(&item.network_id)?,
         has_utxo_index: item.has_utxo_index,

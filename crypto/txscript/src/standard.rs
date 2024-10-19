@@ -215,7 +215,6 @@ mod tests {
 
         for test in tests {
             let extracted = extract_script_pub_key_address(&test.script_pub_key, test.prefix);
-            eprintln!("extracted: {:#?} - test.expected_address: {:#?}", extracted, test.expected_address);
             assert_eq!(extracted, test.expected_address, "extract address test failed for '{}'", test.name);
             if let Ok(ref address) = extracted {
                 let encoded = pay_to_address_script(address);
