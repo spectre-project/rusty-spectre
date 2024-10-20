@@ -18,7 +18,7 @@ use crate::{
         deps_manager::{BlockProcessingMessage, BlockTaskDependencyManager, TaskId, VirtualStateProcessingMessage},
         ProcessingCounters,
     },
-    processes::{coinbase::CoinbaseManager, mass::MassCalculator, transaction_validator::TransactionValidator},
+    processes::{coinbase::CoinbaseManager, transaction_validator::TransactionValidator},
 };
 use crossbeam_channel::{Receiver, Sender};
 use parking_lot::RwLock;
@@ -28,6 +28,7 @@ use spectre_consensus_core::{
     block::Block,
     blockstatus::BlockStatus::{self, StatusHeaderOnly, StatusInvalid},
     config::genesis::GenesisBlock,
+    mass::MassCalculator,
     tx::Transaction,
 };
 use spectre_consensus_notify::{
