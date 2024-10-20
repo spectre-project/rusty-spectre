@@ -86,6 +86,7 @@ pub enum SpectredPayloadOps {
     GetDaaScoreTimestampEstimate,
     GetFeeEstimate,
     GetFeeEstimateExperimental,
+    GetCurrentBlockColor,
 
     // Subscription commands for starting/stopping notifications
     NotifyBlockAdded,

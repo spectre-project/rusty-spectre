@@ -614,6 +614,7 @@ impl RpcApi for SpectreRpcClient {
             GetBlockDagInfo,
             GetBlocks,
             GetBlockTemplate,
+            GetCurrentBlockColor,
             GetCoinSupply,
             GetConnectedPeerInfo,
             GetConnections,

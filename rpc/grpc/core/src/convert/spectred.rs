@@ -62,6 +62,7 @@ pub mod spectred_request_convert {
     impl_into_spectred_request!(GetDaaScoreTimestampEstimate);
     impl_into_spectred_request!(GetFeeEstimate);
     impl_into_spectred_request!(GetFeeEstimateExperimental);
+    impl_into_spectred_request!(GetCurrentBlockColor);
 
     impl_into_spectred_request!(NotifyBlockAdded);
     impl_into_spectred_request!(NotifyNewBlockTemplate);
@@ -198,6 +199,7 @@ pub mod spectred_response_convert {
     impl_into_spectred_response!(GetDaaScoreTimestampEstimate);
     impl_into_spectred_response!(GetFeeEstimate);
     impl_into_spectred_response!(GetFeeEstimateExperimental);
+    impl_into_spectred_response!(GetCurrentBlockColor);
 
     impl_into_spectred_notify_response!(NotifyBlockAdded);
     impl_into_spectred_notify_response!(NotifyNewBlockTemplate);
