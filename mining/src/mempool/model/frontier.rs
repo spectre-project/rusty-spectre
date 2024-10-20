@@ -8,9 +8,9 @@ use feerate_key::FeerateTransactionKey;
 use rand::{distributions::Uniform, prelude::Distribution, Rng};
 use search_tree::SearchTree;
 use selectors::{SequenceSelector, SequenceSelectorInput, TakeAllSelector};
-use spectre_consensus_core::block::TemplateTransactionSelector;
+use spectre_consensus_core::{block::TemplateTransactionSelector, tx::Transaction};
 use spectre_core::trace;
-use std::collections::HashSet;
+use std::{collections::HashSet, iter::FusedIterator, sync::Arc};
 
 pub(crate) mod feerate_key;
 pub(crate) mod search_tree;
@@ -253,6 +253,11 @@ impl Frontier {
             }
         }
         estimator
+    }
+
+    /// Returns an iterator to the transactions in the frontier in increasing feerate order
+    pub fn ascending_iter(&self) -> impl DoubleEndedIterator<Item = &Arc<Transaction>> + ExactSizeIterator + FusedIterator {
+        self.search_tree.ascending_iter().map(|key| &key.tx)
     }
 }
 
