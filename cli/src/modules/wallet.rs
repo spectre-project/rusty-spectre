@@ -9,6 +9,9 @@ impl Wallet {
     async fn main(self: Arc<Self>, ctx: &Arc<dyn Context>, mut argv: Vec<String>, cmd: &str) -> Result<()> {
         let ctx = ctx.clone().downcast_arc::<SpectreCli>()?;
 
+        let guard = ctx.wallet().guard();
+        let guard = guard.lock().await;
+
         if argv.is_empty() {
             return self.display_help(ctx, argv).await;
         }
@@ -43,8 +46,8 @@ impl Wallet {
                 };
 
                 let wallet_name = wallet_name.as_deref();
-                let import_with_mnemonic = op == "import";
-                wizards::wallet::create(&ctx, wallet_name, import_with_mnemonic).await?;
+                let import_with_mnemonic = op.as_str() == "import";
+                wizards::wallet::create(&ctx, guard.into(), wallet_name, import_with_mnemonic).await?;
             }
             "open" => {
                 let name = if let Some(name) = argv.first().cloned() {
@@ -61,8 +64,8 @@ impl Wallet {
                 let (wallet_secret, _) = ctx.ask_wallet_secret(None).await?;
                 let _ = ctx.notifier().show(Notification::Processing).await;
                 let args = WalletOpenArgs::default_with_legacy_accounts();
-                ctx.wallet().open(&wallet_secret, name, args).await?;
-                ctx.wallet().activate_accounts(None).await?;
+                ctx.wallet().open(&wallet_secret, name, args, &guard).await?;
+                ctx.wallet().activate_accounts(None, &guard).await?;
             }
             "close" => {
                 ctx.wallet().close().await?;
@@ -70,13 +73,14 @@ impl Wallet {
             "hint" => {
                 if !argv.is_empty() {
                     let re = regex::Regex::new(r"wallet\s+hint\s+").unwrap();
-                    let hint = re.replace(cmd, "").trim().to_string();
+                    let hint = re.replace(cmd, "");
+                    let hint = hint.trim();
                     let store = ctx.store();
                     if hint == "remove" {
                         tprintln!(ctx, "Hint is empty - removing wallet hint");
                         store.set_user_hint(None).await?;
                     } else {
-                        store.set_user_hint(Some(spectre_wallet_core::storage::Hint { text: hint })).await?;
+                        store.set_user_hint(Some(hint.into())).await?;
                     }
                 } else {
                     tprintln!(ctx, "Usage:\n'wallet hint <text>' or 'wallet hint remove' to remove the hint");

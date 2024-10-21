@@ -30,6 +30,7 @@ spectre-muhash.workspace = true
 spectre-notify.workspace = true
 spectre-pow.workspace = true
 spectre-txscript.workspace = true
+spectre-txscript-errors.workspace = true
 spectre-utils.workspace = true
 log.workspace = true
 once_cell.workspace = true

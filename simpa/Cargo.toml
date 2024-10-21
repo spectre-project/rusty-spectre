@@ -22,6 +22,7 @@ spectre-perf-monitor.workspace = true
 spectre-utils.workspace = true
 
 async-channel.workspace = true
+cfg-if.workspace = true
 clap.workspace = true
 dhat = { workspace = true, optional = true }
 futures-util.workspace = true
@@ -38,3 +39,4 @@ tokio = { workspace = true, features = ["rt", "macros", "rt-multi-thread"] }
 
 [features]
 heap = ["dhat", "spectre-alloc/heap"]
+semaphore-trace = ["spectre-utils/semaphore-trace"]

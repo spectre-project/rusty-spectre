@@ -3,7 +3,14 @@ use spectre_addresses::Address;
 use spectre_consensus_core::{config::params::Params, network::NetworkType};
 use wasm_bindgen::prelude::*;
 
+///
+/// `ConsensusParams` can be obtained using `getConsensusParametersByNetwork` or `getConsensusParametersByAddress`.
+///
+/// @see {@link getConsensusParametersByNetwork}
+/// @see {@link getConsensusParametersByAddress}
+///
 /// @category Wallet SDK
+///
 #[wasm_bindgen]
 pub struct ConsensusParams {
     params: Params,

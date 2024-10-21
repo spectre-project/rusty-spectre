@@ -64,7 +64,7 @@ impl BlockBodyProcessor {
             .copied()
             .filter(|parent| {
                 let status_option = statuses_read_guard.get(*parent).unwrap_option();
-                status_option.is_none_or(|s| !s.has_block_body())
+                status_option.is_none_or_ex(|s| !s.has_block_body())
             })
             .collect();
         if !missing.is_empty() {
@@ -108,12 +108,16 @@ mod tests {
     };
     use spectre_consensus_core::{
         api::ConsensusApi,
-        merkle::calc_hash_merkle_root,
+        merkle::calc_hash_merkle_root as calc_hash_merkle_root_with_options,
         subnets::SUBNETWORK_ID_NATIVE,
         tx::{Transaction, TransactionInput, TransactionOutpoint},
     };
     use spectre_core::assert_match;
     use spectre_hashes::Hash;
+
+    fn calc_hash_merkle_root<'a>(txs: impl ExactSizeIterator<Item = &'a Transaction>) -> Hash {
+        calc_hash_merkle_root_with_options(txs, false)
+    }
 
     #[tokio::test]
     async fn validate_body_in_context_test() {
