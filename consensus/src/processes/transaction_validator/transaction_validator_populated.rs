@@ -1,17 +1,25 @@
 use crate::constants::{MAX_SOMPI, SEQUENCE_LOCK_TIME_DISABLED, SEQUENCE_LOCK_TIME_MASK};
+use spectre_consensus_core::hashing::sighash::{SigHashReusedValues, SigHashReusedValuesSync};
 use spectre_consensus_core::{
-    hashing::sighash::SigHashReusedValues,
+    hashing::sighash::SigHashReusedValuesUnsync,
     mass::Kip9Version,
-    tx::{TransactionInput, VerifiableTransaction},
+    tx::VerifiableTransaction,
 };
 use spectre_core::warn;
-use spectre_txscript::{get_sig_op_count, TxScriptEngine};
+use spectre_txscript::caches::Cache;
+use spectre_txscript::{get_sig_op_count, SigCacheKey, TxScriptEngine};
 use spectre_txscript_errors::TxScriptError;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use rayon::ThreadPool;
+use std::marker::Sync;
 
 use super::{
     errors::{TxResult, TxRuleError},
     TransactionValidator,
 };
+
+/// The threshold above which we apply parallelism to input script processing
+const CHECK_SCRIPTS_PARALLELISM_THRESHOLD: usize = 1;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum TxValidationFlags {
@@ -29,7 +37,7 @@ pub enum TxValidationFlags {
 impl TransactionValidator {
     pub fn validate_populated_transaction_and_get_fee(
         &self,
-        tx: &impl VerifiableTransaction,
+        tx: &(impl VerifiableTransaction + Sync),
         pov_daa_score: u64,
         flags: TxValidationFlags,
         mass_and_feerate_threshold: Option<(u64, f64)>,
@@ -48,13 +56,13 @@ impl TransactionValidator {
         }
         Self::check_sequence_lock(tx, pov_daa_score)?;
 
-        // The following call is not a consensus check (it could not be one in the first place since it uses floating number)
-        // but rather a mempool Replace by Fee validation rule. It was placed here purposely for avoiding unneeded script checks.
+        // The following call is not a consensus check (it could not be one in the first place since it uses a floating number)
+        // but rather a mempool Replace by Fee validation rule. It is placed here purposely for avoiding unneeded script checks.
         Self::check_feerate_threshold(fee, mass_and_feerate_threshold)?;
 
         match flags {
             TxValidationFlags::Full | TxValidationFlags::SkipMassCheck => {
-                Self::check_sig_op_counts(tx)?;
+                Self::check_sig_op_counts::<_, SigHashReusedValuesUnsync>(tx)?;
                 self.check_scripts(tx)?;
             }
             TxValidationFlags::SkipScriptChecks => {}
@@ -156,9 +164,9 @@ impl TransactionValidator {
         Ok(())
     }
 
-    fn check_sig_op_counts<T: VerifiableTransaction>(tx: &T) -> TxResult<()> {
+    fn check_sig_op_counts<T: VerifiableTransaction, Reused: SigHashReusedValues>(tx: &T) -> TxResult<()> {
         for (i, (input, entry)) in tx.populated_inputs().enumerate() {
-            let calculated = get_sig_op_count::<T>(&input.signature_script, &entry.script_public_key);
+            let calculated = get_sig_op_count::<T, Reused>(&input.signature_script, &entry.script_public_key);
             if calculated != input.sig_op_count as u64 {
                 return Err(TxRuleError::WrongSigOpCount(i, input.sig_op_count as u64, calculated));
             }
@@ -166,15 +174,52 @@ impl TransactionValidator {
         Ok(())
     }
 
-    pub fn check_scripts(&self, tx: &impl VerifiableTransaction) -> TxResult<()> {
-        let mut reused_values = SigHashReusedValues::new();
-        for (i, (input, entry)) in tx.populated_inputs().enumerate() {
-            let mut engine = TxScriptEngine::from_transaction_input(tx, input, i, entry, &mut reused_values, &self.sig_cache)
-                .map_err(|err| map_script_err(err, input))?;
-            engine.execute().map_err(|err| map_script_err(err, input))?;
-        }
+    pub fn check_scripts(&self, tx: &(impl VerifiableTransaction + Sync)) -> TxResult<()> {
+        check_scripts(&self.sig_cache, tx)
+    }
+}
 
-        Ok(())
+pub fn check_scripts(sig_cache: &Cache<SigCacheKey, bool>, tx: &(impl VerifiableTransaction + Sync)) -> TxResult<()> {
+    if tx.inputs().len() > CHECK_SCRIPTS_PARALLELISM_THRESHOLD {
+        check_scripts_par_iter(sig_cache, tx)
+    } else {
+        check_scripts_sequential(sig_cache, tx)
+    }
+}
+
+pub fn check_scripts_sequential(sig_cache: &Cache<SigCacheKey, bool>, tx: &impl VerifiableTransaction) -> TxResult<()> {
+    let reused_values = SigHashReusedValuesUnsync::new();
+    for (i, (input, entry)) in tx.populated_inputs().enumerate() {
+        TxScriptEngine::from_transaction_input(tx, input, i, entry, &reused_values, sig_cache)
+            .and_then(|mut e| e.execute())
+            .map_err(|err| map_script_err(err, input))?;
+    }
+    Ok(())
+}
+
+pub fn check_scripts_par_iter(sig_cache: &Cache<SigCacheKey, bool>, tx: &(impl VerifiableTransaction + Sync)) -> TxResult<()> {
+    let reused_values = SigHashReusedValuesSync::new();
+    (0..tx.inputs().len()).into_par_iter().try_for_each(|idx| {
+        let (input, utxo) = tx.populated_input(idx);
+        TxScriptEngine::from_transaction_input(tx, input, idx, utxo, &reused_values, sig_cache)
+            .and_then(|mut e| e.execute())
+            .map_err(|err| map_script_err(err, input))
+    })
+}
+
+pub fn check_scripts_par_iter_pool(
+    sig_cache: &Cache<SigCacheKey, bool>,
+    tx: &(impl VerifiableTransaction + Sync),
+    pool: &ThreadPool,
+) -> TxResult<()> {
+    pool.install(|| check_scripts_par_iter(sig_cache, tx))
+}
+
+fn map_script_err(script_err: TxScriptError, input: &TransactionInput) -> TxRuleError {
+    if input.signature_script.is_empty() {
+        TxRuleError::SignatureEmpty(script_err)
+    } else {
+        TxRuleError::SignatureInvalid(script_err)
     }
 }
 
@@ -189,10 +234,12 @@ fn map_script_err(script_err: TxScriptError, input: &TransactionInput) -> TxRule
 #[cfg(test)]
 mod tests {
     use super::super::errors::TxRuleError;
+    use super::CHECK_SCRIPTS_PARALLELISM_THRESHOLD;
     use core::str::FromStr;
     use itertools::Itertools;
     use secp256k1::Secp256k1;
     use smallvec::SmallVec;
+    use spectre_consensus_core::hashing::sighash::SigHashReusedValuesUnsync;
     use spectre_consensus_core::sign::sign;
     use spectre_consensus_core::subnets::SubnetworkId;
     use spectre_consensus_core::tx::{MutableTransaction, PopulatedTransaction, ScriptVec, TransactionId, UtxoEntry};
@@ -201,6 +248,15 @@ mod tests {
     use std::iter::once;
 
     use crate::{params::MAINNET_PARAMS, processes::transaction_validator::TransactionValidator};
+
+    /// Helper function to duplicate the last input
+    fn duplicate_input(tx: &Transaction, entries: &[UtxoEntry]) -> (Transaction, Vec<UtxoEntry>) {
+        let mut tx2 = tx.clone();
+        let mut entries2 = entries.to_owned();
+        tx2.inputs.push(tx2.inputs.last().unwrap().clone());
+        entries2.push(entries2.last().unwrap().clone());
+        (tx2, entries2)
+    }
 
     #[test]
     fn check_signature_test() {
@@ -261,6 +317,14 @@ mod tests {
         );
 
         tv.check_scripts(&populated_tx).expect("Signature check failed");
+
+        // Test a tx with 2 inputs to cover parallelism split points in inner script checking code
+        let (tx2, entries2) = duplicate_input(&tx, &populated_tx.entries);
+        // Duplicated sigs should fail due to wrong sighash
+        assert_eq!(
+            tv.check_scripts(&PopulatedTransaction::new(&tx2, entries2)),
+            Err(TxRuleError::SignatureInvalid(TxScriptError::EvalFalse))
+        );
     }
 
     #[test]
@@ -322,7 +386,18 @@ mod tests {
             }],
         );
 
-        assert!(tv.check_scripts(&populated_tx).is_err(), "Failing Signature Test Failed");
+        assert!(tv.check_scripts(&populated_tx).is_err(), "Expecting signature check to fail");
+
+        // Test a tx with 2 inputs to cover parallelism split points in inner script checking code
+        let (tx2, entries2) = duplicate_input(&tx, &populated_tx.entries);
+        tv.check_scripts(&PopulatedTransaction::new(&tx2, entries2)).expect_err("Expecting signature check to fail");
+
+        // Verify we are correctly testing the parallelism case (applied here as sanity for all tests)
+        assert!(
+            tx2.inputs.len() > CHECK_SCRIPTS_PARALLELISM_THRESHOLD,
+            "The script tests must cover the case of a tx with inputs.len() > {}",
+            CHECK_SCRIPTS_PARALLELISM_THRESHOLD
+        );
     }
 
     #[test]
@@ -385,6 +460,14 @@ mod tests {
             }],
         );
         tv.check_scripts(&populated_tx).expect("Signature check failed");
+
+        // Test a tx with 2 inputs to cover parallelism split points in inner script checking code
+        let (tx2, entries2) = duplicate_input(&tx, &populated_tx.entries);
+        // Duplicated sigs should fail due to wrong sighash
+        assert_eq!(
+            tv.check_scripts(&PopulatedTransaction::new(&tx2, entries2)),
+            Err(TxRuleError::SignatureInvalid(TxScriptError::NullFail))
+        );
     }
 
     #[test]
@@ -447,7 +530,14 @@ mod tests {
             }],
         );
 
-        assert!(tv.check_scripts(&populated_tx) == Err(TxRuleError::SignatureInvalid(TxScriptError::NullFail)));
+        assert_eq!(tv.check_scripts(&populated_tx), Err(TxRuleError::SignatureInvalid(TxScriptError::NullFail)));
+
+        // Test a tx with 2 inputs to cover parallelism split points in inner script checking code
+        let (tx2, entries2) = duplicate_input(&tx, &populated_tx.entries);
+        assert_eq!(
+            tv.check_scripts(&PopulatedTransaction::new(&tx2, entries2)),
+            Err(TxRuleError::SignatureInvalid(TxScriptError::NullFail))
+        );
     }
 
     #[test]
@@ -510,7 +600,14 @@ mod tests {
             }],
         );
 
-        assert!(tv.check_scripts(&populated_tx) == Err(TxRuleError::SignatureInvalid(TxScriptError::NullFail)));
+        assert_eq!(tv.check_scripts(&populated_tx), Err(TxRuleError::SignatureInvalid(TxScriptError::NullFail)));
+
+        // Test a tx with 2 inputs to cover parallelism split points in inner script checking code
+        let (tx2, entries2) = duplicate_input(&tx, &populated_tx.entries);
+        assert_eq!(
+            tv.check_scripts(&PopulatedTransaction::new(&tx2, entries2)),
+            Err(TxRuleError::SignatureInvalid(TxScriptError::NullFail))
+        );
     }
 
     #[test]
@@ -573,8 +670,14 @@ mod tests {
             }],
         );
 
-        let result = tv.check_scripts(&populated_tx);
-        assert!(result == Err(TxRuleError::SignatureInvalid(TxScriptError::EvalFalse)));
+        assert_eq!(tv.check_scripts(&populated_tx), Err(TxRuleError::SignatureInvalid(TxScriptError::EvalFalse)));
+
+        // Test a tx with 2 inputs to cover parallelism split points in inner script checking code
+        let (tx2, entries2) = duplicate_input(&tx, &populated_tx.entries);
+        assert_eq!(
+            tv.check_scripts(&PopulatedTransaction::new(&tx2, entries2)),
+            Err(TxRuleError::SignatureInvalid(TxScriptError::EvalFalse))
+        );
     }
 
     #[test]
@@ -628,8 +731,14 @@ mod tests {
             }],
         );
 
-        let result = tv.check_scripts(&populated_tx);
-        assert!(result == Err(TxRuleError::SignatureInvalid(TxScriptError::SignatureScriptNotPushOnly)));
+        assert_eq!(tv.check_scripts(&populated_tx), Err(TxRuleError::SignatureInvalid(TxScriptError::SignatureScriptNotPushOnly)));
+
+        // Test a tx with 2 inputs to cover parallelism split points in inner script checking code
+        let (tx2, entries2) = duplicate_input(&tx, &populated_tx.entries);
+        assert_eq!(
+            tv.check_scripts(&PopulatedTransaction::new(&tx2, entries2)),
+            Err(TxRuleError::SignatureInvalid(TxScriptError::SignatureScriptNotPushOnly))
+        );
     }
 
     #[test]
@@ -709,6 +818,6 @@ mod tests {
         let signed_tx = sign(MutableTransaction::with_entries(unsigned_tx, entries), schnorr_key);
         let populated_tx = signed_tx.as_verifiable();
         assert_eq!(tv.check_scripts(&populated_tx), Ok(()));
-        assert_eq!(TransactionValidator::check_sig_op_counts(&populated_tx), Ok(()));
+        assert_eq!(TransactionValidator::check_sig_op_counts::<_, SigHashReusedValuesUnsync>(&populated_tx), Ok(()));
     }
 }

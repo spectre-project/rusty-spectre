@@ -318,7 +318,7 @@ jobs:
           path: wasm/release/spectre-wasm32-sdk-${{ env.SHORT_SHA }}.zip
 
   build-release:
-    name: Build Ubuntu Release
+    name: Build Linux Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
