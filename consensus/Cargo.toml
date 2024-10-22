@@ -57,7 +57,7 @@ spectre-txscript-errors.workspace = true
 spectre-addresses.workspace = true
 
 [[bench]]
-name = "hash_benchmarks"
+name = "parallel_muhash"
 harness = false
 
 [[bench]]
