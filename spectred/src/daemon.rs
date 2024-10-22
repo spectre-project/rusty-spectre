@@ -6,7 +6,7 @@ use spectre_consensus_core::{
     errors::config::{ConfigError, ConfigResult},
 };
 use spectre_consensus_notify::{root::ConsensusNotificationRoot, service::NotifyService};
-use spectre_core::{core::Core, info, trace};
+use spectre_core::{core::Core, debug, info};
 use spectre_core::{spectred_env::version, task::tick::TickService};
 use spectre_database::prelude::CachePolicy;
 use spectre_grpc_server::service::GrpcService;
@@ -400,10 +400,10 @@ do you confirm? (answer y/n or pass --yes to the Spectred command line to confir
         .with_tick_service(tick_service.clone());
     let perf_monitor = if args.perf_metrics {
         let cb = move |counters: CountersSnapshot| {
-            trace!("[{}] {}", spectre_perf_monitor::SERVICE_NAME, counters.to_process_metrics_display());
-            trace!("[{}] {}", spectre_perf_monitor::SERVICE_NAME, counters.to_io_metrics_display());
+            debug!("[{}] {}", spectre_perf_monitor::SERVICE_NAME, counters.to_process_metrics_display());
+            debug!("[{}] {}", spectre_perf_monitor::SERVICE_NAME, counters.to_io_metrics_display());
             #[cfg(feature = "heap")]
-            trace!("[{}] heap stats: {:?}", spectre_perf_monitor::SERVICE_NAME, dhat::HeapStats::get());
+            debug!("[{}] heap stats: {:?}", spectre_perf_monitor::SERVICE_NAME, dhat::HeapStats::get());
         };
         Arc::new(perf_monitor_builder.with_fetch_cb(cb).build())
     } else {
