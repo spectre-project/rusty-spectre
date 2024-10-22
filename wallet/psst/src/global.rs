@@ -1,3 +1,5 @@
+//! Global PSST data.
+
 use crate::psst::{KeySource, Version};
 use crate::utils::combine_if_no_conflicts;
 use derive_builder::Builder;

@@ -13,6 +13,11 @@ use serde::{Deserialize, Serialize};
 use spectre_txscript::{extract_script_pub_key_address, pay_to_address_script, pay_to_script_hash_script};
 use std::ops::Deref;
 
+///
+/// Bundle is a [`PSST`] bundle - a sequence of PSST transactions
+/// meant for batch processing and transport as a
+/// single serialized payload.
+///
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Bundle(pub Vec<PSSTInner>);

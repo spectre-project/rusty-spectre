@@ -1,3 +1,7 @@
+//!
+//! Partially Signed Spectre Transaction (PSST)
+//!
+
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use spectre_bip32::{secp256k1, DerivationPath, KeyFingerprint};
@@ -76,6 +80,23 @@ impl Signature {
     }
 }
 
+///
+/// A Partially Signed Spectre Transaction (PSST) is a standardized format
+/// that allows multiple participants to collaborate in creating and signing
+/// a Spectre transaction. PSST enables the exchange of incomplete transaction
+/// data between different wallets or entities, allowing each participant
+/// to add their signature or inputs in stages. This facilitates more complex
+/// transaction workflows, such as multi-signature setups or hardware wallet
+/// interactions, by ensuring that sensitive data remains secure while
+/// enabling cooperation across different devices or platforms without
+/// exposing private keys.
+///
+/// Please note that due to transaction mass limits and potential of
+/// a wallet aggregating large UTXO sets, the PSST [`Bundle`](crate::bundle::Bundle) primitive
+/// is used to represent a collection of PSSTs and should be used for
+/// PSST serialization and transport. PSST is an internal implementation
+/// primitive that represents each transaction in the bundle.
+///
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PSST<ROLE> {

@@ -1,3 +1,5 @@
+//! PSST output structure.
+
 use crate::psst::KeySource;
 use crate::utils::combine_if_no_conflicts;
 use derive_builder::Builder;

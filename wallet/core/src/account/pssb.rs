@@ -1,3 +1,8 @@
+//!
+//! Tools for interfacing wallet accounts with PSSBs.
+//! (Partial Signed Spectre Transaction Bundles).
+//!
+
 pub use crate::error::Error;
 use crate::imports::*;
 use crate::tx::PaymentOutputs;

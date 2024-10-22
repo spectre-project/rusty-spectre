@@ -1,3 +1,5 @@
+//! PSST input structure.
+
 use crate::psst::{KeySource, PartialSigs};
 use crate::utils::{combine_if_no_conflicts, Error as CombineMapErr};
 use derive_builder::Builder;

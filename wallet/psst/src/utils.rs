@@ -1,3 +1,5 @@
+//! Utility functions for the PSST module.
+
 use std::collections::BTreeMap;
 
 // todo optimize without cloning
