@@ -11,7 +11,7 @@ use secp256k1::schnorr;
 use secp256k1::{Message, PublicKey};
 use spectre_bip32::{DerivationPath, KeyFingerprint, PrivateKey};
 use spectre_consensus_client::UtxoEntry as ClientUTXO;
-use spectre_consensus_core::hashing::sighash::{calc_schnorr_signature_hash, SigHashReusedValues};
+use spectre_consensus_core::hashing::sighash::{calc_schnorr_signature_hash, SigHashReusedValuesUnsync};
 use spectre_consensus_core::tx::VerifiableTransaction;
 use spectre_consensus_core::tx::{TransactionInput, UtxoEntry};
 use spectre_txscript::extract_script_pub_key_address;
@@ -160,7 +160,7 @@ pub async fn pssb_signer_for_address(
     key_fingerprint: KeyFingerprint,
 ) -> Result<Bundle, Error> {
     let mut signed_bundle = Bundle::new();
-    let mut reused_values = SigHashReusedValues::new();
+    let reused_values = SigHashReusedValuesUnsync::new();
 
     // If set, sign-for address is used for signing.
     // Else, all addresses from inputs are.
@@ -186,7 +186,7 @@ pub async fn pssb_signer_for_address(
     for psst_inner in bundle.iter().cloned() {
         let psst: PSST<Signer> = PSST::from(psst_inner);
 
-        let mut sign = |signer_psst: PSST<Signer>| {
+        let sign = |signer_psst: PSST<Signer>| {
             signer_psst
                 .pass_signature_sync(|tx, sighash| -> Result<Vec<SignInputOk>, String> {
                     tx.tx
@@ -194,7 +194,7 @@ pub async fn pssb_signer_for_address(
                         .iter()
                         .enumerate()
                         .map(|(idx, _input)| {
-                            let hash = calc_schnorr_signature_hash(&tx.as_verifiable(), idx, sighash[idx], &mut reused_values);
+                            let hash = calc_schnorr_signature_hash(&tx.as_verifiable(), idx, sighash[idx], &reused_values);
                             let msg = secp256k1::Message::from_digest_slice(hash.as_bytes().as_slice()).unwrap();
 
                             // When address represents a locked UTXO, no private key is available.

@@ -3,7 +3,7 @@ use spectre_consensus_core::hashing::sighash::{SigHashReusedValues, SigHashReuse
 use spectre_consensus_core::{
     hashing::sighash::SigHashReusedValuesUnsync,
     mass::Kip9Version,
-    tx::VerifiableTransaction,
+    tx::{TransactionInput, VerifiableTransaction},
 };
 use spectre_core::warn;
 use spectre_txscript::caches::Cache;
@@ -213,14 +213,6 @@ pub fn check_scripts_par_iter_pool(
     pool: &ThreadPool,
 ) -> TxResult<()> {
     pool.install(|| check_scripts_par_iter(sig_cache, tx))
-}
-
-fn map_script_err(script_err: TxScriptError, input: &TransactionInput) -> TxRuleError {
-    if input.signature_script.is_empty() {
-        TxRuleError::SignatureEmpty(script_err)
-    } else {
-        TxRuleError::SignatureInvalid(script_err)
-    }
 }
 
 fn map_script_err(script_err: TxScriptError, input: &TransactionInput) -> TxRuleError {

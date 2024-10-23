@@ -244,28 +244,6 @@ impl Transaction {
         self.set_mass(mass);
         self
     }
-
-    pub fn with_mass(self, mass: u64) -> Self {
-        self.set_mass(mass);
-        self
-    }
-}
-
-impl MemSizeEstimator for Transaction {
-    fn estimate_mem_bytes(&self) -> usize {
-        // Calculates mem bytes of the transaction (for cache tracking purposes)
-        size_of::<Self>()
-            + self.payload.len()
-            + self
-                .inputs
-                .iter()
-                .map(|i| i.signature_script.len() + size_of::<TransactionInput>())
-                .chain(self.outputs.iter().map(|o| {
-                    // size_of::<TransactionOutput>() already counts SCRIPT_VECTOR_SIZE bytes within, so we only add the delta
-                    o.script_public_key.script().len().saturating_sub(SCRIPT_VECTOR_SIZE) + size_of::<TransactionOutput>()
-                }))
-                .sum::<usize>()
-    }
 }
 
 impl MemSizeEstimator for Transaction {
@@ -488,50 +466,6 @@ impl<T: AsRef<Transaction>> MutableTransaction<T> {
 
     pub fn has_parent_in_set(&self, possible_parents: &HashSet<TransactionId>) -> bool {
         self.tx.as_ref().inputs.iter().any(|x| possible_parents.contains(&x.previous_outpoint.transaction_id))
-    }
-
-    /// Returns the calculated feerate. The feerate is calculated as the amount of fee
-    /// this transactions pays per gram of the full contextual (compute & storage) mass. The
-    /// function returns a value when calculated fee exists and the contextual mass is greater
-    /// than zero, otherwise `None` is returned.
-    pub fn calculated_feerate(&self) -> Option<f64> {
-        let contextual_mass = self.tx.as_ref().mass();
-        if contextual_mass > 0 {
-            self.calculated_fee.map(|fee| fee as f64 / contextual_mass as f64)
-        } else {
-            None
-        }
-    }
-
-    /// A function for estimating the amount of memory bytes used by this transaction (dedicated to mempool usage).
-    /// We need consistency between estimation calls so only this function should be used for this purpose since
-    /// `estimate_mem_bytes` is sensitive to pointer wrappers such as Arc
-    pub fn mempool_estimated_bytes(&self) -> usize {
-        self.estimate_mem_bytes()
-    }
-
-    pub fn has_parent(&self, possible_parent: TransactionId) -> bool {
-        self.tx.as_ref().inputs.iter().any(|x| x.previous_outpoint.transaction_id == possible_parent)
-    }
-
-    pub fn has_parent_in_set(&self, possible_parents: &HashSet<TransactionId>) -> bool {
-        self.tx.as_ref().inputs.iter().any(|x| possible_parents.contains(&x.previous_outpoint.transaction_id))
-    }
-}
-
-impl<T: AsRef<Transaction>> MemSizeEstimator for MutableTransaction<T> {
-    fn estimate_mem_bytes(&self) -> usize {
-        size_of::<Self>()
-            + self
-                .entries
-                .iter()
-                .map(|op| {
-                    // size_of::<Option<UtxoEntry>>() already counts SCRIPT_VECTOR_SIZE bytes within, so we only add the delta
-                    size_of::<Option<UtxoEntry>>()
-                        + op.as_ref().map_or(0, |e| e.script_public_key.script().len().saturating_sub(SCRIPT_VECTOR_SIZE))
-                })
-                .sum::<usize>()
-            + self.tx.as_ref().estimate_mem_bytes()
     }
 }
 

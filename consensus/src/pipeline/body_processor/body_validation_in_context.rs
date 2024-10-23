@@ -1,10 +1,7 @@
 use super::BlockBodyProcessor;
 use crate::{
     errors::{BlockProcessResult, RuleError},
-    model::{
-        services::reachability::ReachabilityService,
-        stores::{ghostdag::GhostdagStoreReader, pruning::PruningStoreReader, statuses::StatusesStoreReader},
-    },
+    model::stores::{ghostdag::GhostdagStoreReader, statuses::StatusesStoreReader},
     processes::window::WindowManager,
 };
 use spectre_consensus_core::block::Block;
