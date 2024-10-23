@@ -77,11 +77,11 @@ use crossbeam_channel::{
 use itertools::Itertools;
 use spectre_consensusmanager::{SessionLock, SessionReadGuard};
 
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use spectre_database::prelude::StoreResultExtensions;
 use spectre_hashes::Hash;
 use spectre_muhash::MuHash;
 use spectre_txscript::caches::TxScriptCacheCounters;
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 use std::{
     cmp::Reverse,

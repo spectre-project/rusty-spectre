@@ -515,12 +515,12 @@ mod address_store_with_cache {
 
         use super::*;
         use address_manager::AddressManager;
+        use rv::{dist::Uniform, misc::ks_test as one_way_ks_test, traits::Cdf};
         use spectre_consensus_core::config::{params::SIMNET_PARAMS, Config};
         use spectre_core::task::tick::TickService;
         use spectre_database::create_temp_db;
         use spectre_database::prelude::ConnBuilder;
         use spectre_utils::networking::IpAddress;
-        use rv::{dist::Uniform, misc::ks_test as one_way_ks_test, traits::Cdf};
         use std::net::{IpAddr, Ipv6Addr};
 
         #[test]

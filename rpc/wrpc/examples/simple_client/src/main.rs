@@ -6,7 +6,7 @@ use spectre_wrpc_client::{
     prelude::NetworkId,
     prelude::NetworkType,
     result::Result,
-    SpectreRpcClient, Resolver, WrpcEncoding,
+    Resolver, SpectreRpcClient, WrpcEncoding,
 };
 use std::process::ExitCode;
 use std::time::Duration;

@@ -1,5 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use itertools::Itertools;
+use rayon::prelude::*;
 use spectre_consensus_core::{
     muhash::MuHashExtensions,
     subnets::SUBNETWORK_ID_NATIVE,
@@ -8,7 +9,6 @@ use spectre_consensus_core::{
 use spectre_hashes::TransactionID;
 use spectre_muhash::MuHash;
 use spectre_utils::iter::parallelism_in_power_steps;
-use rayon::prelude::*;
 
 fn generate_transaction(ins: usize, outs: usize, randomness: u64) -> SignableTransaction {
     let mut tx = Transaction::new(0, vec![], vec![], 0, SUBNETWORK_ID_NATIVE, 0, vec![]);

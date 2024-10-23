@@ -1,4 +1,6 @@
 use crate::constants::{MAX_SOMPI, SEQUENCE_LOCK_TIME_DISABLED, SEQUENCE_LOCK_TIME_MASK};
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use rayon::ThreadPool;
 use spectre_consensus_core::hashing::sighash::{SigHashReusedValues, SigHashReusedValuesSync};
 use spectre_consensus_core::{
     hashing::sighash::SigHashReusedValuesUnsync,
@@ -9,8 +11,6 @@ use spectre_core::warn;
 use spectre_txscript::caches::Cache;
 use spectre_txscript::{get_sig_op_count, SigCacheKey, TxScriptEngine};
 use spectre_txscript_errors::TxScriptError;
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
-use rayon::ThreadPool;
 use std::marker::Sync;
 
 use super::{

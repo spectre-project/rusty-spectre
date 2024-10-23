@@ -1,4 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion, SamplingMode};
+use rand::{thread_rng, Rng};
+use secp256k1::Keypair;
 use spectre_addresses::{Address, Prefix, Version};
 use spectre_consensus::processes::transaction_validator::transaction_validator_populated::{
     check_scripts_par_iter, check_scripts_par_iter_pool, check_scripts_sequential,
@@ -10,8 +12,6 @@ use spectre_consensus_core::tx::{MutableTransaction, Transaction, TransactionInp
 use spectre_txscript::caches::Cache;
 use spectre_txscript::pay_to_address_script;
 use spectre_utils::iter::parallelism_in_power_steps;
-use rand::{thread_rng, Rng};
-use secp256k1::Keypair;
 
 // You may need to add more detailed mocks depending on your actual code.
 fn mock_tx(inputs_count: usize, non_uniq_signatures: usize) -> (Transaction, Vec<UtxoEntry>) {
