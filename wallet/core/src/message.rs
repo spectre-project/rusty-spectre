@@ -5,6 +5,7 @@
 use secp256k1::{Error, XOnlyPublicKey};
 use spectre_hashes::{Hash, PersonalMessageSigningHash};
 
+/// A personal message (text) that can be signed.
 #[derive(Clone)]
 pub struct PersonalMessage<'a>(pub &'a str);
 

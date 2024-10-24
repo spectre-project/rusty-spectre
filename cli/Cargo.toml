@@ -33,6 +33,7 @@ downcast.workspace = true
 faster-hex.workspace = true
 futures.workspace = true
 js-sys.workspace = true
+hex.workspace = true
 spectre-addresses.workspace = true
 spectre-bip32.workspace = true
 spectre-consensus-core.workspace = true
@@ -43,6 +44,7 @@ spectre-rpc-core.workspace = true
 spectre-utils.workspace = true
 spectre-wallet-core.workspace = true
 spectre-wallet-keys.workspace = true
+spectre-wallet-psst.workspace = true
 spectre-wrpc-client.workspace = true
 nw-sys.workspace = true
 pad.workspace = true
@@ -80,5 +82,5 @@ features = [
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tokio.workspace = true
 
-[lints.clippy]
-empty_docs = "allow"
+[lints]
+workspace = true

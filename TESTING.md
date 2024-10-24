@@ -21,6 +21,7 @@ while attempting to fill each block with up to 200 transactions.
 ```bash
 cargo run --release --bin simpa -- -t=200 -d=2 -b=8 -n=1000
 ```
+
 ## Heap Profiling
 
 Heap-profiling in `spectred` and `simpa` can be done by enabling

@@ -1,3 +1,5 @@
+//! Re-exports of the most commonly used types and traits.
+
 pub use crate::client::{ConnectOptions, ConnectStrategy};
 pub use crate::{Resolver, SpectreRpcClient, WrpcEncoding};
 pub use spectre_consensus_core::network::{NetworkId, NetworkType};

@@ -60,7 +60,7 @@ from!(item: &spectre_rpc_core::RpcTransactionVerboseData, protowire::RpcTransact
     Self {
         transaction_id: item.transaction_id.to_string(),
         hash: item.hash.to_string(),
-        mass: item.mass,
+        compute_mass: item.compute_mass,
         block_hash: item.block_hash.to_string(),
         block_time: item.block_time,
     }
@@ -167,7 +167,7 @@ try_from!(item: &protowire::RpcTransactionVerboseData, spectre_rpc_core::RpcTran
     Self {
         transaction_id: RpcHash::from_str(&item.transaction_id)?,
         hash: RpcHash::from_str(&item.hash)?,
-        mass: item.mass,
+        compute_mass: item.compute_mass,
         block_hash: RpcHash::from_str(&item.block_hash)?,
         block_time: item.block_time,
     }

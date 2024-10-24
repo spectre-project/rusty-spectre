@@ -4,7 +4,7 @@ use crate::mempool::{
     Mempool,
 };
 use spectre_consensus_core::tx::TransactionId;
-use spectre_core::{debug, warn};
+use spectre_core::debug;
 use spectre_utils::iter::IterExtensions;
 
 impl Mempool {
@@ -43,8 +43,8 @@ impl Mempool {
             TxRemovalReason::Muted => {}
             TxRemovalReason::DoubleSpend => match removed_transactions.len() {
                 0 => {}
-                1 => warn!("Removed transaction ({}) {}{}", reason, removed_transactions[0], extra_info),
-                n => warn!(
+                1 => debug!("Removed transaction ({}) {}{}", reason, removed_transactions[0], extra_info),
+                n => debug!(
                     "Removed {} transactions ({}): {}{}",
                     n,
                     reason,

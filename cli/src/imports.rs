@@ -19,7 +19,7 @@ pub use spectre_utils::hex::*;
 pub use spectre_wallet_core::compat::*;
 pub use spectre_wallet_core::prelude::*;
 pub use spectre_wallet_core::settings::{DefaultSettings, SettingsStore, WalletSettings};
-pub use spectre_wallet_core::utils::*;
+pub use spectre_wrpc_client::prelude::*;
 pub use std::collections::HashMap;
 pub use std::collections::VecDeque;
 pub use std::ops::Deref;

@@ -26,8 +26,8 @@ use spectre_core::{
 };
 use spectre_core::{time::unix_now, warn};
 use spectre_hashes::Hash;
-use spectre_mining::manager::MiningManagerProxy;
 use spectre_mining::mempool::tx::{Orphan, Priority};
+use spectre_mining::{manager::MiningManagerProxy, mempool::tx::RbfPolicy};
 use spectre_notify::notifier::Notify;
 use spectre_p2p_lib::{
     common::ProtocolError,
@@ -618,14 +618,46 @@ impl FlowContext {
         transaction: Transaction,
         orphan: Orphan,
     ) -> Result<(), ProtocolError> {
-        let accepted_transactions =
-            self.mining_manager().clone().validate_and_insert_transaction(consensus, transaction, Priority::High, orphan).await?;
+        let transaction_insertion = self
+            .mining_manager()
+            .clone()
+            .validate_and_insert_transaction(consensus, transaction, Priority::High, orphan, RbfPolicy::Forbidden)
+            .await?;
         self.broadcast_transactions(
-            accepted_transactions.iter().map(|x| x.id()),
+            transaction_insertion.accepted.iter().map(|x| x.id()),
             false, // RPC transactions are considered high priority, so we don't want to throttle them
         )
         .await;
         Ok(())
+    }
+
+    /// Replaces the rpc-submitted transaction into the mempool and propagates it to peers.
+    ///
+    /// Returns the removed mempool transaction on successful replace by fee.
+    ///
+    /// Transactions submitted through rpc are considered high priority. This definition does not affect the tx selection algorithm
+    /// but only changes how we manage the lifetime of the tx. A high-priority tx does not expire and is repeatedly rebroadcasted to
+    /// peers
+    pub async fn submit_rpc_transaction_replacement(
+        &self,
+        consensus: &ConsensusProxy,
+        transaction: Transaction,
+    ) -> Result<Arc<Transaction>, ProtocolError> {
+        let transaction_insertion = self
+            .mining_manager()
+            .clone()
+            .validate_and_insert_transaction(consensus, transaction, Priority::High, Orphan::Forbidden, RbfPolicy::Mandatory)
+            .await?;
+        self.broadcast_transactions(
+            transaction_insertion.accepted.iter().map(|x| x.id()),
+            false, // RPC transactions are considered high priority, so we don't want to throttle them
+        )
+        .await;
+        // The combination of args above of Orphan::Forbidden and RbfPolicy::Mandatory should always result
+        // in a removed transaction returned, however we prefer failing gracefully in case of future internal mempool changes
+        transaction_insertion.removed.ok_or(ProtocolError::Other(
+            "Replacement transaction was actually accepted but the *replaced* transaction was not returned from the mempool",
+        ))
     }
 
     /// Returns true if the time has come for running the task cleaning mempool transactions.

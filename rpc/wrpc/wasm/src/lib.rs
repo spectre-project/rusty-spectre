@@ -1,3 +1,7 @@
+//!
+//! WASM bindings for the [Rusty Spectre p2p Node wRPC Client](spectre-wrpc-client)
+//!
+
 #![allow(unused_imports)]
 
 use cfg_if::cfg_if;

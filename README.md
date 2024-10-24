@@ -31,16 +31,16 @@ introducing CPU-only mining algorithm [SpectreX](https://github.com/spectre-proj
 SpectreX is based on [AstroBWTv3](https://github.com/deroproject/derohe/tree/main/astrobwt/astrobwtv3)
 and proof-of-work calculation is done in the following steps:
 
-* Step 1: SHA-3
-* Step 2: AstroBWTv3
-* Step 3: HeavyHash
+- Step 1: SHA-3
+- Step 2: AstroBWTv3
+- Step 3: HeavyHash
 
 Spectre will add full non-disclosable privacy and anonymous
 transactions in future implemented with the GhostFACE protocol
 build by a team of anonymous crypto algorithm researchers and
 engineers. Simple and plain goal:
 
-* PHANTOM Protocol + GhostDAG + GhostFACE = Spectre
+- PHANTOM Protocol + GhostDAG + GhostFACE = Spectre
 
 Spectre will become a ghostchain; nothing more, nothing less. Design
 decisions have been made already and more details about the GhostFACE
@@ -58,17 +58,17 @@ Why another fork? Kaspa is great but we love privacy, Monero and DERO
 are great but we love speed! So lets join the cool things from both.
 We decided to take Kaspa as codebase, quick comparison:
 
-Feature                      | Spectre  | Kaspa      | Monero  | DERO
------------------------------|----------|------------|---------|-----------
-PoW Algorithm                | SpectreX | kHeavyHash | RandomX | AstroBWTv3
-Balance Encryption           | Future   | No         | Yes     | Yes
-Transaction Encryption       | Future   | No         | Yes     | Yes
-Message Encyrption           | Future   | No         | No      | Yes
-Untraceable Transactions     | Future   | No         | Yes     | Yes
-Untraceable Mining           | Yes      | No         | No      | Yes
-Built-in multicore CPU-miner | Yes      | No         | Yes     | Yes
-High BPS                     | Yes      | Yes        | No      | No
-High TPS                     | Yes      | Yes        | No      | No
+| Feature                      | Spectre  | Kaspa      | Monero  | DERO       |
+| ---------------------------- | -------- | ---------- | ------- | ---------- |
+| PoW Algorithm                | SpectreX | kHeavyHash | RandomX | AstroBWTv3 |
+| Balance Encryption           | Future   | No         | Yes     | Yes        |
+| Transaction Encryption       | Future   | No         | Yes     | Yes        |
+| Message Encyrption           | Future   | No         | No      | Yes        |
+| Untraceable Transactions     | Future   | No         | Yes     | Yes        |
+| Untraceable Mining           | Yes      | No         | No      | Yes        |
+| Built-in multicore CPU-miner | Yes      | No         | Yes     | Yes        |
+| High BPS                     | Yes      | Yes        | No      | No         |
+| High TPS                     | Yes      | Yes        | No      | No         |
 
 Untraceable Mining is already achieved with AstroBWTv3 and a multicore
 miner is already being shipped with Spectre, working on ARM/x86. We
@@ -79,7 +79,7 @@ leave it up to the community to build an highly optimized CPU-miner.
 We love numbers, you will find a lot of mathematical constants in the
 source code, in the genesis hash, genesis payload, genesis merkle hash
 and more. Mathematical constants like [Pi](https://en.wikipedia.org/wiki/Pi),
-[E](https://en.wikipedia.org/wiki/E_(mathematical_constant)) and
+[E](<https://en.wikipedia.org/wiki/E_(mathematical_constant)>) and
 several prime numbers used as starting values for nonce or difficulty.
 The first released version is `0.3.14`, the famous Pi divided by 10.
 
@@ -92,19 +92,19 @@ Spectre full-node daemon, CLI wallet application, and testing
 utilities, all designed to promote decentralization. Here's an
 overview of the different builds:
 
-Build                 | Description
-----------------------|---------------------------------------------
-linux-gnu-aarch64     | Dynamically linked Linux (arm64)
-linux-gnu-powerpc64   | Dynamically linked Linux (ppc64)
-linux-gnu-powerpc64le | Dynamically linked Linux (ppc64le)
-linux-gnu-riscv64     | Dynamically linked Linux (riscv64)
-linux-gnu-amd64       | Dynamically linked Linux (x86_64)
-linux-musl-aarch64    | Statically linked Linux (arm64)
-linux-musl-amd64      | Statically linked Linux (x86_64)
-windows-gnullvm-amd64 | Windows version using GNU ABI from Clang/LLVM
-windows-msvc-amd64    | Windows version using Microsoft ABI, requires [MSVC runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170)
-macos-amd64           | macOS version for Intel-based systems
-macos-aarch64         | macOS version for Arm-based systems (M1, M2, etc.)
+| Build                 | Description                                                                                                                                          |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| linux-gnu-aarch64     | Dynamically linked Linux (arm64)                                                                                                                     |
+| linux-gnu-powerpc64   | Dynamically linked Linux (ppc64)                                                                                                                     |
+| linux-gnu-powerpc64le | Dynamically linked Linux (ppc64le)                                                                                                                   |
+| linux-gnu-riscv64     | Dynamically linked Linux (riscv64)                                                                                                                   |
+| linux-gnu-amd64       | Dynamically linked Linux (x86_64)                                                                                                                    |
+| linux-musl-aarch64    | Statically linked Linux (arm64)                                                                                                                      |
+| linux-musl-amd64      | Statically linked Linux (x86_64)                                                                                                                     |
+| windows-gnullvm-amd64 | Windows version using GNU ABI from Clang/LLVM                                                                                                        |
+| windows-msvc-amd64    | Windows version using Microsoft ABI, requires [MSVC runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) |
+| macos-amd64           | macOS version for Intel-based systems                                                                                                                |
+| macos-aarch64         | macOS version for Arm-based systems (M1, M2, etc.)                                                                                                   |
 
 The dynamically linked versions are always preferred for security
 reasons. However, for older Linux distributions, statically linked
@@ -146,24 +146,24 @@ the MSVC runtime EULA.
    llvm python3-clang
    ```
 
-3. Install the [rust toolchain](https://rustup.rs/)
-   
+4. Install the [rust toolchain](https://rustup.rs/)
+
    If you already have rust installed, update it by running:
    `rustup update`.
 
-4. Install wasm-pack
+5. Install wasm-pack
 
    ```bash
    cargo install wasm-pack
    ```
 
-4. Install wasm32 target
+6. Install wasm32 target
 
    ```bash
    rustup target add wasm32-unknown-unknown
-   ```      
+   ```
 
-5. Clone the repo
+7. Clone the repo
 
    ```bash
    git clone https://github.com/spectre-project/rusty-spectre
@@ -180,7 +180,7 @@ the MSVC runtime EULA.
 
    Add the `bin` directory of the LLVM installation
    (`C:\Program Files\LLVM\bin`) to PATH.
-    
+
    Set `LIBCLANG_PATH` environment variable to point to the `bin`
    directory as well.
 
@@ -193,9 +193,9 @@ the MSVC runtime EULA.
    WASM32 targets). Currently, the best way to address this, is as
    follows: after installing LLVM on Windows, go to the target `bin`
    installation directory and copy or rename `LLVM_AR.exe` to `AR.exe`.
-  
+
 4. Install the [rust toolchain](https://rustup.rs/)
-     
+
    If you already have rust installed, update it by running:
    `rustup update`.
 
@@ -209,7 +209,7 @@ the MSVC runtime EULA.
 
    ```bash
    rustup target add wasm32-unknown-unknown
-   ```      
+   ```
 
 7. Clone the repo
 
@@ -226,8 +226,8 @@ the MSVC runtime EULA.
    brew install protobuf
    ```
 
-2. Install LLVM. 
-  
+2. Install LLVM.
+
    The default XCode installation of `llvm` does not support WASM
    build targets. To build WASM on MacOS you need to install `llvm`
    from homebrew (at the time of writing, the llvm version for MacOS
@@ -272,7 +272,7 @@ the MSVC runtime EULA.
    ```
 
 3. Install the [rust toolchain](https://rustup.rs/)
-     
+
    If you already have rust installed, update it by running:
    `rustup update`.
 
@@ -282,13 +282,13 @@ the MSVC runtime EULA.
    cargo install wasm-pack
    ```
 
-4. Install wasm32 target
+5. Install wasm32 target
 
    ```bash
    rustup target add wasm32-unknown-unknown
    ```
 
-5. Clone the repo
+6. Clone the repo
 
    ```bash
    git clone https://github.com/spectre-project/rusty-spectre
@@ -358,7 +358,7 @@ cargo install basic-http-server
 basic-http-server
 ```
 
-The *basic-http-server* will serve on port 4000 by default, so open
+The _basic-http-server_ will serve on port 4000 by default, so open
 your web browser and load http://localhost:4000
 
 The framework is compatible with all major desktop and mobile browsers.
@@ -386,7 +386,7 @@ cargo run --release --bin spectred -- -C /path/to/configfile.toml
 ```
 
 - The config file should be a list of \<CLI argument\> = \<value\>
-  separated by newlines. 
+  separated by newlines.
 - Whitespace around the `=` is fine, `arg=value` and `arg = value`
   are both parsed correctly.
 - Values with special characters like `.` or `=` will require quoting
@@ -395,6 +395,7 @@ cargo run --release --bin spectred -- -C /path/to/configfile.toml
   like `addpeer = ["10.0.0.1", "1.2.3.4"]`.
 
 For example:
+
 ```
 testnet = true
 utxoindex = false

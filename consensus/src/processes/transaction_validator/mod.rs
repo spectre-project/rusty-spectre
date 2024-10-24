@@ -11,7 +11,7 @@ use spectre_txscript::{
     SigCacheKey,
 };
 
-use super::mass::MassCalculator;
+use spectre_consensus_core::mass::MassCalculator;
 
 #[derive(Clone)]
 pub struct TransactionValidator {

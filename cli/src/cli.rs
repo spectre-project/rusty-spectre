@@ -9,7 +9,7 @@ use spectre_daemon::{DaemonEvent, DaemonKind, Daemons};
 use spectre_wallet_core::account::Account;
 use spectre_wallet_core::rpc::DynRpcApi;
 use spectre_wallet_core::storage::{IdT, PrvKeyDataInfo};
-use spectre_wrpc_client::SpectreRpcClient;
+use spectre_wrpc_client::{Resolver, SpectreRpcClient};
 use workflow_core::channel::*;
 use workflow_core::time::Instant;
 use workflow_log::*;
@@ -103,7 +103,7 @@ impl SpectreCli {
     }
 
     pub async fn try_new_arc(options: Options) -> Result<Arc<Self>> {
-        let wallet = Arc::new(Wallet::try_new(Wallet::local_store()?, None, None)?);
+        let wallet = Arc::new(Wallet::try_new(Wallet::local_store()?, Some(Resolver::default()), None)?);
 
         let spectre_cli = Arc::new(SpectreCli {
             term: Arc::new(Mutex::new(None)),
@@ -312,7 +312,9 @@ impl SpectreCli {
                                 Events::SyncState { sync_state } => {
 
                                     if sync_state.is_synced() && this.wallet().is_open() {
-                                        if let Err(error) = this.wallet().reload(false).await {
+                                        let guard = this.wallet().guard();
+                                        let guard = guard.lock().await;
+                                        if let Err(error) = this.wallet().reload(false, &guard).await {
                                             terrorln!(this, "Unable to reload wallet: {error}");
                                         }
                                     }
@@ -384,8 +386,11 @@ impl SpectreCli {
                                     record
                                 } => {
                                     if !this.is_mutted() || (this.is_mutted() && this.flags.get(Track::Pending)) {
+                                        let guard = this.wallet.guard();
+                                        let guard = guard.lock().await;
+
                                         let include_utxos = this.flags.get(Track::Utxo);
-                                        let tx = record.format_transaction_with_state(&this.wallet,Some("reorg"),include_utxos).await;
+                                        let tx = record.format_transaction_with_state(&this.wallet,Some("reorg"),include_utxos, &guard).await;
                                         tx.iter().for_each(|line|tprintln!(this,"{NOTIFY} {line}"));
                                     }
                                 },
@@ -394,8 +399,11 @@ impl SpectreCli {
                                 } => {
                                     // Pending and coinbase stasis fall under the same `Track` category
                                     if !this.is_mutted() || (this.is_mutted() && this.flags.get(Track::Pending)) {
+                                        let guard = this.wallet.guard();
+                                        let guard = guard.lock().await;
+
                                         let include_utxos = this.flags.get(Track::Utxo);
-                                        let tx = record.format_transaction_with_state(&this.wallet,Some("stasis"),include_utxos).await;
+                                        let tx = record.format_transaction_with_state(&this.wallet,Some("stasis"),include_utxos, &guard).await;
                                         tx.iter().for_each(|line|tprintln!(this,"{NOTIFY} {line}"));
                                     }
                                 },
@@ -412,8 +420,11 @@ impl SpectreCli {
                                     record
                                 } => {
                                     if !this.is_mutted() || (this.is_mutted() && this.flags.get(Track::Pending)) {
+                                        let guard = this.wallet.guard();
+                                        let guard = guard.lock().await;
+
                                         let include_utxos = this.flags.get(Track::Utxo);
-                                        let tx = record.format_transaction_with_state(&this.wallet,Some("pending"),include_utxos).await;
+                                        let tx = record.format_transaction_with_state(&this.wallet,Some("pending"),include_utxos, &guard).await;
                                         tx.iter().for_each(|line|tprintln!(this,"{NOTIFY} {line}"));
                                     }
                                 },
@@ -421,8 +432,11 @@ impl SpectreCli {
                                     record
                                 } => {
                                     if !this.is_mutted() || (this.is_mutted() && this.flags.get(Track::Tx)) {
+                                        let guard = this.wallet.guard();
+                                        let guard = guard.lock().await;
+
                                         let include_utxos = this.flags.get(Track::Utxo);
-                                        let tx = record.format_transaction_with_state(&this.wallet,Some("confirmed"),include_utxos).await;
+                                        let tx = record.format_transaction_with_state(&this.wallet,Some("confirmed"),include_utxos, &guard).await;
                                         tx.iter().for_each(|line|tprintln!(this,"{NOTIFY} {line}"));
                                     }
                                 },
@@ -533,6 +547,9 @@ impl SpectreCli {
     }
 
     async fn select_account_with_args(&self, autoselect: bool) -> Result<Arc<dyn Account>> {
+        let guard = self.wallet.guard();
+        let guard = guard.lock().await;
+
         let mut selection = None;
 
         let mut list_by_key = Vec::<(Arc<PrvKeyDataInfo>, Vec<(usize, Arc<dyn Account>)>)>::new();
@@ -541,7 +558,7 @@ impl SpectreCli {
         let mut keys = self.wallet.keys().await?;
         while let Some(key) = keys.try_next().await? {
             let mut prv_key_accounts = Vec::new();
-            let mut accounts = self.wallet.accounts(Some(key.id)).await?;
+            let mut accounts = self.wallet.accounts(Some(key.id), &guard).await?;
             while let Some(account) = accounts.next().await {
                 let account = account?;
                 prv_key_accounts.push((flat_list.len(), account.clone()));
@@ -552,7 +569,17 @@ impl SpectreCli {
         }
 
         let mut watch_accounts = Vec::<(usize, Arc<dyn Account>)>::new();
-        let mut unfiltered_accounts = self.wallet.accounts(None).await?;
+        let mut unfiltered_accounts = self.wallet.accounts(None, &guard).await?;
+
+        while let Some(account) = unfiltered_accounts.try_next().await? {
+            if account.feature().is_some() {
+                watch_accounts.push((flat_list.len(), account.clone()));
+                flat_list.push(account.clone());
+            }
+        }
+
+        let mut watch_accounts = Vec::<(usize, Arc<dyn Account>)>::new();
+        let mut unfiltered_accounts = self.wallet.accounts(None, &guard).await?;
 
         while let Some(account) = unfiltered_accounts.try_next().await? {
             if account.feature().is_some() {
@@ -578,6 +605,16 @@ impl SpectreCli {
                     let ls_string = account.get_list_string().unwrap_or_else(|err| panic!("{err}"));
                     tprintln!(self, "    {seq}: {ls_string}");
                 })
+            });
+
+            if !watch_accounts.is_empty() {
+                tprintln!(self, "• watch-only");
+            }
+
+            watch_accounts.iter().for_each(|(seq, account)| {
+                let seq = style(seq.to_string()).cyan();
+                let ls_string = account.get_list_string().unwrap_or_else(|err| panic!("{err}"));
+                tprintln!(self, "    {seq}: {ls_string}");
             });
 
             if !watch_accounts.is_empty() {
@@ -664,12 +701,16 @@ impl SpectreCli {
     }
 
     pub async fn list(&self) -> Result<()> {
+        let guard = self.wallet.guard();
+        let guard = guard.lock().await;
+
         let mut keys = self.wallet.keys().await?;
 
         tprintln!(self);
         while let Some(key) = keys.try_next().await? {
             tprintln!(self, "• {}", style(&key).dim());
-            let mut accounts = self.wallet.accounts(Some(key.id)).await?;
+
+            let mut accounts = self.wallet.accounts(Some(key.id), &guard).await?;
             while let Some(account) = accounts.try_next().await? {
                 let receive_address = account.receive_address()?;
                 tprintln!(self, "    • {}", account.get_list_string()?);
@@ -677,7 +718,7 @@ impl SpectreCli {
             }
         }
 
-        let mut unfiltered_accounts = self.wallet.accounts(None).await?;
+        let mut unfiltered_accounts = self.wallet.accounts(None, &guard).await?;
         let mut feature_header_printed = false;
         while let Some(account) = unfiltered_accounts.try_next().await? {
             if let Some(feature) = account.feature() {
@@ -995,7 +1036,7 @@ mod panic_handler {
         fn stack(error: &Error) -> String;
     }
 
-    pub fn process(info: &std::panic::PanicInfo) -> String {
+    pub fn process(info: &std::panic::PanicHookInfo) -> String {
         let mut msg = info.to_string();
 
         // Add the error stack to our message.
@@ -1032,7 +1073,7 @@ mod panic_handler {
 impl SpectreCli {
     pub fn init_panic_hook(self: &Arc<Self>) {
         let this = self.clone();
-        let handler = move |info: &std::panic::PanicInfo| {
+        let handler = move |info: &std::panic::PanicHookInfo| {
             let msg = panic_handler::process(info);
             this.term().writeln(msg.crlf());
             panic_handler::console_error(msg);

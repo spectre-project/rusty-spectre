@@ -71,6 +71,7 @@ spectre-txscript.workspace = true
 spectre-utils.workspace = true
 spectre-wallet-keys.workspace = true
 spectre-wallet-macros.workspace = true
+spectre-wallet-psst.workspace = true
 spectre-wasm-core.workspace = true
 spectre-wrpc-client.workspace = true
 spectre-wrpc-wasm.workspace = true
@@ -125,5 +126,5 @@ serde_repr.workspace = true
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 tokio.workspace = true
 
-[lints.clippy]
-empty_docs = "allow"
+[lints]
+workspace = true

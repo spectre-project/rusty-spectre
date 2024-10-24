@@ -7,7 +7,7 @@ use rand_distr::{Distribution, Exp};
 use spectre_addresses::Address;
 use spectre_core::warn;
 use spectre_grpc_client::GrpcClient;
-use spectre_rpc_core::{api::rpc::RpcApi, GetBlockTemplateResponse, RpcBlock};
+use spectre_rpc_core::{api::rpc::RpcApi, GetBlockTemplateResponse, RpcRawBlock};
 use spectre_utils::triggers::SingleTrigger;
 use std::{
     cmp::max,
@@ -25,7 +25,7 @@ pub struct BlockMinerTask {
     client: Arc<GrpcClient>,
     bps: u64,
     block_count: usize,
-    sender: Sender<RpcBlock>,
+    sender: Sender<RpcRawBlock>,
     template: Arc<Mutex<GetBlockTemplateResponse>>,
     pay_address: Address,
     tx_counter: Arc<AtomicUsize>,
@@ -38,7 +38,7 @@ impl BlockMinerTask {
         client: Arc<GrpcClient>,
         bps: u64,
         block_count: usize,
-        sender: Sender<RpcBlock>,
+        sender: Sender<RpcRawBlock>,
         template: Arc<Mutex<GetBlockTemplateResponse>>,
         pay_address: Address,
         stopper: Stopper,
@@ -60,7 +60,7 @@ impl BlockMinerTask {
         client: Arc<GrpcClient>,
         bps: u64,
         block_count: usize,
-        sender: Sender<RpcBlock>,
+        sender: Sender<RpcRawBlock>,
         template: Arc<Mutex<GetBlockTemplateResponse>>,
         pay_address: Address,
         stopper: Stopper,
@@ -68,7 +68,7 @@ impl BlockMinerTask {
         Arc::new(Self::new(client, bps, block_count, sender, template, pay_address, stopper))
     }
 
-    pub fn sender(&self) -> Sender<RpcBlock> {
+    pub fn sender(&self) -> Sender<RpcRawBlock> {
         self.sender.clone()
     }
 

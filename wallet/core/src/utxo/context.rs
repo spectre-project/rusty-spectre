@@ -299,7 +299,7 @@ impl UtxoContext {
                 context.mature.sorted_insert_binary_asc_by_key(utxo_entry.clone(), |entry| entry.amount_as_ref());
             } else {
                 let params = NetworkParams::from(self.processor().network_id()?);
-                match utxo_entry.maturity(&params, current_daa_score) {
+                match utxo_entry.maturity(params, current_daa_score) {
                     Maturity::Stasis => {
                         context.stasis.insert(utxo_entry.id().clone(), utxo_entry.clone());
                         self.processor()
@@ -319,7 +319,7 @@ impl UtxoContext {
             }
             Ok(())
         } else {
-            log_warn!("ignoring duplicate utxo entry");
+            // log_warn!("Warning: Ignoring duplicate UTXO entry");
             Ok(())
         }
     }
@@ -347,7 +347,7 @@ impl UtxoContext {
                     remove_mature_ids.push(id);
                 }
             } else if context.outgoing.get(&utxo.transaction_id()).is_none() {
-                log_error!("Error: UTXO not found in UtxoContext map!");
+                // log_warm!("Warning: UTXO not found in UtxoContext map!");
             }
         }
 
@@ -374,10 +374,10 @@ impl UtxoContext {
                     context.mature.sorted_insert_binary_asc_by_key(utxo_entry.clone(), |entry| entry.amount_as_ref());
                 } else {
                     log_error!("Error: non-pending utxo promotion!");
-                    unreachable!("Error: non-pending utxo promotion!");
                 }
             }
 
+            // sanity check
             if self.context().outgoing.get(&txid).is_some() {
                 unreachable!("Error: promotion of the outgoing transaction!");
             }
@@ -421,14 +421,14 @@ impl UtxoContext {
             let mut context = self.context();
 
             let mut pending = vec![];
-            let mut mature = vec![];
+            let mut mature = Vec::with_capacity(utxo_entries.len());
 
             let params = NetworkParams::from(self.processor().network_id()?);
 
             for utxo_entry in utxo_entries.into_iter() {
                 if let std::collections::hash_map::Entry::Vacant(e) = context.map.entry(utxo_entry.id()) {
                     e.insert(utxo_entry.clone());
-                    match utxo_entry.maturity(&params, current_daa_score) {
+                    match utxo_entry.maturity(params, current_daa_score) {
                         Maturity::Stasis => {
                             context.stasis.insert(utxo_entry.id().clone(), utxo_entry.clone());
                             self.processor()
@@ -444,13 +444,15 @@ impl UtxoContext {
                         }
                         Maturity::Confirmed => {
                             mature.push(utxo_entry.clone());
-                            context.mature.sorted_insert_binary_asc_by_key(utxo_entry.clone(), |entry| entry.amount_as_ref());
                         }
                     }
                 } else {
                     log_warn!("ignoring duplicate utxo entry");
                 }
             }
+
+            context.mature.extend(mature.iter().cloned());
+            context.mature.sort_by_key(|entry| entry.amount());
 
             (pending, mature)
         };
@@ -513,7 +515,6 @@ impl UtxoContext {
         }
 
         let mature = (mature + consumed).saturating_sub(outgoing);
-
         Balance::new(mature, pending, outgoing_without_batch_tx, context.mature.len(), context.pending.len(), context.stasis.len())
     }
 
@@ -532,7 +533,7 @@ impl UtxoContext {
 
             let force_maturity_if_outgoing = outgoing_transaction.is_some();
             let is_coinbase_stasis =
-                utxos.first().map(|utxo| matches!(utxo.maturity(&params, current_daa_score), Maturity::Stasis)).unwrap_or_default();
+                utxos.first().map(|utxo| matches!(utxo.maturity(params, current_daa_score), Maturity::Stasis)).unwrap_or_default();
             let is_batch = outgoing_transaction.as_ref().map_or_else(|| false, |tx| tx.is_batch());
             if !is_batch {
                 for utxo in utxos.iter() {
@@ -572,22 +573,20 @@ impl UtxoContext {
         Ok(())
     }
 
-    pub(crate) async fn handle_utxo_removed(&self, mut utxos: Vec<UtxoEntryReference>, current_daa_score: u64) -> Result<()> {
+    pub(crate) async fn handle_utxo_removed(&self, utxos: Vec<UtxoEntryReference>, current_daa_score: u64) -> Result<()> {
         // remove UTXOs from account set
 
         let outgoing_transactions = self.processor().outgoing();
         #[allow(clippy::mutable_key_type)]
         let mut accepted_outgoing_transactions = HashSet::<OutgoingTransaction>::new();
 
-        utxos.retain(|utxo| {
+        for utxo in &utxos {
             for outgoing_transaction in outgoing_transactions.iter() {
                 if outgoing_transaction.utxo_entries().contains_key(&utxo.id()) {
                     accepted_outgoing_transactions.insert((*outgoing_transaction).clone());
-                    return false;
                 }
             }
-            true
-        });
+        }
 
         for accepted_outgoing_transaction in accepted_outgoing_transactions.into_iter() {
             if accepted_outgoing_transaction.is_batch() {

@@ -1,4 +1,7 @@
-use crate::{utils::combine_if_no_conflicts, KeySource, Version};
+//! Global PSST data.
+
+use crate::psst::{KeySource, Version};
+use crate::utils::combine_if_no_conflicts;
 use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 use spectre_consensus_core::tx::TransactionId;
@@ -10,6 +13,7 @@ use std::{
 type Xpub = spectre_bip32::ExtendedPublicKey<secp256k1::PublicKey>;
 
 #[derive(Debug, Clone, Builder, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[builder(default)]
 pub struct Global {
     /// The version number of this PSST.
@@ -33,6 +37,7 @@ pub struct Global {
     /// Proprietary key-value pairs for this output.
     pub proprietaries: BTreeMap<String, serde_value::Value>,
     /// Unknown key-value pairs for this output.
+    #[serde(flatten)]
     pub unknowns: BTreeMap<String, serde_value::Value>,
 }
 
