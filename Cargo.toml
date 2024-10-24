@@ -41,6 +41,7 @@ members = [
     "rpc/wrpc/proxy",
     "rpc/wrpc/wasm",
     "rpc/wrpc/examples/subscriber",
+    "rpc/wrpc/examples/simple_client",
     "mining",
     "mining/errors",
     "protocol/p2p",
@@ -61,8 +62,8 @@ members = [
 ]
 
 [workspace.package]
-rust-version = "1.80.0"
-version = "0.3.15"
+rust-version = "1.82.0"
+version = "0.3.16"
 authors = ["Spectre developers"]
 license = "ISC"
 repository = "https://github.com/spectre-project/rusty-spectre"
@@ -79,61 +80,61 @@ include = [
 ]
 
 [workspace.dependencies]
-# spectre-testing-integration = { version = "0.3.15", path = "testing/integration" }
-spectre-addresses = { version = "0.3.15", path = "crypto/addresses" }
-spectre-addressmanager = { version = "0.3.15", path = "components/addressmanager" }
-spectre-bip32 = { version = "0.3.15", path = "wallet/bip32" }
-spectre-cli = { version = "0.3.15", path = "cli" }
-spectre-connectionmanager = { version = "0.3.15", path = "components/connectionmanager" }
-spectre-consensus = { version = "0.3.15", path = "consensus" }
-spectre-consensus-core = { version = "0.3.15", path = "consensus/core" }
-spectre-consensus-client = { version = "0.3.15", path = "consensus/client" }
-spectre-consensus-notify = { version = "0.3.15", path = "consensus/notify" }
-spectre-consensus-wasm = { version = "0.3.15", path = "consensus/wasm" }
-spectre-consensusmanager = { version = "0.3.15", path = "components/consensusmanager" }
-spectre-core = { version = "0.3.15", path = "core" }
-spectre-daemon = { version = "0.3.15", path = "daemon" }
-spectre-database = { version = "0.3.15", path = "database" }
-spectre-grpc-client = { version = "0.3.15", path = "rpc/grpc/client" }
-spectre-grpc-core = { version = "0.3.15", path = "rpc/grpc/core" }
-spectre-grpc-server = { version = "0.3.15", path = "rpc/grpc/server" }
-spectre-hashes = { version = "0.3.15", path = "crypto/hashes" }
-spectre-index-core = { version = "0.3.15", path = "indexes/core" }
-spectre-index-processor = { version = "0.3.15", path = "indexes/processor" }
-spectre-math = { version = "0.3.15", path = "math" }
-spectre-merkle = { version = "0.3.15", path = "crypto/merkle" }
-spectre-metrics-core = { version = "0.3.15", path = "metrics/core" }
-spectre-mining = { version = "0.3.15", path = "mining" }
-spectre-mining-errors = { version = "0.3.15", path = "mining/errors" }
-spectre-muhash = { version = "0.3.15", path = "crypto/muhash" }
-spectre-notify = { version = "0.3.15", path = "notify" }
-spectre-p2p-flows = { version = "0.3.15", path = "protocol/flows" }
-spectre-p2p-lib = { version = "0.3.15", path = "protocol/p2p" }
-spectre-perf-monitor = { version = "0.3.15", path = "metrics/perf_monitor" }
-spectre-pow = { version = "0.3.15", path = "consensus/pow" }
-spectre-rpc-core = { version = "0.3.15", path = "rpc/core" }
-spectre-rpc-macros = { version = "0.3.15", path = "rpc/macros" }
-spectre-rpc-service = { version = "0.3.15", path = "rpc/service" }
-spectre-txscript = { version = "0.3.15", path = "crypto/txscript" }
-spectre-txscript-errors = { version = "0.3.15", path = "crypto/txscript/errors" }
-spectre-utils = { version = "0.3.15", path = "utils" }
-spectre-utils-tower = { version = "0.3.15", path = "utils/tower" }
-spectre-utxoindex = { version = "0.3.15", path = "indexes/utxoindex" }
-spectre-wallet = { version = "0.3.15", path = "wallet/native" }
-spectre-wallet-cli-wasm = { version = "0.3.15", path = "wallet/wasm" }
-spectre-wallet-keys = { version = "0.3.15", path = "wallet/keys" }
-spectre-wallet-psst = { version = "0.3.15", path = "wallet/psst" }
-spectre-wallet-core = { version = "0.3.15", path = "wallet/core" }
-spectre-wallet-macros = { version = "0.3.15", path = "wallet/macros" }
-spectre-wasm = { version = "0.3.15", path = "wasm" }
-spectre-wasm-core = { version = "0.3.15", path = "wasm/core" }
-spectre-wrpc-client = { version = "0.3.15", path = "rpc/wrpc/client" }
-spectre-wrpc-proxy = { version = "0.3.15", path = "rpc/wrpc/proxy" }
-spectre-wrpc-server = { version = "0.3.15", path = "rpc/wrpc/server" }
-spectre-wrpc-wasm = { version = "0.3.15", path = "rpc/wrpc/wasm" }
-spectre-wrpc-example-subscriber = { version = "0.3.15", path = "rpc/wrpc/examples/subscriber" }
-spectred = { version = "0.3.15", path = "spectred" }
-spectre-alloc = { version = "0.3.15", path = "utils/alloc" }
+# spectre-testing-integration = { version = "0.3.16", path = "testing/integration" }
+spectre-addresses = { version = "0.3.16", path = "crypto/addresses" }
+spectre-addressmanager = { version = "0.3.16", path = "components/addressmanager" }
+spectre-bip32 = { version = "0.3.16", path = "wallet/bip32" }
+spectre-cli = { version = "0.3.16", path = "cli" }
+spectre-connectionmanager = { version = "0.3.16", path = "components/connectionmanager" }
+spectre-consensus = { version = "0.3.16", path = "consensus" }
+spectre-consensus-core = { version = "0.3.16", path = "consensus/core" }
+spectre-consensus-client = { version = "0.3.16", path = "consensus/client" }
+spectre-consensus-notify = { version = "0.3.16", path = "consensus/notify" }
+spectre-consensus-wasm = { version = "0.3.16", path = "consensus/wasm" }
+spectre-consensusmanager = { version = "0.3.16", path = "components/consensusmanager" }
+spectre-core = { version = "0.3.16", path = "core" }
+spectre-daemon = { version = "0.3.16", path = "daemon" }
+spectre-database = { version = "0.3.16", path = "database" }
+spectre-grpc-client = { version = "0.3.16", path = "rpc/grpc/client" }
+spectre-grpc-core = { version = "0.3.16", path = "rpc/grpc/core" }
+spectre-grpc-server = { version = "0.3.16", path = "rpc/grpc/server" }
+spectre-hashes = { version = "0.3.16", path = "crypto/hashes" }
+spectre-index-core = { version = "0.3.16", path = "indexes/core" }
+spectre-index-processor = { version = "0.3.16", path = "indexes/processor" }
+spectre-math = { version = "0.3.16", path = "math" }
+spectre-merkle = { version = "0.3.16", path = "crypto/merkle" }
+spectre-metrics-core = { version = "0.3.16", path = "metrics/core" }
+spectre-mining = { version = "0.3.16", path = "mining" }
+spectre-mining-errors = { version = "0.3.16", path = "mining/errors" }
+spectre-muhash = { version = "0.3.16", path = "crypto/muhash" }
+spectre-notify = { version = "0.3.16", path = "notify" }
+spectre-p2p-flows = { version = "0.3.16", path = "protocol/flows" }
+spectre-p2p-lib = { version = "0.3.16", path = "protocol/p2p" }
+spectre-perf-monitor = { version = "0.3.16", path = "metrics/perf_monitor" }
+spectre-pow = { version = "0.3.16", path = "consensus/pow" }
+spectre-rpc-core = { version = "0.3.16", path = "rpc/core" }
+spectre-rpc-macros = { version = "0.3.16", path = "rpc/macros" }
+spectre-rpc-service = { version = "0.3.16", path = "rpc/service" }
+spectre-txscript = { version = "0.3.16", path = "crypto/txscript" }
+spectre-txscript-errors = { version = "0.3.16", path = "crypto/txscript/errors" }
+spectre-utils = { version = "0.3.16", path = "utils" }
+spectre-utils-tower = { version = "0.3.16", path = "utils/tower" }
+spectre-utxoindex = { version = "0.3.16", path = "indexes/utxoindex" }
+spectre-wallet = { version = "0.3.16", path = "wallet/native" }
+spectre-wallet-cli-wasm = { version = "0.3.16", path = "wallet/wasm" }
+spectre-wallet-keys = { version = "0.3.16", path = "wallet/keys" }
+spectre-wallet-psst = { version = "0.3.16", path = "wallet/psst" }
+spectre-wallet-core = { version = "0.3.16", path = "wallet/core" }
+spectre-wallet-macros = { version = "0.3.16", path = "wallet/macros" }
+spectre-wasm = { version = "0.3.16", path = "wasm" }
+spectre-wasm-core = { version = "0.3.16", path = "wasm/core" }
+spectre-wrpc-client = { version = "0.3.16", path = "rpc/wrpc/client" }
+spectre-wrpc-proxy = { version = "0.3.16", path = "rpc/wrpc/proxy" }
+spectre-wrpc-server = { version = "0.3.16", path = "rpc/wrpc/server" }
+spectre-wrpc-wasm = { version = "0.3.16", path = "rpc/wrpc/wasm" }
+spectre-wrpc-example-subscriber = { version = "0.3.16", path = "rpc/wrpc/examples/subscriber" }
+spectred = { version = "0.3.16", path = "spectred" }
+spectre-alloc = { version = "0.3.16", path = "utils/alloc" }
 
 # external
 aes = "0.8.3"
@@ -149,6 +150,7 @@ bincode = { version = "1.3.3", default-features = false }
 blake2b_simd = "1.0.2"
 borsh = { version = "1.5.1", features = ["derive", "rc"] }
 bs58 = { version = "0.5.0", features = ["check"], default-features = false }
+bytes = "1.7.1"
 cc = "1.0.83"
 cfb-mode = "0.8.2"
 cfg-if = "1.0.0"
@@ -187,6 +189,8 @@ hex-literal = "0.4.1"
 hexplay = "0.3.0"
 hmac = { version = "0.12.1", default-features = false }
 home = "0.5.5"
+http-body = "1.0.1"
+http-body-util = "0.1.2"
 igd-next = { version = "0.14.2", features = ["aio_tokio"] }
 indexmap = "2.1.0"
 intertrait = "0.2.2"
@@ -210,8 +214,7 @@ parking_lot = "0.12.1"
 paste = "1.0.14"
 pbkdf2 = "0.12.2"
 portable-atomic = { version = "1.5.1", features = ["float"] }
-prost = "0.12.1"
-# prost = "0.13.1"
+prost = "0.13.2"
 rand = "0.8.5"
 rand_chacha = "0.3.1"
 rand_core = { version = "0.6.4", features = ["std"] }
@@ -221,6 +224,7 @@ regex = "1.10.2"
 ripemd = { version = "0.1.3", default-features = false }
 rlimit = "0.10.1"
 rocksdb = "0.22.0"
+rv = "0.16.4"
 secp256k1 = { version = "0.29.0", features = [
     "global-context",
     "rand-std",
@@ -251,23 +255,22 @@ thiserror = "1.0.50"
 tokio = { version = "1.33.0", features = ["sync", "rt-multi-thread"] }
 tokio-stream = "0.1.14"
 toml = "0.8.8"
-tonic = { version = "0.10.2", features = ["tls", "gzip", "transport"] }
-tonic-build = { version = "0.10.2", features = ["prost"] }
+tonic = { version = "0.12.3", features = ["tls-webpki-roots", "gzip", "transport"] }
+tonic-build = { version = "0.12.3", features = ["prost"] }
 triggered = "0.1.2"
 uuid = { version = "1.5.0", features = ["v4", "fast-rng", "serde"] }
-wasm-bindgen = { version = "0.2.93", features = ["serde-serialize"] }
+wasm-bindgen = { version = "=0.2.93", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4.43"
 wasm-bindgen-test = "0.3.43"
 web-sys = "0.3.70"
 xxhash-rust = { version = "0.8.7", features = ["xxh3"] }
 zeroize = { version = "1.6.0", default-features = false, features = ["alloc"] }
 pin-project-lite = "0.2.13"
-tower-http = { version = "0.4.4", features = [
+tower-http = { version = "0.5.2", features = [
     "map-response-body",
     "map-request-body",
 ] }
-tower = "0.4.7"
-hyper = "0.14.27"
+tower = "0.5.1"
 chrono = "0.4.31"
 indexed_db_futures = "0.5.0"
 # workflow dependencies that are not a part of core libraries
@@ -275,20 +278,21 @@ indexed_db_futures = "0.5.0"
 # workflow-perf-monitor = { path = "../../../workflow-perf-monitor-rs" }
 workflow-perf-monitor = "0.0.2"
 nw-sys = "0.1.6"
+rustls = { version = "0.23", default-features = false, features = ["ring"] }
 
 # workflow dependencies
-workflow-core = { version = "0.17.0" }
-workflow-d3 = { version = "0.17.0" }
-workflow-dom = { version = "0.17.0" }
-workflow-http = { version = "0.17.0" }
-workflow-log = { version = "0.17.0" }
-workflow-node = { version = "0.17.0" }
-workflow-nw = { version = "0.17.0" }
-workflow-rpc = { version = "0.17.0" }
-workflow-serializer = { version = "0.17.0" }
-workflow-store = { version = "0.17.0" }
-workflow-terminal = { version = "0.17.0" }
-workflow-wasm = { version = "0.17.0" }
+workflow-core = { version = "0.18.0" }
+workflow-d3 = { version = "0.18.0" }
+workflow-dom = { version = "0.18.0" }
+workflow-http = { version = "0.18.0", default-features = false, features = ["rustls-tls-webpki-roots", "http2", "charset", "macos-system-configuration"] }
+workflow-log = { version = "0.18.0" }
+workflow-node = { version = "0.18.0" }
+workflow-nw = { version = "0.18.0" }
+workflow-rpc = { version = "0.18.0", default-features = false, features = ["rustls-tls-webpki-roots"] }
+workflow-serializer = { version = "0.18.0" }
+workflow-store = { version = "0.18.0" }
+workflow-terminal = { version = "0.18.0" }
+workflow-wasm = { version = "0.18.0" }
 
 # if below is enabled, this means that there is an ongoing work
 # on the workflow-rs crate. This requires that you clone workflow-rs
@@ -296,25 +300,27 @@ workflow-wasm = { version = "0.17.0" }
 # workflow-core = { path = "../workflow-rs/core" }
 # workflow-d3 = { path = "../workflow-rs/d3" }
 # workflow-dom = { path = "../workflow-rs/dom" }
-# workflow-http = { path = "../workflow-rs/http" }
+# # Same features as default but with rustls-tls-webpki-roots instead of native-tls
+# workflow-http = { path = "../workflow-rs/http", default-features = false, features = ["rustls-tls-webpki-roots", "http2", "charset", "macos-system-configuration"] }
 # workflow-log = { path = "../workflow-rs/log" }
 # workflow-node = { path = "../workflow-rs/node" }
 # workflow-nw = { path = "../workflow-rs/nw" }
-# workflow-rpc = { path = "../workflow-rs/rpc" }
+# workflow-rpc = { path = "../workflow-rs/rpc", default-features = false, features = ["rustls-tls-webpki-roots"] }
 # workflow-serializer = { path = "../workflow-rs/serializer" }
 # workflow-store = { path = "../workflow-rs/store" }
 # workflow-terminal = { path = "../workflow-rs/terminal" }
 # workflow-wasm = { path = "../workflow-rs/wasm" }
 
+
 # ---
 # workflow-core = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
 # workflow-d3 = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
 # workflow-dom = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
-# workflow-http = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
+# workflow-http = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master", default-features = false, features = ["rustls-tls-webpki-roots", "http2", "charset", "macos-system-configuration"] }
 # workflow-log = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
 # workflow-node = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
 # workflow-nw = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
-# workflow-rpc = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
+# workflow-rpc = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master", default-features = false, features = ["rustls-tls-webpki-roots"]  }
 # workflow-serializer = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
 # workflow-store = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }
 # workflow-terminal = { git = "https://github.com/workflow-rs/workflow-rs.git", branch = "master" }

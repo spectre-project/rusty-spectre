@@ -1,3 +1,10 @@
+//!
+//! # Spectre Wallet Keys
+//!
+//! This crate provides tools for creating and managing Spectre wallet keys.
+//! This includes extended key generation and derivation.
+//!
+
 pub mod derivation;
 pub mod derivation_path;
 pub mod error;

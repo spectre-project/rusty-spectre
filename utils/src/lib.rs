@@ -1,3 +1,9 @@
+//!
+//! # Spectre Utilities
+//!
+//! General purpose utilities and various type extensions used across the Rusty Spectre codebase.
+//!
+
 pub mod any;
 pub mod arc;
 pub mod binary_heap;

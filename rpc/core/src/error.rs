@@ -1,3 +1,7 @@
+//!
+//! [`RpcError`] enum used by RPC primitives.
+//!
+
 use spectre_consensus_core::{subnets::SubnetworkConversionError, tx::TransactionId};
 use spectre_utils::networking::IpAddress;
 use std::{net::AddrParseError, num::TryFromIntError};

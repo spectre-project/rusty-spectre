@@ -1,3 +1,9 @@
+//!
+//! Conversion functions for converting between
+//! the [`spectre_consensus_client`], [`spectre_consensus_core`]
+//! and [`spectre_wallet_psst`](crate) types.
+//!
+
 use crate::error::Error;
 use crate::input::{Input, InputBuilder};
 use crate::output::{Output, OutputBuilder};

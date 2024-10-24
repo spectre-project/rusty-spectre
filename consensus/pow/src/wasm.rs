@@ -91,11 +91,9 @@ impl PoW {
     }
 }
 
-// https://github.com/tmrlvi/spectre-miner/blob/bf361d02a46c580f55f46b5dfa773477634a5753/src/client/stratum.rs#L36
 const DIFFICULTY_1_TARGET: (u64, i16) = (0xffffu64, 208); // 0xffff 2^208
 
-/// Calculates target from difficulty, based on set_difficulty function on
-/// <https://github.com/tmrlvi/spectre-miner/blob/bf361d02a46c580f55f46b5dfa773477634a5753/src/client/stratum.rs#L375>
+/// Calculates target from difficulty
 /// @category Mining
 #[wasm_bindgen(js_name = calculateTarget)]
 pub fn calculate_target(difficulty: f32) -> Result<BigInt> {

@@ -1,3 +1,5 @@
+//! Conversion functions for UTXO related types.
+
 use crate::RpcUtxoEntry;
 use crate::RpcUtxosByAddressesEntry;
 use spectre_addresses::Prefix;

@@ -1,5 +1,5 @@
 /*!
-# `rusty-spectre WASM32 bindings`
+# Rusty Spectre WASM32 bindings
 
 [<img alt="github" src="https://img.shields.io/badge/github-spectre--project/rusty--spectre-8da0cb?style=for-the-badge&labelColor=555555&color=8da0cb&logo=github" height="20">](https://github.com/spectre-project/rusty-spectre/tree/main/wasm)
 [<img alt="crates.io" src="https://img.shields.io/crates/v/spectre-wasm.svg?maxAge=2592000&style=for-the-badge&color=fc8d62&logo=rust" height="20">](https://crates.io/crates/spectre-wasm)
@@ -22,9 +22,10 @@ to the 'snake_case' convention in Rust.
 
 The APIs are currently separated into the following groups (this will be expanded in the future):
 
-- **Transaction API** — Bindings for primitives related to transactions.
-- **RPC API** — [RPC interface bindings](rpc) for the Spectre node using WebSocket (wRPC) connections.
-- **Wallet API** — API for async core wallet processing tasks.
+- **Consensus Client API** — Bindings for primitives related to transactions.
+- **RPC API** — [RPC interface bindings](spectre_wrpc_wasm::client) for the Spectre node using WebSocket (wRPC) connections.
+- **Wallet SDK** — API for async core wallet processing tasks.
+- **Wallet API** — A rust implementation of the fully-featured wallet usable in the native Rust, Browser or NodeJs and Bun environments.
 
 ## NPM Modules
 
@@ -40,6 +41,9 @@ of a native WebSocket in NodeJs environment, while
 the `spectre` module includes `websocket` package dependency simulating
 the W3C WebSocket and due to this supports RPC.
 
+NOTE: for security reasons it is always recommended to build WASM SDK from source or
+download pre-built redistributables from releases or development builds.
+
 ## Examples
 
 JavaScript examples for using this framework can be found at:
@@ -52,6 +56,10 @@ framework please see the releases section of the Rusty Spectre
 repository at <https://github.com/spectre-project/rusty-spectre/releases>.
 
 ## Using RPC
+
+No special handling is required to use the RPC client
+in **Browser** or **Bun** environments due to the fact that
+these environments provide native WebSocket support.
 
 **NODEJS:** If you are building from source, to use WASM RPC client
 in the NodeJS environment, you need to introduce a global W3C WebSocket
@@ -207,7 +215,6 @@ cfg_if::cfg_if! {
 
         pub use spectre_addresses::{Address, Version as AddressVersion};
         pub use spectre_wallet_keys::prelude::*;
-        pub use spectre_bip32::*;
         pub use spectre_wasm_core::types::*;
 
     }

@@ -578,6 +578,16 @@ impl SpectreCli {
             }
         }
 
+        let mut watch_accounts = Vec::<(usize, Arc<dyn Account>)>::new();
+        let mut unfiltered_accounts = self.wallet.accounts(None, &guard).await?;
+
+        while let Some(account) = unfiltered_accounts.try_next().await? {
+            if account.feature().is_some() {
+                watch_accounts.push((flat_list.len(), account.clone()));
+                flat_list.push(account.clone());
+            }
+        }
+
         if flat_list.is_empty() {
             return Err(Error::NoAccounts);
         } else if autoselect && flat_list.len() == 1 {
@@ -595,6 +605,16 @@ impl SpectreCli {
                     let ls_string = account.get_list_string().unwrap_or_else(|err| panic!("{err}"));
                     tprintln!(self, "    {seq}: {ls_string}");
                 })
+            });
+
+            if !watch_accounts.is_empty() {
+                tprintln!(self, "• watch-only");
+            }
+
+            watch_accounts.iter().for_each(|(seq, account)| {
+                let seq = style(seq.to_string()).cyan();
+                let ls_string = account.get_list_string().unwrap_or_else(|err| panic!("{err}"));
+                tprintln!(self, "    {seq}: {ls_string}");
             });
 
             if !watch_accounts.is_empty() {

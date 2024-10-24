@@ -1,3 +1,7 @@
+//!
+//! WASM interfaces and conversion to and from RPC messages.
+//!
+
 #![allow(non_snake_case)]
 use crate::error::RpcError as Error;
 use crate::error::RpcResult as Result;
@@ -1454,8 +1458,8 @@ try_from! ( args: ISubmitTransactionRequest, SubmitTransactionRequest, {
     } else {
         let tx = Transaction::try_cast_from(&transaction)?;
         SubmitTransactionRequest {
-          transaction : tx.as_ref().into(),
-          allow_orphan,
+            transaction : tx.as_ref().into(),
+            allow_orphan,
         }
     };
     Ok(request)

@@ -1,3 +1,7 @@
+//!
+//! Extended public key ([`XPub`]).
+//!
+
 use spectre_bip32::{ChainCode, KeyFingerprint, Prefix};
 use std::{fmt, str::FromStr};
 

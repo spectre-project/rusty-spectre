@@ -1,3 +1,7 @@
+//!
+//! RPC Operations used to identify RPC methods during transport and in various RPC-related macros.
+//!
+
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
 use spectre_notify::events::EventType;
