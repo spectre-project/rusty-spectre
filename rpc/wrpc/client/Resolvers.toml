@@ -1,7 +1,12 @@
 [[resolver]]
-url = "https://beacon.spectre-network.org"
 enable = true
+address = "https://resolver.spectre-network.org"
 
 [[resolver]]
-url = "http://127.0.0.1:8888"
 enable = false
+address = "http://127.0.0.1:8888"
+
+[[group]]
+enable = false
+template = "https://*."
+nodes = ["rudy", "todd", "clay", "walt"]

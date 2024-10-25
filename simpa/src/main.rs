@@ -21,7 +21,12 @@ use spectre_consensus_core::{
     BlockHashSet, BlockLevel, HashMapCustomHasher,
 };
 use spectre_consensus_notify::root::ConsensusNotificationRoot;
-use spectre_core::{info, task::service::AsyncService, task::tick::TickService, time::unix_now, trace, warn};
+use spectre_core::{
+    info,
+    task::{service::AsyncService, tick::TickService},
+    time::unix_now,
+    trace, warn,
+};
 use spectre_database::prelude::ConnBuilder;
 use spectre_database::{create_temp_db, load_existing_db};
 use spectre_hashes::Hash;
@@ -78,7 +83,7 @@ struct Args {
     ram_scale: f64,
 
     /// Logging level for all subsystems {off, error, warn, info, debug, trace}
-    ///  -- You may also specify <subsystem>=<level>,<subsystem2>=<level>,... to set the log level for individual subsystems
+    ///  -- You may also specify `<subsystem>=<level>,<subsystem2>=<level>,...` to set the log level for individual subsystems
     #[arg(long = "loglevel", default_value = format!("info,{}=trace", env!("CARGO_PKG_NAME")))]
     log_level: String,
 
@@ -133,7 +138,13 @@ fn main() {
     let args = Args::parse();
 
     // Initialize the logger
-    spectre_core::log::init_logger(None, &args.log_level);
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "semaphore-trace")] {
+            spectre_core::log::init_logger(None, &format!("{},{}=debug", args.log_level, spectre_utils::sync::semaphore_module_path()));
+        } else {
+            spectre_core::log::init_logger(None, &args.log_level);
+        }
+    };
 
     // Configure the panic behavior
     // As we log the panic, we want to set it up after the logger

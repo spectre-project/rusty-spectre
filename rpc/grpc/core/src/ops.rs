@@ -61,6 +61,7 @@ pub enum SpectredPayloadOps {
     GetConnectedPeerInfo,
     AddPeer,
     SubmitTransaction,
+    SubmitTransactionReplacement,
     GetSubnetwork,
     GetVirtualChainFromBlock,
     GetBlockCount,
@@ -78,9 +79,14 @@ pub enum SpectredPayloadOps {
     GetCoinSupply,
     Ping,
     GetMetrics,
+    GetConnections,
+    GetSystemInfo,
     GetServerInfo,
     GetSyncStatus,
     GetDaaScoreTimestampEstimate,
+    GetFeeEstimate,
+    GetFeeEstimateExperimental,
+    GetCurrentBlockColor,
 
     // Subscription commands for starting/stopping notifications
     NotifyBlockAdded,

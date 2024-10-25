@@ -1,10 +1,7 @@
 use super::BlockBodyProcessor;
 use crate::{
     errors::{BlockProcessResult, RuleError},
-    model::{
-        services::reachability::ReachabilityService,
-        stores::{ghostdag::GhostdagStoreReader, pruning::PruningStoreReader, statuses::StatusesStoreReader},
-    },
+    model::stores::{ghostdag::GhostdagStoreReader, statuses::StatusesStoreReader},
     processes::window::WindowManager,
 };
 use spectre_consensus_core::block::Block;
@@ -15,27 +12,9 @@ use std::sync::Arc;
 
 impl BlockBodyProcessor {
     pub fn validate_body_in_context(self: &Arc<Self>, block: &Block) -> BlockProcessResult<()> {
-        self.check_block_is_not_pruned(block)?;
         self.check_parent_bodies_exist(block)?;
         self.check_coinbase_blue_score_and_subsidy(block)?;
         self.check_block_transactions_in_context(block)
-    }
-
-    fn check_block_is_not_pruned(self: &Arc<Self>, _block: &Block) -> BlockProcessResult<()> {
-        match self.statuses_store.read().get(_block.hash()).unwrap_option() {
-            Some(_) => {
-                let Some(pp) = self.pruning_point_store.read().pruning_point().unwrap_option() else {
-                    return Ok(());
-                };
-
-                if self.reachability_service.is_dag_ancestor_of(_block.hash(), pp) {
-                    Err(RuleError::PrunedBlock)
-                } else {
-                    Ok(())
-                }
-            }
-            None => Ok(()),
-        }
     }
 
     fn check_block_transactions_in_context(self: &Arc<Self>, block: &Block) -> BlockProcessResult<()> {
@@ -50,12 +29,6 @@ impl BlockBodyProcessor {
     }
 
     fn check_parent_bodies_exist(self: &Arc<Self>, block: &Block) -> BlockProcessResult<()> {
-        // TODO: Skip this check for blocks in PP anticone that comes as part of the pruning proof.
-
-        if block.header.direct_parents().len() == 1 && block.header.direct_parents()[0] == self.genesis.hash {
-            return Ok(());
-        }
-
         let statuses_read_guard = self.statuses_store.read();
         let missing: Vec<Hash> = block
             .header
@@ -64,7 +37,7 @@ impl BlockBodyProcessor {
             .copied()
             .filter(|parent| {
                 let status_option = statuses_read_guard.get(*parent).unwrap_option();
-                status_option.is_none_or(|s| !s.has_block_body())
+                status_option.is_none_or_ex(|s| !s.has_block_body())
             })
             .collect();
         if !missing.is_empty() {
@@ -108,12 +81,16 @@ mod tests {
     };
     use spectre_consensus_core::{
         api::ConsensusApi,
-        merkle::calc_hash_merkle_root,
+        merkle::calc_hash_merkle_root as calc_hash_merkle_root_with_options,
         subnets::SUBNETWORK_ID_NATIVE,
         tx::{Transaction, TransactionInput, TransactionOutpoint},
     };
     use spectre_core::assert_match;
     use spectre_hashes::Hash;
+
+    fn calc_hash_merkle_root<'a>(txs: impl ExactSizeIterator<Item = &'a Transaction>) -> Hash {
+        calc_hash_merkle_root_with_options(txs, false)
+    }
 
     #[tokio::test]
     async fn validate_body_in_context_test() {

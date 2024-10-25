@@ -36,6 +36,7 @@ pub mod spectred_request_convert {
     impl_into_spectred_request!(GetConnectedPeerInfo);
     impl_into_spectred_request!(AddPeer);
     impl_into_spectred_request!(SubmitTransaction);
+    impl_into_spectred_request!(SubmitTransactionReplacement);
     impl_into_spectred_request!(GetSubnetwork);
     impl_into_spectred_request!(GetVirtualChainFromBlock);
     impl_into_spectred_request!(GetBlocks);
@@ -54,9 +55,14 @@ pub mod spectred_request_convert {
     impl_into_spectred_request!(GetCoinSupply);
     impl_into_spectred_request!(Ping);
     impl_into_spectred_request!(GetMetrics);
+    impl_into_spectred_request!(GetConnections);
+    impl_into_spectred_request!(GetSystemInfo);
     impl_into_spectred_request!(GetServerInfo);
     impl_into_spectred_request!(GetSyncStatus);
     impl_into_spectred_request!(GetDaaScoreTimestampEstimate);
+    impl_into_spectred_request!(GetFeeEstimate);
+    impl_into_spectred_request!(GetFeeEstimateExperimental);
+    impl_into_spectred_request!(GetCurrentBlockColor);
 
     impl_into_spectred_request!(NotifyBlockAdded);
     impl_into_spectred_request!(NotifyNewBlockTemplate);
@@ -167,6 +173,7 @@ pub mod spectred_response_convert {
     impl_into_spectred_response!(GetConnectedPeerInfo);
     impl_into_spectred_response!(AddPeer);
     impl_into_spectred_response!(SubmitTransaction);
+    impl_into_spectred_response!(SubmitTransactionReplacement);
     impl_into_spectred_response!(GetSubnetwork);
     impl_into_spectred_response!(GetVirtualChainFromBlock);
     impl_into_spectred_response!(GetBlocks);
@@ -185,9 +192,14 @@ pub mod spectred_response_convert {
     impl_into_spectred_response!(GetCoinSupply);
     impl_into_spectred_response!(Ping);
     impl_into_spectred_response!(GetMetrics);
+    impl_into_spectred_response!(GetConnections);
+    impl_into_spectred_response!(GetSystemInfo);
     impl_into_spectred_response!(GetServerInfo);
     impl_into_spectred_response!(GetSyncStatus);
     impl_into_spectred_response!(GetDaaScoreTimestampEstimate);
+    impl_into_spectred_response!(GetFeeEstimate);
+    impl_into_spectred_response!(GetFeeEstimateExperimental);
+    impl_into_spectred_response!(GetCurrentBlockColor);
 
     impl_into_spectred_notify_response!(NotifyBlockAdded);
     impl_into_spectred_notify_response!(NotifyNewBlockTemplate);

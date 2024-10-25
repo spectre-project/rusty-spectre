@@ -30,6 +30,7 @@ spectre-muhash.workspace = true
 spectre-notify.workspace = true
 spectre-pow.workspace = true
 spectre-txscript.workspace = true
+spectre-txscript-errors.workspace = true
 spectre-utils.workspace = true
 log.workspace = true
 once_cell.workspace = true
@@ -53,9 +54,14 @@ serde_json.workspace = true
 flate2.workspace = true
 rand_distr.workspace = true
 spectre-txscript-errors.workspace = true
+spectre-addresses.workspace = true
 
 [[bench]]
-name = "hash_benchmarks"
+name = "parallel_muhash"
+harness = false
+
+[[bench]]
+name = "check_scripts"
 harness = false
 
 [features]

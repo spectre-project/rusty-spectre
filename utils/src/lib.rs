@@ -1,7 +1,14 @@
+//!
+//! # Spectre Utilities
+//!
+//! General purpose utilities and various type extensions used across the Rusty Spectre codebase.
+//!
+
 pub mod any;
 pub mod arc;
 pub mod binary_heap;
 pub mod channel;
+pub mod expiring_cache;
 pub mod hashmap;
 pub mod hex;
 pub mod iter;
@@ -191,4 +198,9 @@ pub mod sync;
 pub mod triggers;
 pub mod vec;
 
+pub mod git;
+
+#[cfg(not(target_arch = "wasm32"))]
 pub mod fd_budget;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod sysinfo;

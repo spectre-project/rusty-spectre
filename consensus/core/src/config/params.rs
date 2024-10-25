@@ -346,7 +346,11 @@ pub const MAINNET_PARAMS: Params = Params {
 };
 
 pub const TESTNET_PARAMS: Params = Params {
-    dns_seeders: &[],
+    dns_seeders: &[
+        // Official DNS seeders.
+        "testnet-dnsseed-1.spectre-network.org",
+        "testnet-dnsseed-2.spectre-network.org",
+    ],
     net: NetworkId::with_suffix(NetworkType::Testnet, 10),
     genesis: TESTNET_GENESIS,
     ghostdag_k: LEGACY_DEFAULT_GHOSTDAG_K,
@@ -400,7 +404,11 @@ pub const TESTNET_PARAMS: Params = Params {
 };
 
 pub const TESTNET11_PARAMS: Params = Params {
-    dns_seeders: &[],
+    dns_seeders: &[
+        // Official DNS seeders.
+        "testnet11-dnsseed-1.spectre-network.org",
+        "testnet11-dnsseed-2.spectre-network.org",
+    ],
     net: NetworkId::with_suffix(NetworkType::Testnet, 11),
     genesis: TESTNET11_GENESIS,
     legacy_timestamp_deviation_tolerance: LEGACY_TIMESTAMP_DEVIATION_TOLERANCE,
@@ -472,7 +480,8 @@ pub const SIMNET_PARAMS: Params = Params {
     target_time_per_block: Testnet11Bps::target_time_per_block(),
     past_median_time_sample_rate: Testnet11Bps::past_median_time_sample_rate(),
     difficulty_sample_rate: Testnet11Bps::difficulty_adjustment_sample_rate(),
-    max_block_parents: Testnet11Bps::max_block_parents(),
+    // For simnet, we deviate from TN11 configuration and allow at least 64 parents in order to support mempool benchmarks out of the box
+    max_block_parents: if Testnet11Bps::max_block_parents() > 64 { Testnet11Bps::max_block_parents() } else { 64 },
     mergeset_size_limit: Testnet11Bps::mergeset_size_limit(),
     merge_depth: Testnet11Bps::merge_depth_bound(),
     finality_depth: Testnet11Bps::finality_depth(),

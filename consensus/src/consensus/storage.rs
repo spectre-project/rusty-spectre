@@ -31,7 +31,7 @@ use parking_lot::RwLock;
 use spectre_consensus_core::{blockstatus::BlockStatus, BlockHashSet};
 use spectre_database::registry::DatabaseStorePrefixes;
 use spectre_hashes::Hash;
-use std::{mem::size_of, ops::DerefMut, sync::Arc};
+use std::{ops::DerefMut, sync::Arc};
 
 pub struct ConsensusStorage {
     // DB

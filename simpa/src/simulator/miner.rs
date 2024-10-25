@@ -7,10 +7,10 @@ use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use spectre_consensus::consensus::Consensus;
 use spectre_consensus::model::stores::virtual_state::VirtualStateStoreReader;
 use spectre_consensus::params::Params;
-use spectre_consensus::processes::mass::MassCalculator;
 use spectre_consensus_core::api::ConsensusApi;
 use spectre_consensus_core::block::{Block, TemplateBuildMode, TemplateTransactionSelector};
 use spectre_consensus_core::coinbase::MinerData;
+use spectre_consensus_core::mass::{Kip9Version, MassCalculator};
 use spectre_consensus_core::sign::sign;
 use spectre_consensus_core::subnets::SUBNETWORK_ID_NATIVE;
 use spectre_consensus_core::tx::{
@@ -151,10 +151,7 @@ impl Miner {
             .into_par_iter()
             .map(|mutable_tx| {
                 let signed_tx = sign(mutable_tx, schnorr_key);
-                let mass = self
-                    .mass_calculator
-                    .calc_tx_overall_mass(&signed_tx.as_verifiable(), None, spectre_consensus::processes::mass::Kip9Version::Alpha)
-                    .unwrap();
+                let mass = self.mass_calculator.calc_tx_overall_mass(&signed_tx.as_verifiable(), None, Kip9Version::Alpha).unwrap();
                 signed_tx.tx.set_mass(mass);
                 let mut signed_tx = signed_tx.tx;
                 signed_tx.finalize();
