@@ -58,6 +58,8 @@ jobs:
       - name: Install zig on Linux
         if: runner.os == 'Linux'
         uses: goto-bus-stop/setup-zig@v2 # needed for cargo-zigbuild
+        with:
+          version: 0.13.0
 
       - name: Install protoc on Linux
         if: runner.os == 'Linux'

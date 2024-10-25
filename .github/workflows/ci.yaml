@@ -347,6 +347,8 @@ jobs:
       - name: Install zig
         if: runner.os == 'Linux'
         uses: goto-bus-stop/setup-zig@v2 # needed for cargo-zigbuild
+        with:
+          version: 0.13.0
 
       - name: Build on Linux
         if: runner.os == 'Linux'
