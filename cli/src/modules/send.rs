@@ -53,7 +53,7 @@ impl Send {
 
         tprintln!(ctx, "Transaction sent - {summary}");
         tprintln!(ctx, "\nSending {} SPR to {address}, transaction IDs:", sompi_to_spectre_string(amount_sompi));
-        // tprintln!(ctx, "{}\n", ids.into_iter().map(|a| a.to_string()).collect::<Vec<_>>().join("\n"));
+        tprintln!(ctx, "\n{}\n", _ids.into_iter().map(|a| a.to_string()).collect::<Vec<_>>().join("\n"));
 
         Ok(())
     }
