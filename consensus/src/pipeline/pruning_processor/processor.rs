@@ -284,7 +284,7 @@ impl PruningProcessor {
             let mut batch = WriteBatch::default();
             // At this point keep_relations only holds level-0 relations which is the correct filtering criteria for primary GHOSTDAG
             for kept in keep_relations.keys().copied() {
-                let Some(ghostdag) = self.ghostdag_primary_store.get_data(kept).unwrap_option() else {
+                let Some(ghostdag) = self.ghostdag_store.get_data(kept).unwrap_option() else {
                     continue;
                 };
                 if ghostdag.unordered_mergeset().any(|h| !keep_relations.contains_key(&h)) {
@@ -296,7 +296,7 @@ impl PruningProcessor {
                         mutable_ghostdag.selected_parent = ORIGIN;
                     }
                     counter += 1;
-                    self.ghostdag_primary_store.update_batch(&mut batch, kept, &Arc::new(mutable_ghostdag.into())).unwrap();
+                    self.ghostdag_store.update_batch(&mut batch, kept, &Arc::new(mutable_ghostdag.into())).unwrap();
                 }
             }
             self.db.write(batch).unwrap();

@@ -120,7 +120,7 @@ impl TestConsensus {
         let mut header = header_from_precomputed_hash(hash, Default::default());
         let parents_by_level = self.consensus.services.parents_manager.calc_block_parents(self.pruning_point(), &parents);
         header.parents_by_level = parents_by_level;
-        let ghostdag_data = self.consensus.services.ghostdag_primary_manager.ghostdag(header.direct_parents());
+        let ghostdag_data = self.consensus.services.ghostdag_manager.ghostdag(header.direct_parents());
         header.pruning_point = self
             .consensus
             .services
@@ -215,7 +215,7 @@ impl TestConsensus {
     }
 
     pub fn ghostdag_store(&self) -> &Arc<DbGhostdagStore> {
-        &self.consensus.ghostdag_primary_store
+        &self.consensus.ghostdag_store
     }
 
     pub fn reachability_store(&self) -> &Arc<RwLock<DbReachabilityStore>> {
@@ -247,7 +247,7 @@ impl TestConsensus {
     }
 
     pub fn ghostdag_manager(&self) -> &DbGhostdagManager {
-        &self.consensus.services.ghostdag_primary_manager
+        &self.consensus.services.ghostdag_manager
     }
 }
 
