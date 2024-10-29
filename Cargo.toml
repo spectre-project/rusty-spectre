@@ -63,7 +63,7 @@ members = [
 
 [workspace.package]
 rust-version = "1.82.0"
-version = "0.3.16"
+version = "0.3.17"
 authors = ["Spectre developers"]
 license = "ISC"
 repository = "https://github.com/spectre-project/rusty-spectre"
@@ -80,61 +80,61 @@ include = [
 ]
 
 [workspace.dependencies]
-# spectre-testing-integration = { version = "0.3.16", path = "testing/integration" }
-spectre-addresses = { version = "0.3.16", path = "crypto/addresses" }
-spectre-addressmanager = { version = "0.3.16", path = "components/addressmanager" }
-spectre-bip32 = { version = "0.3.16", path = "wallet/bip32" }
-spectre-cli = { version = "0.3.16", path = "cli" }
-spectre-connectionmanager = { version = "0.3.16", path = "components/connectionmanager" }
-spectre-consensus = { version = "0.3.16", path = "consensus" }
-spectre-consensus-core = { version = "0.3.16", path = "consensus/core" }
-spectre-consensus-client = { version = "0.3.16", path = "consensus/client" }
-spectre-consensus-notify = { version = "0.3.16", path = "consensus/notify" }
-spectre-consensus-wasm = { version = "0.3.16", path = "consensus/wasm" }
-spectre-consensusmanager = { version = "0.3.16", path = "components/consensusmanager" }
-spectre-core = { version = "0.3.16", path = "core" }
-spectre-daemon = { version = "0.3.16", path = "daemon" }
-spectre-database = { version = "0.3.16", path = "database" }
-spectre-grpc-client = { version = "0.3.16", path = "rpc/grpc/client" }
-spectre-grpc-core = { version = "0.3.16", path = "rpc/grpc/core" }
-spectre-grpc-server = { version = "0.3.16", path = "rpc/grpc/server" }
-spectre-hashes = { version = "0.3.16", path = "crypto/hashes" }
-spectre-index-core = { version = "0.3.16", path = "indexes/core" }
-spectre-index-processor = { version = "0.3.16", path = "indexes/processor" }
-spectre-math = { version = "0.3.16", path = "math" }
-spectre-merkle = { version = "0.3.16", path = "crypto/merkle" }
-spectre-metrics-core = { version = "0.3.16", path = "metrics/core" }
-spectre-mining = { version = "0.3.16", path = "mining" }
-spectre-mining-errors = { version = "0.3.16", path = "mining/errors" }
-spectre-muhash = { version = "0.3.16", path = "crypto/muhash" }
-spectre-notify = { version = "0.3.16", path = "notify" }
-spectre-p2p-flows = { version = "0.3.16", path = "protocol/flows" }
-spectre-p2p-lib = { version = "0.3.16", path = "protocol/p2p" }
-spectre-perf-monitor = { version = "0.3.16", path = "metrics/perf_monitor" }
-spectre-pow = { version = "0.3.16", path = "consensus/pow" }
-spectre-rpc-core = { version = "0.3.16", path = "rpc/core" }
-spectre-rpc-macros = { version = "0.3.16", path = "rpc/macros" }
-spectre-rpc-service = { version = "0.3.16", path = "rpc/service" }
-spectre-txscript = { version = "0.3.16", path = "crypto/txscript" }
-spectre-txscript-errors = { version = "0.3.16", path = "crypto/txscript/errors" }
-spectre-utils = { version = "0.3.16", path = "utils" }
-spectre-utils-tower = { version = "0.3.16", path = "utils/tower" }
-spectre-utxoindex = { version = "0.3.16", path = "indexes/utxoindex" }
-spectre-wallet = { version = "0.3.16", path = "wallet/native" }
-spectre-wallet-cli-wasm = { version = "0.3.16", path = "wallet/wasm" }
-spectre-wallet-keys = { version = "0.3.16", path = "wallet/keys" }
-spectre-wallet-psst = { version = "0.3.16", path = "wallet/psst" }
-spectre-wallet-core = { version = "0.3.16", path = "wallet/core" }
-spectre-wallet-macros = { version = "0.3.16", path = "wallet/macros" }
-spectre-wasm = { version = "0.3.16", path = "wasm" }
-spectre-wasm-core = { version = "0.3.16", path = "wasm/core" }
-spectre-wrpc-client = { version = "0.3.16", path = "rpc/wrpc/client" }
-spectre-wrpc-proxy = { version = "0.3.16", path = "rpc/wrpc/proxy" }
-spectre-wrpc-server = { version = "0.3.16", path = "rpc/wrpc/server" }
-spectre-wrpc-wasm = { version = "0.3.16", path = "rpc/wrpc/wasm" }
-spectre-wrpc-example-subscriber = { version = "0.3.16", path = "rpc/wrpc/examples/subscriber" }
-spectred = { version = "0.3.16", path = "spectred" }
-spectre-alloc = { version = "0.3.16", path = "utils/alloc" }
+# spectre-testing-integration = { version = "0.3.17", path = "testing/integration" }
+spectre-addresses = { version = "0.3.17", path = "crypto/addresses" }
+spectre-addressmanager = { version = "0.3.17", path = "components/addressmanager" }
+spectre-bip32 = { version = "0.3.17", path = "wallet/bip32" }
+spectre-cli = { version = "0.3.17", path = "cli" }
+spectre-connectionmanager = { version = "0.3.17", path = "components/connectionmanager" }
+spectre-consensus = { version = "0.3.17", path = "consensus" }
+spectre-consensus-core = { version = "0.3.17", path = "consensus/core" }
+spectre-consensus-client = { version = "0.3.17", path = "consensus/client" }
+spectre-consensus-notify = { version = "0.3.17", path = "consensus/notify" }
+spectre-consensus-wasm = { version = "0.3.17", path = "consensus/wasm" }
+spectre-consensusmanager = { version = "0.3.17", path = "components/consensusmanager" }
+spectre-core = { version = "0.3.17", path = "core" }
+spectre-daemon = { version = "0.3.17", path = "daemon" }
+spectre-database = { version = "0.3.17", path = "database" }
+spectre-grpc-client = { version = "0.3.17", path = "rpc/grpc/client" }
+spectre-grpc-core = { version = "0.3.17", path = "rpc/grpc/core" }
+spectre-grpc-server = { version = "0.3.17", path = "rpc/grpc/server" }
+spectre-hashes = { version = "0.3.17", path = "crypto/hashes" }
+spectre-index-core = { version = "0.3.17", path = "indexes/core" }
+spectre-index-processor = { version = "0.3.17", path = "indexes/processor" }
+spectre-math = { version = "0.3.17", path = "math" }
+spectre-merkle = { version = "0.3.17", path = "crypto/merkle" }
+spectre-metrics-core = { version = "0.3.17", path = "metrics/core" }
+spectre-mining = { version = "0.3.17", path = "mining" }
+spectre-mining-errors = { version = "0.3.17", path = "mining/errors" }
+spectre-muhash = { version = "0.3.17", path = "crypto/muhash" }
+spectre-notify = { version = "0.3.17", path = "notify" }
+spectre-p2p-flows = { version = "0.3.17", path = "protocol/flows" }
+spectre-p2p-lib = { version = "0.3.17", path = "protocol/p2p" }
+spectre-perf-monitor = { version = "0.3.17", path = "metrics/perf_monitor" }
+spectre-pow = { version = "0.3.17", path = "consensus/pow" }
+spectre-rpc-core = { version = "0.3.17", path = "rpc/core" }
+spectre-rpc-macros = { version = "0.3.17", path = "rpc/macros" }
+spectre-rpc-service = { version = "0.3.17", path = "rpc/service" }
+spectre-txscript = { version = "0.3.17", path = "crypto/txscript" }
+spectre-txscript-errors = { version = "0.3.17", path = "crypto/txscript/errors" }
+spectre-utils = { version = "0.3.17", path = "utils" }
+spectre-utils-tower = { version = "0.3.17", path = "utils/tower" }
+spectre-utxoindex = { version = "0.3.17", path = "indexes/utxoindex" }
+spectre-wallet = { version = "0.3.17", path = "wallet/native" }
+spectre-wallet-cli-wasm = { version = "0.3.17", path = "wallet/wasm" }
+spectre-wallet-keys = { version = "0.3.17", path = "wallet/keys" }
+spectre-wallet-psst = { version = "0.3.17", path = "wallet/psst" }
+spectre-wallet-core = { version = "0.3.17", path = "wallet/core" }
+spectre-wallet-macros = { version = "0.3.17", path = "wallet/macros" }
+spectre-wasm = { version = "0.3.17", path = "wasm" }
+spectre-wasm-core = { version = "0.3.17", path = "wasm/core" }
+spectre-wrpc-client = { version = "0.3.17", path = "rpc/wrpc/client" }
+spectre-wrpc-proxy = { version = "0.3.17", path = "rpc/wrpc/proxy" }
+spectre-wrpc-server = { version = "0.3.17", path = "rpc/wrpc/server" }
+spectre-wrpc-wasm = { version = "0.3.17", path = "rpc/wrpc/wasm" }
+spectre-wrpc-example-subscriber = { version = "0.3.17", path = "rpc/wrpc/examples/subscriber" }
+spectred = { version = "0.3.17", path = "spectred" }
+spectre-alloc = { version = "0.3.17", path = "utils/alloc" }
 
 # external
 aes = "0.8.3"
