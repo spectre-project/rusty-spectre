@@ -53,7 +53,6 @@ pub struct ConsensusServices {
     pub reachability_service: MTReachabilityService<DbReachabilityStore>,
     pub window_manager: DbWindowManager,
     pub dag_traversal_manager: DbDagTraversalManager,
-    pub ghostdag_managers: Arc<Vec<DbGhostdagManager>>,
     pub ghostdag_manager: DbGhostdagManager,
     pub coinbase_manager: CoinbaseManager,
     pub pruning_point_manager: DbPruningPointManager,
@@ -112,25 +111,15 @@ impl ConsensusServices {
             reachability_service.clone(),
             storage.ghostdag_store.clone(),
         );
-        let ghostdag_managers = Arc::new(
-            storage
-                .ghostdag_stores
-                .iter()
-                .cloned()
-                .enumerate()
-                .map(|(level, ghostdag_store)| {
-                    GhostdagManager::new(
-                        params.genesis.hash,
-                        params.ghostdag_k,
-                        ghostdag_store,
-                        relations_services[level].clone(),
-                        storage.headers_store.clone(),
-                        reachability_service.clone(),
-                    )
-                })
-                .collect_vec(),
+        let ghostdag_manager = GhostdagManager::new(
+            params.genesis.hash,
+            params.ghostdag_k,
+            storage.ghostdag_store.clone(),
+            relations_services[0].clone(),
+            storage.headers_store.clone(),
+            reachability_service.clone(),
+            false,
         );
-        let ghostdag_manager = ghostdag_managers[0].clone();
 
         let coinbase_manager = CoinbaseManager::new(
             params.coinbase_payload_script_public_key_max_len,
@@ -184,7 +173,7 @@ impl ConsensusServices {
             &storage,
             parents_manager.clone(),
             reachability_service.clone(),
-            ghostdag_managers.clone(),
+            ghostdag_manager.clone(),
             dag_traversal_manager.clone(),
             window_manager.clone(),
             params.max_block_level,
@@ -213,7 +202,6 @@ impl ConsensusServices {
             reachability_service,
             window_manager,
             dag_traversal_manager,
-            ghostdag_managers,
             ghostdag_manager,
             coinbase_manager,
             pruning_point_manager,
