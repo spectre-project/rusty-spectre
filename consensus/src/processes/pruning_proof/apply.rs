@@ -5,6 +5,7 @@ use std::{
 };
 
 use itertools::Itertools;
+use rocksdb::WriteBatch;
 use spectre_consensus_core::{
     blockhash::{BlockHashes, ORIGIN},
     errors::pruning::{PruningImportError, PruningImportResult},
@@ -17,7 +18,6 @@ use spectre_core::{debug, trace};
 use spectre_hashes::Hash;
 use spectre_pow::calc_block_level;
 use spectre_utils::{binary_heap::BinaryHeapExtensions, vec::VecExtensions};
-use rocksdb::WriteBatch;
 
 use crate::{
     model::{
@@ -148,7 +148,7 @@ impl PruningProofManager {
         let mut up_heap = BinaryHeap::with_capacity(capacity_estimate);
         for header in proof.iter().flatten().cloned() {
             if let Vacant(e) = dag.entry(header.hash) {
-                // TODO: Check if pow passes
+                // pow passing has already been checked during validation
                 let block_level = calc_block_level(&header, self.max_block_level);
                 self.headers_store.insert(header.hash, header.clone(), block_level).unwrap();
 
