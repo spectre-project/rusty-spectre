@@ -13,7 +13,7 @@ use crate::imports::*;
 pub struct NodeDescriptor {
     /// The unique identifier of the node.
     #[wasm_bindgen(getter_with_clone)]
-    pub uid: String,
+    pub id: String,
     /// The URL of the node WebSocket (wRPC URL).
     #[wasm_bindgen(getter_with_clone)]
     pub url: String,
