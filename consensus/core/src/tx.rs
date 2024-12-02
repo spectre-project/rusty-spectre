@@ -319,7 +319,7 @@ impl<'a, T: VerifiableTransaction> Iterator for PopulatedInputIterator<'a, T> {
     }
 }
 
-impl<'a, T: VerifiableTransaction> ExactSizeIterator for PopulatedInputIterator<'a, T> {}
+impl<T: VerifiableTransaction> ExactSizeIterator for PopulatedInputIterator<'_, T> {}
 
 /// Represents a read-only referenced transaction along with fully populated UTXO entry data
 pub struct PopulatedTransaction<'a> {
@@ -334,7 +334,7 @@ impl<'a> PopulatedTransaction<'a> {
     }
 }
 
-impl<'a> VerifiableTransaction for PopulatedTransaction<'a> {
+impl VerifiableTransaction for PopulatedTransaction<'_> {
     fn tx(&self) -> &Transaction {
         self.tx
     }
@@ -362,7 +362,7 @@ impl<'a> ValidatedTransaction<'a> {
     }
 }
 
-impl<'a> VerifiableTransaction for ValidatedTransaction<'a> {
+impl VerifiableTransaction for ValidatedTransaction<'_> {
     fn tx(&self) -> &Transaction {
         self.tx
     }

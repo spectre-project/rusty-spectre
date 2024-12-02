@@ -6,7 +6,6 @@ use spectre_consensus_core::errors::sync::{SyncManagerError, SyncManagerResult};
 use spectre_database::prelude::StoreResultExtensions;
 use spectre_hashes::Hash;
 use spectre_math::uint::malachite_base::num::arithmetic::traits::CeilingLogBase2;
-use spectre_utils::option::OptionExtensions;
 
 use crate::model::{
     services::reachability::{MTReachabilityService, ReachabilityService},
@@ -191,7 +190,7 @@ impl<
             }
         }
 
-        if highest_with_body.is_none_or_ex(|&h| h == high) {
+        if highest_with_body.is_none_or(|h| h == high) {
             return Ok(vec![]);
         };
 
