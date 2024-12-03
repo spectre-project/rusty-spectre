@@ -292,6 +292,7 @@ pub const MAINNET_PARAMS: Params = Params {
         // Official DNS seeders.
         "mainnet-dnsseed-1.spectre-network.org",
         "mainnet-dnsseed-2.spectre-network.org",
+        "mainnet-dnsseed-3.spectre-network.xyz",
     ],
     net: NetworkId::new(NetworkType::Mainnet),
     genesis: GENESIS,
@@ -350,6 +351,7 @@ pub const TESTNET_PARAMS: Params = Params {
         // Official DNS seeders.
         "testnet-dnsseed-1.spectre-network.org",
         "testnet-dnsseed-2.spectre-network.org",
+        "testnet-dnsseed-3.spectre-network.xyz",
     ],
     net: NetworkId::with_suffix(NetworkType::Testnet, 10),
     genesis: TESTNET_GENESIS,
