@@ -2,6 +2,7 @@ use std::{
     cmp::Reverse,
     collections::{hash_map::Entry::Vacant, BinaryHeap, HashSet},
     sync::Arc,
+    time::{Duration, Instant},
 };
 
 use itertools::Itertools;
@@ -14,7 +15,7 @@ use spectre_consensus_core::{
     trusted::TrustedBlock,
     BlockHashMap, BlockHashSet, BlockLevel, HashMapCustomHasher,
 };
-use spectre_core::{debug, trace};
+use spectre_core::{debug, info, trace};
 use spectre_hashes::Hash;
 use spectre_pow::calc_block_level;
 use spectre_utils::{binary_heap::BinaryHeapExtensions, vec::VecExtensions};
@@ -146,7 +147,22 @@ impl PruningProofManager {
         let capacity_estimate = self.estimate_proof_unique_size(proof);
         let mut dag = BlockHashMap::with_capacity(capacity_estimate);
         let mut up_heap = BinaryHeap::with_capacity(capacity_estimate);
-        for header in proof.iter().flatten().cloned() {
+        let mut processed = 0;
+        let mut last_time = Instant::now();
+        for (i, header) in proof.iter().flatten().cloned().enumerate() {
+            let now = Instant::now();
+            let passed = now.duration_since(last_time);
+            if passed > Duration::from_secs(10) || (i == (proof.iter().flatten().count() - 1) && processed > 0) {
+                info!(
+                    "Processed {} relations in the last {:.2}s (total {}, completed {}%)",
+                    i + 1 - processed,
+                    passed.as_secs_f64(),
+                    i + 1,
+                    ((i * 100 / (proof.iter().flatten().count() - 1)) as f64).round()
+                );
+                processed = i + 1;
+                last_time = now;
+            }
             if let Vacant(e) = dag.entry(header.hash) {
                 // pow passing has already been checked during validation
                 let block_level = calc_block_level(&header, self.max_block_level);

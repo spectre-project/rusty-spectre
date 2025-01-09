@@ -1,6 +1,7 @@
 use std::{
     ops::DerefMut,
     sync::{atomic::Ordering, Arc},
+    time::{Duration, Instant},
 };
 
 use itertools::Itertools;
@@ -252,7 +253,22 @@ impl PruningProofManager {
             }
             let level_idx = level as usize;
             let mut selected_tip = None;
+            let mut processed = 0;
+            let mut last_time = Instant::now();
             for (i, header) in proof[level as usize].iter().enumerate() {
+                let now = Instant::now();
+                let passed = now.duration_since(last_time);
+                if passed > Duration::from_secs(10) || (i == (proof[level as usize].len() - 1) && processed > 0) {
+                    info!(
+                        "Validated {} headers in the last {:.2}s (total {}, completed {}%)",
+                        i + 1 - processed,
+                        passed.as_secs_f64(),
+                        i + 1,
+                        ((i * 100 / (proof[level as usize].len() - 1)) as f64).round()
+                    );
+                    processed = i + 1;
+                    last_time = now;
+                }
                 let (header_level, pow_passes) = calc_block_level_check_pow(header, self.max_block_level);
                 if header_level < level {
                     return Err(PruningImportError::PruningProofWrongBlockLevel(header.hash, header_level, level));
