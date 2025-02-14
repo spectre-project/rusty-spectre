@@ -99,7 +99,10 @@ impl<T: GhostdagStoreReader, S: RelationsStoreReader, U: ReachabilityService, V:
     pub fn find_selected_parent(&self, parents: impl IntoIterator<Item = Hash>) -> Hash {
         parents
             .into_iter()
-            .map(|parent| SortableBlock { hash: parent, blue_work: self.ghostdag_store.get_blue_work(parent).unwrap() })
+            .map(|parent| SortableBlock {
+                hash: parent,
+                blue_work: self.ghostdag_store.get_blue_work(parent).unwrap_or(spectre_math::Uint192([0, 0, 0])),
+            })
             .max()
             .unwrap()
             .hash
