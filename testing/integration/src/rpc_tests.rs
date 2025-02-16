@@ -656,6 +656,23 @@ async fn sanity_test() {
                 })
             }
 
+            SpectredPayloadOps::GetUtxoReturnAddress => {
+                let rpc_client = client.clone();
+                tst!(op, {
+                    let results = rpc_client.get_utxo_return_address(RpcHash::from_bytes([0; 32]), 1000).await;
+
+                    assert!(results.is_err_and(|err| {
+                        match err {
+                            spectre_rpc_core::RpcError::General(msg) => {
+                                info!("Expected error message: {}", msg);
+                                true
+                            }
+                            _ => false,
+                        }
+                    }));
+                })
+            }
+
             SpectredPayloadOps::NotifyBlockAdded => {
                 let rpc_client = client.clone();
                 let id = listener_id;
