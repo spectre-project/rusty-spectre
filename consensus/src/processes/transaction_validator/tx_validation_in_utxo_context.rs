@@ -1,14 +1,12 @@
 use crate::constants::{MAX_SOMPI, SEQUENCE_LOCK_TIME_DISABLED, SEQUENCE_LOCK_TIME_MASK};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use rayon::ThreadPool;
-use spectre_consensus_core::hashing::sighash::{SigHashReusedValues, SigHashReusedValuesSync};
 use spectre_consensus_core::{
-    hashing::sighash::SigHashReusedValuesUnsync,
+    hashing::sighash::{SigHashReusedValuesSync, SigHashReusedValuesUnsync},
     tx::{TransactionInput, VerifiableTransaction},
 };
 use spectre_core::warn;
-use spectre_txscript::caches::Cache;
-use spectre_txscript::{get_sig_op_count, SigCacheKey, TxScriptEngine};
+use spectre_txscript::{caches::Cache, get_sig_op_count_upper_bound, SigCacheKey, TxScriptEngine};
 use spectre_txscript_errors::TxScriptError;
 use std::marker::Sync;
 
@@ -61,7 +59,9 @@ impl TransactionValidator {
 
         match flags {
             TxValidationFlags::Full | TxValidationFlags::SkipMassCheck => {
-                Self::check_sig_op_counts::<_, SigHashReusedValuesUnsync>(tx)?;
+                if !self.runtime_sig_op_counting.is_active(pov_daa_score) {
+                    Self::check_sig_op_counts(tx)?;
+                }
                 self.check_scripts(tx, pov_daa_score)?;
             }
             TxValidationFlags::SkipScriptChecks => {}
@@ -162,9 +162,10 @@ impl TransactionValidator {
         Ok(())
     }
 
-    fn check_sig_op_counts<T: VerifiableTransaction, Reused: SigHashReusedValues>(tx: &T) -> TxResult<()> {
+    fn check_sig_op_counts<T: VerifiableTransaction>(tx: &T) -> TxResult<()> {
         for (i, (input, entry)) in tx.populated_inputs().enumerate() {
-            let calculated = get_sig_op_count::<T, Reused>(&input.signature_script, &entry.script_public_key);
+            let calculated =
+                get_sig_op_count_upper_bound::<T, SigHashReusedValuesUnsync>(&input.signature_script, &entry.script_public_key);
             if calculated != input.sig_op_count as u64 {
                 return Err(TxRuleError::WrongSigOpCount(i, input.sig_op_count as u64, calculated));
             }
@@ -173,7 +174,12 @@ impl TransactionValidator {
     }
 
     pub fn check_scripts(&self, tx: &(impl VerifiableTransaction + Sync), pov_daa_score: u64) -> TxResult<()> {
-        check_scripts(&self.sig_cache, tx, self.kip10_activation.is_active(pov_daa_score))
+        check_scripts(
+            &self.sig_cache,
+            tx,
+            self.kip10_activation.is_active(pov_daa_score),
+            self.runtime_sig_op_counting.is_active(pov_daa_score),
+        )
     }
 }
 
@@ -181,11 +187,12 @@ pub fn check_scripts(
     sig_cache: &Cache<SigCacheKey, bool>,
     tx: &(impl VerifiableTransaction + Sync),
     kip10_enabled: bool,
+    runtime_sig_op_counting: bool,
 ) -> TxResult<()> {
     if tx.inputs().len() > CHECK_SCRIPTS_PARALLELISM_THRESHOLD {
-        check_scripts_par_iter(sig_cache, tx, kip10_enabled)
+        check_scripts_par_iter(sig_cache, tx, kip10_enabled, runtime_sig_op_counting)
     } else {
-        check_scripts_sequential(sig_cache, tx, kip10_enabled)
+        check_scripts_sequential(sig_cache, tx, kip10_enabled, runtime_sig_op_counting)
     }
 }
 
@@ -193,10 +200,11 @@ pub fn check_scripts_sequential(
     sig_cache: &Cache<SigCacheKey, bool>,
     tx: &impl VerifiableTransaction,
     kip10_enabled: bool,
+    runtime_sig_op_counting: bool,
 ) -> TxResult<()> {
     let reused_values = SigHashReusedValuesUnsync::new();
     for (i, (input, entry)) in tx.populated_inputs().enumerate() {
-        TxScriptEngine::from_transaction_input(tx, input, i, entry, &reused_values, sig_cache, kip10_enabled)
+        TxScriptEngine::from_transaction_input(tx, input, i, entry, &reused_values, sig_cache, kip10_enabled, runtime_sig_op_counting)
             .execute()
             .map_err(|err| map_script_err(err, input))?;
     }
@@ -207,11 +215,12 @@ pub fn check_scripts_par_iter(
     sig_cache: &Cache<SigCacheKey, bool>,
     tx: &(impl VerifiableTransaction + Sync),
     kip10_enabled: bool,
+    runtime_sig_op_counting: bool,
 ) -> TxResult<()> {
     let reused_values = SigHashReusedValuesSync::new();
     (0..tx.inputs().len()).into_par_iter().try_for_each(|idx| {
         let (input, utxo) = tx.populated_input(idx);
-        TxScriptEngine::from_transaction_input(tx, input, idx, utxo, &reused_values, sig_cache, kip10_enabled)
+        TxScriptEngine::from_transaction_input(tx, input, idx, utxo, &reused_values, sig_cache, kip10_enabled, runtime_sig_op_counting)
             .execute()
             .map_err(|err| map_script_err(err, input))
     })
@@ -222,8 +231,9 @@ pub fn check_scripts_par_iter_pool(
     tx: &(impl VerifiableTransaction + Sync),
     pool: &ThreadPool,
     kip10_enabled: bool,
+    runtime_sig_op_counting: bool,
 ) -> TxResult<()> {
-    pool.install(|| check_scripts_par_iter(sig_cache, tx, kip10_enabled))
+    pool.install(|| check_scripts_par_iter(sig_cache, tx, kip10_enabled, runtime_sig_op_counting))
 }
 
 fn map_script_err(script_err: TxScriptError, input: &TransactionInput) -> TxRuleError {
@@ -242,7 +252,6 @@ mod tests {
     use itertools::Itertools;
     use secp256k1::Secp256k1;
     use smallvec::SmallVec;
-    use spectre_consensus_core::hashing::sighash::SigHashReusedValuesUnsync;
     use spectre_consensus_core::sign::sign;
     use spectre_consensus_core::subnets::SubnetworkId;
     use spectre_consensus_core::tx::{MutableTransaction, PopulatedTransaction, ScriptVec, TransactionId, UtxoEntry};
@@ -824,6 +833,6 @@ mod tests {
         let signed_tx = sign(MutableTransaction::with_entries(unsigned_tx, entries), schnorr_key);
         let populated_tx = signed_tx.as_verifiable();
         assert_eq!(tv.check_scripts(&populated_tx, u64::MAX), Ok(()));
-        assert_eq!(TransactionValidator::check_sig_op_counts::<_, SigHashReusedValuesUnsync>(&populated_tx), Ok(()));
+        assert_eq!(TransactionValidator::check_sig_op_counts(&populated_tx), Ok(()));
     }
 }
