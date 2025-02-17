@@ -503,12 +503,13 @@ pub const TESTNET11_PARAMS: Params = Params {
 
     storage_mass_parameter: STORAGE_MASS_PARAMETER,
     storage_mass_activation: ForkActivation::always(),
+
+    // TODO: date for activation to be decided
     kip10_activation: ForkActivation::never(),
+    payload_activation: ForkActivation::never(),
 
     skip_proof_of_work: false,
     max_block_level: 250,
-
-    payload_activation: ForkActivation::never(),
 };
 
 pub const SIMNET_PARAMS: Params = Params {

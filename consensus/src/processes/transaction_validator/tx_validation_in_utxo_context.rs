@@ -4,7 +4,6 @@ use rayon::ThreadPool;
 use spectre_consensus_core::hashing::sighash::{SigHashReusedValues, SigHashReusedValuesSync};
 use spectre_consensus_core::{
     hashing::sighash::SigHashReusedValuesUnsync,
-    mass::Kip9Version,
     tx::{TransactionInput, VerifiableTransaction},
 };
 use spectre_core::warn;
@@ -128,8 +127,7 @@ impl TransactionValidator {
     }
 
     fn check_mass_commitment(&self, tx: &impl VerifiableTransaction) -> TxResult<()> {
-        let calculated_contextual_mass =
-            self.mass_calculator.calc_tx_overall_mass(tx, None, Kip9Version::Alpha).ok_or(TxRuleError::MassIncomputable)?;
+        let calculated_contextual_mass = self.mass_calculator.calc_tx_overall_mass(tx, None).ok_or(TxRuleError::MassIncomputable)?;
         let committed_contextual_mass = tx.tx().mass();
         if committed_contextual_mass != calculated_contextual_mass {
             return Err(TxRuleError::WrongMass(calculated_contextual_mass, committed_contextual_mass));
