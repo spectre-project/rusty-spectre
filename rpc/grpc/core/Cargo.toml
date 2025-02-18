@@ -10,6 +10,7 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+spectre-addresses.workspace = true
 spectre-consensus-core.workspace = true
 spectre-core.workspace = true
 spectre-notify.workspace = true

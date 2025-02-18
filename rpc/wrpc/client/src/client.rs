@@ -644,6 +644,7 @@ impl RpcApi for SpectreRpcClient {
             GetSubnetwork,
             GetSyncStatus,
             GetSystemInfo,
+            GetUtxoReturnAddress,
             GetUtxosByAddresses,
             GetVirtualChainFromBlock,
             ResolveFinalityConflict,

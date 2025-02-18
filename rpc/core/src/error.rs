@@ -2,7 +2,7 @@
 //! [`RpcError`] enum used by RPC primitives.
 //!
 
-use spectre_consensus_core::{subnets::SubnetworkConversionError, tx::TransactionId};
+use spectre_consensus_core::{subnets::SubnetworkConversionError, tx::TransactionId, utxo::utxo_inquirer::UtxoInquirerError};
 use spectre_utils::networking::IpAddress;
 use std::{net::AddrParseError, num::TryFromIntError};
 use thiserror::Error;
@@ -134,6 +134,9 @@ pub enum RpcError {
 
     #[error(transparent)]
     ConsensusClient(#[from] spectre_consensus_client::error::Error),
+
+    #[error("utxo return address could not be found -> {0}")]
+    UtxoReturnAddressNotFound(UtxoInquirerError),
 }
 
 impl From<String> for RpcError {

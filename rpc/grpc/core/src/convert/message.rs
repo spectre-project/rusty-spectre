@@ -19,7 +19,8 @@
 //! The SubmitBlockResponse is a notable exception to this general rule.
 
 use crate::protowire::{self, submit_block_response_message::RejectReason};
-use spectre_consensus_core::network::NetworkId;
+use spectre_addresses::Address;
+use spectre_consensus_core::{network::NetworkId, Hash};
 use spectre_core::debug;
 use spectre_notify::subscription::Command;
 use spectre_rpc_core::{
@@ -428,6 +429,16 @@ from!(item: &spectre_rpc_core::GetCurrentBlockColorRequest, protowire::GetCurren
 });
 from!(item: RpcResult<&spectre_rpc_core::GetCurrentBlockColorResponse>, protowire::GetCurrentBlockColorResponseMessage, {
     Self { blue: item.blue, error: None }
+});
+
+from!(item: &spectre_rpc_core::GetUtxoReturnAddressRequest, protowire::GetUtxoReturnAddressRequestMessage, {
+    Self {
+        txid: item.txid.to_string(),
+        accepting_block_daa_score: item.accepting_block_daa_score
+    }
+});
+from!(item: RpcResult<&spectre_rpc_core::GetUtxoReturnAddressResponse>, protowire::GetUtxoReturnAddressResponseMessage, {
+    Self { return_address: item.return_address.address_to_string(), error: None }
 });
 
 from!(&spectre_rpc_core::PingRequest, protowire::PingRequestMessage);
@@ -915,6 +926,15 @@ try_from!(item: &protowire::GetCurrentBlockColorResponseMessage, RpcResult<spect
     Self {
         blue: item.blue
     }
+});
+try_from!(item: &protowire::GetUtxoReturnAddressRequestMessage, spectre_rpc_core::GetUtxoReturnAddressRequest , {
+    Self {
+        txid: Hash::from_str(&item.txid).unwrap_or_default(),
+        accepting_block_daa_score: item.accepting_block_daa_score
+    }
+});
+try_from!(item: &protowire::GetUtxoReturnAddressResponseMessage, RpcResult<spectre_rpc_core::GetUtxoReturnAddressResponse>, {
+    Self { return_address: Address::try_from(item.return_address.clone())? }
 });
 
 try_from!(&protowire::PingRequestMessage, spectre_rpc_core::PingRequest);

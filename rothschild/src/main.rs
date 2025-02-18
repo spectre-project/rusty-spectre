@@ -4,7 +4,10 @@ use clap::{Arg, ArgAction, Command};
 use itertools::Itertools;
 use parking_lot::Mutex;
 use rayon::prelude::*;
-use secp256k1::{rand::thread_rng, Keypair};
+use secp256k1::{
+    rand::{thread_rng, Rng},
+    Keypair,
+};
 use spectre_addresses::{Address, Prefix, Version};
 use spectre_consensus_core::{
     config::params::{TESTNET11_PARAMS, TESTNET_PARAMS},
@@ -18,7 +21,7 @@ use spectre_grpc_client::{ClientPool, GrpcClient};
 use spectre_notify::subscription::context::SubscriptionContext;
 use spectre_rpc_core::{api::rpc::RpcApi, notify::mode::NotificationMode, RpcUtxoEntry};
 use spectre_txscript::pay_to_address_script;
-use tokio::time::{interval, MissedTickBehavior};
+use tokio::time::{interval, Instant, MissedTickBehavior};
 
 const DEFAULT_SEND_AMOUNT: u64 = 10 * SOMPI_PER_SPECTRE;
 const FEE_RATE: u64 = 10;
@@ -40,6 +43,9 @@ pub struct Args {
     pub rpc_server: String,
     pub threads: u8,
     pub unleashed: bool,
+    pub addr: Option<String>,
+    pub priority_fee: u64,
+    pub randomize_fee: bool,
 }
 
 impl Args {
@@ -51,6 +57,9 @@ impl Args {
             rpc_server: m.get_one::<String>("rpcserver").cloned().unwrap_or("localhost:16210".to_owned()),
             threads: m.get_one::<u8>("threads").cloned().unwrap(),
             unleashed: m.get_one::<bool>("unleashed").cloned().unwrap_or(false),
+            addr: m.get_one::<String>("addr").cloned(),
+            priority_fee: m.get_one::<u64>("priority-fee").cloned().unwrap_or(0),
+            randomize_fee: m.get_one::<bool>("randomize-fee").cloned().unwrap_or(false),
         }
     }
 }
@@ -85,6 +94,25 @@ pub fn cli() -> Command {
                 .help("The number of threads to use for TX generation. Set to 0 to use 1 thread per core. Default is 2."),
         )
         .arg(Arg::new("unleashed").long("unleashed").action(ArgAction::SetTrue).hide(true).help("Allow higher TPS"))
+        .arg(Arg::new("addr").long("to-addr").short('a').value_name("addr").help("address to send to"))
+        .arg(
+            Arg::new("priority-fee")
+                .long("priority-fee")
+                .short('f')
+                .value_name("priority-fee")
+                .default_value("0")
+                .value_parser(clap::value_parser!(u64))
+                .help("Transaction priority fee"),
+        )
+        .arg(
+            Arg::new("randomize-fee")
+                .long("randomize-fee")
+                .short('r')
+                .value_name("randomize-fee")
+                .action(ArgAction::SetTrue)
+                .default_value("false")
+                .help("Randomize transaction priority fee"),
+        )
 }
 
 async fn new_rpc_client(subscription_context: &SubscriptionContext, address: &str) -> GrpcClient {
@@ -111,6 +139,11 @@ struct ClientPoolArg {
     utxos_len: usize,
 }
 
+struct TxsFeeConfig {
+    priority_fee: u64,
+    randomize_fee: bool,
+}
+
 #[tokio::main]
 async fn main() {
     spectre_core::log::init_logger(None, "");
@@ -128,14 +161,16 @@ async fn main() {
         Default::default(),
     )
     .await
-    .unwrap();
+    .expect("Critical error: failed to connect to the RPC server.");
+
     info!("Connected to RPC");
-    let mut pending = HashMap::new();
+
+    let mut pending: HashMap<TransactionOutpoint, Instant> = HashMap::new();
 
     let schnorr_key = if let Some(private_key_hex) = args.private_key {
         let mut private_key_bytes = [0u8; 32];
         faster_hex::hex_decode(private_key_hex.as_bytes(), &mut private_key_bytes).unwrap();
-        secp256k1::Keypair::from_seckey_slice(secp256k1::SECP256K1, &private_key_bytes).unwrap()
+        Keypair::from_seckey_slice(secp256k1::SECP256K1, &private_key_bytes).unwrap()
     } else {
         let (sk, pk) = &secp256k1::generate_keypair(&mut thread_rng());
         let spectre_addr = Address::new(ADDRESS_PREFIX, ADDRESS_VERSION, &pk.x_only_public_key().0.serialize());
@@ -150,10 +185,34 @@ async fn main() {
 
     let spectre_addr = Address::new(ADDRESS_PREFIX, ADDRESS_VERSION, &schnorr_key.x_only_public_key().0.serialize());
 
+    let spectre_to_addr =
+        args.addr.as_ref().map_or_else(|| spectre_addr.clone(), |addr_str| Address::try_from(addr_str.clone()).unwrap());
+
+    let fee_config = TxsFeeConfig { priority_fee: args.priority_fee, randomize_fee: args.randomize_fee };
+
     rayon::ThreadPoolBuilder::new().num_threads(args.threads as usize).build_global().unwrap();
 
-    info!("Using Rothschild with private key {} and address {}", schnorr_key.display_secret(), String::from(&spectre_addr));
-    let info = rpc_client.get_block_dag_info().await.unwrap();
+    let mut log_message = format!(
+        "Using Rothschild with:\n\
+        \tprivate key: {}\n\
+        \tfrom address: {}",
+        schnorr_key.display_secret(),
+        String::from(&spectre_addr)
+    );
+    if args.addr.is_some() {
+        log_message.push_str(&format!("\n\tto address: {}", String::from(&spectre_to_addr)));
+    }
+    if args.priority_fee != 0 {
+        log_message.push_str(&format!(
+            "\n\tpriority fee: {} SOMPS {}",
+            fee_config.priority_fee,
+            if fee_config.randomize_fee { "[randomize]" } else { "" }
+        ));
+    }
+    info!("{}", log_message);
+
+    let info = rpc_client.get_block_dag_info().await.expect("Failed to get block dag info.");
+
     let coinbase_maturity = match info.network.suffix {
         Some(11) => TESTNET11_PARAMS.coinbase_maturity,
         None | Some(_) => TESTNET_PARAMS.coinbase_maturity,
@@ -196,10 +255,10 @@ async fn main() {
                     info!(
                         "Tx rate: {:.1}/sec, avg UTXO amount: {}, avg UTXOs per tx: {}, avg outs per tx: {}, estimated available UTXOs: {}",
                         1000f64 * (stats.num_txs as f64) / (time_past as f64),
-                        (stats.utxos_amount / stats.num_utxos as u64),
+                        stats.utxos_amount / stats.num_utxos as u64,
                         stats.num_utxos / stats.num_txs,
                         stats.num_outs / stats.num_txs,
-                        if utxos_len > pending_len { utxos_len - pending_len } else { 0 },
+                        utxos_len.saturating_sub(pending_len),
                     );
                     stats.since = now;
                     stats.num_txs = 0;
@@ -249,13 +308,14 @@ async fn main() {
         let has_funds = maybe_send_tx(
             txs_to_send,
             &tx_sender,
-            spectre_addr.clone(),
+            spectre_to_addr.clone(),
             &mut utxos,
             &mut pending,
             schnorr_key,
             stats.clone(),
             maximize_inputs,
             &mut next_available_utxo_index,
+            &fee_config,
         )
         .await;
         if !has_funds {
@@ -276,7 +336,7 @@ async fn main() {
 fn should_maximize_inputs(
     old_value: bool,
     utxos: &[(TransactionOutpoint, UtxoEntry)],
-    pending: &HashMap<TransactionOutpoint, u64>,
+    pending: &HashMap<TransactionOutpoint, Instant>,
 ) -> bool {
     let estimated_utxos = if utxos.len() > pending.len() { utxos.len() - pending.len() } else { 0 };
     if !old_value && estimated_utxos > 1_000_000 {
@@ -306,7 +366,7 @@ async fn pause_if_mempool_is_full(rpc_client: &GrpcClient) {
 async fn refresh_utxos(
     rpc_client: &GrpcClient,
     spectre_addr: Address,
-    pending: &mut HashMap<TransactionOutpoint, u64>,
+    pending: &mut HashMap<TransactionOutpoint, Instant>,
     coinbase_maturity: u64,
 ) -> Vec<(TransactionOutpoint, UtxoEntry)> {
     populate_pending_outpoints_from_mempool(rpc_client, spectre_addr.clone(), pending).await;
@@ -316,10 +376,11 @@ async fn refresh_utxos(
 async fn populate_pending_outpoints_from_mempool(
     rpc_client: &GrpcClient,
     spectre_addr: Address,
-    pending_outpoints: &mut HashMap<TransactionOutpoint, u64>,
+    pending_outpoints: &mut HashMap<TransactionOutpoint, Instant>,
 ) {
     let entries = rpc_client.get_mempool_entries_by_addresses(vec![spectre_addr], true, false).await.unwrap();
-    let now = unix_now();
+    let now = Instant::now();
+
     for entry in entries {
         for entry in entry.sending {
             for input in entry.transaction.inputs {
@@ -333,7 +394,7 @@ async fn fetch_spendable_utxos(
     rpc_client: &GrpcClient,
     spectre_addr: Address,
     coinbase_maturity: u64,
-    pending: &mut HashMap<TransactionOutpoint, u64>,
+    pending: &mut HashMap<TransactionOutpoint, Instant>,
 ) -> Vec<(TransactionOutpoint, UtxoEntry)> {
     let resp = rpc_client.get_utxos_by_addresses(vec![spectre_addr]).await.unwrap();
     let dag_info = rpc_client.get_block_dag_info().await.unwrap();
@@ -364,11 +425,12 @@ async fn maybe_send_tx(
     tx_sender: &async_channel::Sender<ClientPoolArg>,
     spectre_addr: Address,
     utxos: &mut [(TransactionOutpoint, UtxoEntry)],
-    pending: &mut HashMap<TransactionOutpoint, u64>,
+    pending: &mut HashMap<TransactionOutpoint, Instant>,
     schnorr_key: Keypair,
     stats: Arc<Mutex<Stats>>,
     maximize_inputs: bool,
     next_available_utxo_index: &mut usize,
+    fee_config: &TxsFeeConfig,
 ) -> bool {
     let num_outs = if maximize_inputs { 1 } else { 2 };
 
@@ -377,7 +439,7 @@ async fn maybe_send_tx(
     let selected_utxos_groups = (0..txs_to_send)
         .map(|_| {
             let (selected_utxos, selected_amount) =
-                select_utxos(utxos, DEFAULT_SEND_AMOUNT, num_outs, maximize_inputs, next_available_utxo_index);
+                select_utxos(utxos, DEFAULT_SEND_AMOUNT, num_outs, maximize_inputs, next_available_utxo_index, fee_config);
             if selected_amount == 0 {
                 return None;
             }
@@ -386,7 +448,7 @@ async fn maybe_send_tx(
             // have funds in this tick
             has_fund = true;
 
-            let now = unix_now();
+            let now = Instant::now();
             for input in selected_utxos.iter() {
                 pending.insert(input.0, now);
             }
@@ -429,12 +491,9 @@ async fn maybe_send_tx(
     true
 }
 
-fn clean_old_pending_outpoints(pending: &mut HashMap<TransactionOutpoint, u64>) {
-    let now = unix_now();
-    let old_keys = pending.iter().filter(|(_, time)| now - *time > 3600 * 1000).map(|(op, _)| *op).collect_vec();
-    for key in old_keys {
-        pending.remove(&key).unwrap();
-    }
+fn clean_old_pending_outpoints(pending: &mut HashMap<TransactionOutpoint, Instant>) {
+    let now = Instant::now();
+    pending.retain(|_, &mut time| now.duration_since(time) <= Duration::from_secs(3600));
 }
 
 fn required_fee(num_utxos: usize, num_outs: u64) -> u64 {
@@ -473,10 +532,12 @@ fn select_utxos(
     num_outs: u64,
     maximize_utxos: bool,
     next_available_utxo_index: &mut usize,
+    fee_config: &TxsFeeConfig,
 ) -> (Vec<(TransactionOutpoint, UtxoEntry)>, u64) {
     const MAX_UTXOS: usize = 84;
     let mut selected_amount: u64 = 0;
     let mut selected = Vec::new();
+    let mut rng = thread_rng();
 
     while next_available_utxo_index < &mut utxos.len() {
         let (outpoint, entry) = utxos[*next_available_utxo_index].clone();
@@ -484,11 +545,16 @@ fn select_utxos(
         selected.push((outpoint, entry));
 
         let fee = required_fee(selected.len(), num_outs);
+        let priority_fee = if fee_config.randomize_fee && fee_config.priority_fee > 0 {
+            rng.gen_range(0..fee_config.priority_fee)
+        } else {
+            fee_config.priority_fee
+        };
 
         *next_available_utxo_index += 1;
 
-        if selected_amount >= min_amount + fee && (!maximize_utxos || selected.len() == MAX_UTXOS) {
-            return (selected, selected_amount - fee);
+        if selected_amount >= min_amount + fee + priority_fee && (!maximize_utxos || selected.len() == MAX_UTXOS) {
+            return (selected, selected_amount - fee - priority_fee);
         }
 
         if selected.len() > MAX_UTXOS {

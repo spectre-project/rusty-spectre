@@ -7,7 +7,7 @@ use crate::{
     model::stores::{block_transactions::BlockTransactionsStoreReader, daa::DaaStoreReader, ghostdag::GhostdagData},
     processes::transaction_validator::{
         errors::{TxResult, TxRuleError},
-        transaction_validator_populated::TxValidationFlags,
+        tx_validation_in_utxo_context::TxValidationFlags,
     },
 };
 use spectre_consensus_core::{
@@ -16,7 +16,6 @@ use spectre_consensus_core::{
     coinbase::*,
     hashing,
     header::Header,
-    mass::Kip9Version,
     muhash::MuHashExtensions,
     tx::{MutableTransaction, PopulatedTransaction, Transaction, TransactionId, ValidatedTransaction, VerifiableTransaction},
     utxo::{
@@ -82,7 +81,7 @@ impl VirtualStateProcessor {
         for (i, (merged_block, txs)) in once((ctx.selected_parent(), selected_parent_transactions))
             .chain(
                 ctx.ghostdag_data
-                    .consensus_ordered_mergeset_without_selected_parent(self.ghostdag_primary_store.deref())
+                    .consensus_ordered_mergeset_without_selected_parent(self.ghostdag_store.deref())
                     .map(|b| (b, self.block_transactions_store.get(b).unwrap())),
             )
             .enumerate()
@@ -326,15 +325,11 @@ impl VirtualStateProcessor {
     ) -> TxResult<()> {
         self.populate_mempool_transaction_in_utxo_context(mutable_tx, utxo_view)?;
 
-        // For non-activated nets (mainnet, TN10) we can update mempool rules to KIP9 beta asap. For
-        // TN11 we need to hard-fork consensus first (since the new beta rules are more permissive)
-        let kip9_version = if self.storage_mass_activation_daa_score == u64::MAX { Kip9Version::Beta } else { Kip9Version::Alpha };
-
         // Calc the full contextual mass including storage mass
         let contextual_mass = self
             .transaction_validator
             .mass_calculator
-            .calc_tx_overall_mass(&mutable_tx.as_verifiable(), mutable_tx.calculated_compute_mass, kip9_version)
+            .calc_tx_overall_mass(&mutable_tx.as_verifiable(), mutable_tx.calculated_compute_mass)
             .ok_or(TxRuleError::MassIncomputable)?;
 
         // Set the inner mass field

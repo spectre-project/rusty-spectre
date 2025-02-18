@@ -18,6 +18,7 @@ faster-hex.workspace = true
 futures-util.workspace = true
 indexmap.workspace = true
 itertools.workspace = true
+spectre-addresses.workspace = true
 spectre-consensus-core.workspace = true
 spectre-consensus-notify.workspace = true
 spectre-consensusmanager.workspace = true
