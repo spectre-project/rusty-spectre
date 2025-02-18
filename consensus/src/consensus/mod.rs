@@ -64,9 +64,10 @@ use spectre_consensus_core::{
     merkle::calc_hash_merkle_root,
     muhash::MuHashExtensions,
     network::NetworkType,
-    pruning::{PruningPointProof, PruningPointTrustedData, PruningPointsList},
+    pruning::{PruningPointProof, PruningPointTrustedData, PruningPointsList, PruningProofMetadata},
     trusted::{ExternalGhostdagData, TrustedBlock},
-    tx::{MutableTransaction, Transaction, TransactionOutpoint, UtxoEntry},
+    tx::{MutableTransaction, SignableTransaction, Transaction, TransactionOutpoint, UtxoEntry},
+    utxo::utxo_inquirer::UtxoInquirerError,
     BlockHashSet, BlueWorkType, ChainPath, HashMapCustomHasher,
 };
 use spectre_consensus_notify::root::ConsensusNotificationRoot;
@@ -241,24 +242,13 @@ impl Consensus {
             body_receiver,
             virtual_sender,
             block_processors_pool,
+            params,
             db.clone(),
-            storage.statuses_store.clone(),
-            storage.ghostdag_primary_store.clone(),
-            storage.headers_store.clone(),
-            storage.block_transactions_store.clone(),
-            storage.body_tips_store.clone(),
-            storage.pruning_point_store.clone(),
-            services.reachability_service.clone(),
-            services.coinbase_manager.clone(),
-            services.mass_calculator.clone(),
-            services.transaction_validator.clone(),
-            services.window_manager.clone(),
-            params.max_block_mass,
-            params.genesis.clone(),
+            &storage,
+            &services,
             pruning_lock.clone(),
             notification_root.clone(),
             counters.clone(),
-            params.storage_mass_activation_daa_score,
         ));
 
         let virtual_processor = Arc::new(VirtualStateProcessor::new(
@@ -501,7 +491,7 @@ impl ConsensusApi for Consensus {
 
     fn get_virtual_merge_depth_blue_work_threshold(&self) -> BlueWorkType {
         // PRUNE SAFETY: merge depth root is never close to being pruned (in terms of block depth)
-        self.get_virtual_merge_depth_root().map_or(BlueWorkType::ZERO, |root| self.ghostdag_primary_store.get_blue_work(root).unwrap())
+        self.get_virtual_merge_depth_root().map_or(BlueWorkType::ZERO, |root| self.ghostdag_store.get_blue_work(root).unwrap())
     }
 
     fn get_sink(&self) -> Hash {
@@ -534,7 +524,7 @@ impl ConsensusApi for Consensus {
 
         for child in initial_children {
             if visited.insert(child) {
-                let blue_work = self.ghostdag_primary_store.get_blue_work(child).unwrap();
+                let blue_work = self.ghostdag_store.get_blue_work(child).unwrap();
                 heap.push(Reverse(SortableBlock::new(child, blue_work)));
             }
         }
@@ -561,7 +551,7 @@ impl ConsensusApi for Consensus {
 
             for child in children {
                 if visited.insert(child) {
-                    let blue_work = self.ghostdag_primary_store.get_blue_work(child).unwrap();
+                    let blue_work = self.ghostdag_store.get_blue_work(child).unwrap();
                     heap.push(Reverse(SortableBlock::new(child, blue_work)));
                 }
             }
@@ -698,6 +688,12 @@ impl ConsensusApi for Consensus {
         sample_headers
     }
 
+    fn get_populated_transaction(&self, txid: Hash, accepting_block_daa_score: u64) -> Result<SignableTransaction, UtxoInquirerError> {
+        // We need consistency between the pruning_point_store, utxo_diffs_store, block_transactions_store, selected chain and headers store reads
+        let _guard = self.pruning_lock.blocking_read();
+        self.virtual_processor.get_populated_transaction(txid, accepting_block_daa_score, self.get_source())
+    }
+
     fn get_virtual_parents(&self) -> BlockHashSet {
         self.lkg_virtual_state.load().parents.iter().copied().collect()
     }
@@ -754,12 +750,16 @@ impl ConsensusApi for Consensus {
     }
 
     fn calc_transaction_hash_merkle_root(&self, txs: &[Transaction], pov_daa_score: u64) -> Hash {
-        let storage_mass_activated = pov_daa_score > self.config.storage_mass_activation_daa_score;
+        let storage_mass_activated = self.config.storage_mass_activation.is_active(pov_daa_score);
         calc_hash_merkle_root(txs.iter(), storage_mass_activated)
     }
 
-    fn validate_pruning_proof(&self, proof: &PruningPointProof) -> Result<(), PruningImportError> {
-        self.services.pruning_proof_manager.validate_pruning_point_proof(proof)
+    fn validate_pruning_proof(
+        &self,
+        proof: &PruningPointProof,
+        proof_metadata: &PruningProofMetadata,
+    ) -> Result<(), PruningImportError> {
+        self.services.pruning_proof_manager.validate_pruning_point_proof(proof, proof_metadata)
     }
 
     fn apply_pruning_proof(&self, proof: PruningPointProof, trusted_set: &[TrustedBlock]) -> PruningImportResult<()> {
@@ -774,12 +774,13 @@ impl ConsensusApi for Consensus {
         let mut pruning_utxoset_write = self.pruning_utxoset_stores.write();
         pruning_utxoset_write.utxo_set.write_many(utxoset_chunk).unwrap();
 
-        // Parallelize processing
-        let inner_multiset =
+        // Parallelize processing using the context of an existing thread pool.
+        let inner_multiset = self.virtual_processor.install(|| {
             utxoset_chunk.par_iter().map(|(outpoint, entry)| MuHash::from_utxo(outpoint, entry)).reduce(MuHash::new, |mut a, b| {
                 a.combine(&b);
                 a
-            });
+            })
+        });
 
         current_multiset.combine(&inner_multiset);
     }
@@ -910,7 +911,7 @@ impl ConsensusApi for Consensus {
             Some(BlockStatus::StatusInvalid) => return Err(ConsensusError::InvalidBlock(hash)),
             _ => {}
         };
-        let ghostdag = self.ghostdag_primary_store.get_data(hash).unwrap_option().ok_or(ConsensusError::MissingData(hash))?;
+        let ghostdag = self.ghostdag_store.get_data(hash).unwrap_option().ok_or(ConsensusError::MissingData(hash))?;
         Ok((&*ghostdag).into())
     }
 
@@ -986,7 +987,7 @@ impl ConsensusApi for Consensus {
         Ok(self
             .services
             .window_manager
-            .block_window(&self.ghostdag_primary_store.get_data(hash).unwrap(), WindowType::SampledDifficultyWindow)
+            .block_window(&self.ghostdag_store.get_data(hash).unwrap(), WindowType::DifficultyWindow)
             .unwrap()
             .deref()
             .iter()
@@ -1025,7 +1026,7 @@ impl ConsensusApi for Consensus {
         match start_hash {
             Some(hash) => {
                 self.validate_block_exists(hash)?;
-                let ghostdag_data = self.ghostdag_primary_store.get_data(hash).unwrap();
+                let ghostdag_data = self.ghostdag_store.get_data(hash).unwrap();
                 // The selected parent header is used within to check for sampling activation, so we verify its existence first
                 if !self.headers_store.has(ghostdag_data.selected_parent).unwrap() {
                     return Err(ConsensusError::DifficultyError(DifficultyError::InsufficientWindowData(0)));

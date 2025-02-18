@@ -50,8 +50,7 @@ pub struct ConsensusStorage {
     pub selected_chain_store: Arc<RwLock<DbSelectedChainStore>>,
 
     // Append-only stores
-    pub ghostdag_stores: Arc<Vec<Arc<DbGhostdagStore>>>,
-    pub ghostdag_primary_store: Arc<DbGhostdagStore>,
+    pub ghostdag_store: Arc<DbGhostdagStore>,
     pub headers_store: Arc<DbHeadersStore>,
     pub block_transactions_store: Arc<DbBlockTransactionsStore>,
     pub past_pruning_points_store: Arc<DbPastPruningPointsStore>,
@@ -89,12 +88,12 @@ impl ConsensusStorage {
         // Budgets in bytes. All byte budgets overall sum up to ~1GB of memory (which obviously takes more low level alloc space)
         let daa_excluded_budget = scaled(30_000_000);
         let statuses_budget = scaled(30_000_000);
-        let reachability_data_budget = scaled(20_000_000);
-        let reachability_sets_budget = scaled(20_000_000); // x 2 for tree children and future covering set
+        let reachability_data_budget = scaled(100_000_000);
+        let reachability_sets_budget = scaled(100_000_000); // x 2 for tree children and future covering set
         let ghostdag_compact_budget = scaled(15_000_000);
         let headers_compact_budget = scaled(5_000_000);
-        let parents_budget = scaled(40_000_000); // x 3 for reachability and levels
-        let children_budget = scaled(5_000_000); // x 3 for reachability and levels
+        let parents_budget = scaled(80_000_000); // x 3 for reachability and levels
+        let children_budget = scaled(20_000_000); // x 3 for reachability and levels
         let ghostdag_budget = scaled(80_000_000); // x 2 for levels
         let headers_budget = scaled(80_000_000);
         let transactions_budget = scaled(40_000_000);
@@ -193,19 +192,12 @@ impl ConsensusStorage {
             children_builder.build(),
         )));
 
-        let ghostdag_stores = Arc::new(
-            (0..=params.max_block_level)
-                .map(|level| {
-                    Arc::new(DbGhostdagStore::new(
-                        db.clone(),
-                        level,
-                        ghostdag_builder.downscale(level).build(),
-                        ghostdag_compact_builder.downscale(level).build(),
-                    ))
-                })
-                .collect_vec(),
-        );
-        let ghostdag_primary_store = ghostdag_stores[0].clone();
+        let ghostdag_store = Arc::new(DbGhostdagStore::new(
+            db.clone(),
+            0,
+            ghostdag_builder.downscale(0).build(),
+            ghostdag_compact_builder.downscale(0).build(),
+        ));
         let daa_excluded_store = Arc::new(DbDaaStore::new(db.clone(), daa_excluded_builder.build()));
         let headers_store = Arc::new(DbHeadersStore::new(db.clone(), headers_builder.build(), headers_compact_builder.build()));
         let depth_store = Arc::new(DbDepthStore::new(db.clone(), header_data_builder.build()));
@@ -245,8 +237,7 @@ impl ConsensusStorage {
             relations_stores,
             reachability_relations_store,
             reachability_store,
-            ghostdag_stores,
-            ghostdag_primary_store,
+            ghostdag_store,
             pruning_point_store,
             headers_selected_tip_store,
             body_tips_store,
