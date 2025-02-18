@@ -12,6 +12,7 @@ use std::{
 
 use itertools::Itertools;
 use parking_lot::{Mutex, RwLock};
+use rayon::prelude::*;
 use rocksdb::WriteBatch;
 
 use spectre_consensus_core::{
@@ -183,16 +184,16 @@ impl PruningProofManager {
     }
 
     pub fn import_pruning_points(&self, pruning_points: &[Arc<Header>]) {
-        for (i, header) in pruning_points.iter().enumerate() {
+        pruning_points.par_iter().enumerate().for_each(|(i, header)| {
             self.past_pruning_points_store.set(i as u64, header.hash).unwrap();
 
             if self.headers_store.has(header.hash).unwrap() {
-                continue;
+                return;
             }
 
             let block_level = calc_block_level(header, self.max_block_level);
             self.headers_store.insert(header.hash, header.clone(), block_level).unwrap();
-        }
+        });
 
         let new_pruning_point = pruning_points.last().unwrap().hash;
         info!("Setting {new_pruning_point} as the staging pruning point");
