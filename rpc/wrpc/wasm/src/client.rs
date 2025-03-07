@@ -371,7 +371,7 @@ impl RpcClient {
     /// Optional: Resolver node id.
     #[wasm_bindgen(getter, js_name = "nodeId")]
     pub fn resolver_node_id(&self) -> Option<String> {
-        self.inner.client.node_descriptor().map(|node| node.uid.clone())
+        self.inner.client.node_descriptor().map(|node| node.id.clone())
     }
 
     /// Connect to the Spectre RPC server. This function starts a background
