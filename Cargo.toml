@@ -110,6 +110,7 @@ spectre-muhash = { version = "0.3.17", path = "crypto/muhash" }
 spectre-notify = { version = "0.3.17", path = "notify" }
 spectre-p2p-flows = { version = "0.3.17", path = "protocol/flows" }
 spectre-p2p-lib = { version = "0.3.17", path = "protocol/p2p" }
+spectre-p2p-mining = { version = "0.3.17", path = "protocol/mining" }
 spectre-perf-monitor = { version = "0.3.17", path = "metrics/perf_monitor" }
 spectre-pow = { version = "0.3.17", path = "consensus/pow" }
 spectre-rpc-core = { version = "0.3.17", path = "rpc/core" }

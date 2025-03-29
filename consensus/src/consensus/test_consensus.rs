@@ -1,6 +1,7 @@
 use async_channel::Sender;
 use parking_lot::RwLock;
 use spectre_consensus_core::coinbase::MinerData;
+use spectre_consensus_core::mining_rules::MiningRules;
 use spectre_consensus_core::tx::ScriptPublicKey;
 use spectre_consensus_core::{
     api::ConsensusApi, block::MutableBlock, blockstatus::BlockStatus, header::Header, merkle::calc_hash_merkle_root,
@@ -58,6 +59,7 @@ impl TestConsensus {
             counters,
             tx_script_cache_counters,
             0,
+            Arc::new(MiningRules::default()),
         ));
         let block_builder = TestBlockBuilder::new(consensus.virtual_processor.clone());
 
@@ -78,6 +80,7 @@ impl TestConsensus {
             counters,
             tx_script_cache_counters,
             0,
+            Arc::new(MiningRules::default()),
         ));
         let block_builder = TestBlockBuilder::new(consensus.virtual_processor.clone());
 
@@ -99,6 +102,7 @@ impl TestConsensus {
             counters,
             tx_script_cache_counters,
             0,
+            Arc::new(MiningRules::default()),
         ));
         let block_builder = TestBlockBuilder::new(consensus.virtual_processor.clone());
 

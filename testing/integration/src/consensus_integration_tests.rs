@@ -32,6 +32,7 @@ use spectre_consensus_core::coinbase::MinerData;
 use spectre_consensus_core::constants::{BLOCK_VERSION, SOMPI_PER_SPECTRE, STORAGE_MASS_PARAMETER, TRANSIENT_BYTE_TO_MASS_FACTOR};
 use spectre_consensus_core::errors::block::{BlockProcessResult, RuleError};
 use spectre_consensus_core::header::Header;
+use spectre_consensus_core::mining_rules::MiningRules;
 use spectre_consensus_core::network::{NetworkId, NetworkType::Mainnet};
 use spectre_consensus_core::subnets::SubnetworkId;
 use spectre_consensus_core::trusted::{ExternalGhostdagData, TrustedBlock};
@@ -1771,6 +1772,7 @@ async fn staging_consensus_test() {
         counters,
         tx_script_cache_counters,
         200,
+        Arc::new(MiningRules::default()),
     ));
     let consensus_manager = Arc::new(ConsensusManager::new(consensus_factory));
 
