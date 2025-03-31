@@ -48,7 +48,7 @@ impl<T: HeaderStoreReader> SampledPastMedianTimeManager<T> {
 
         /*
 
-           [Crescendo]: In the first moments post activation the median time window will be empty or smaller than expected.
+           [Sigma]: In the first moments post activation the median time window will be empty or smaller than expected.
                         Which means that past median time will be closer to current time and less flexible. This is ok since
                         BBT makes sure to respect this lower bound. The following alternatives were considered and ruled out:
 
@@ -67,7 +67,7 @@ impl<T: HeaderStoreReader> SampledPastMedianTimeManager<T> {
         */
 
         if window.is_empty() {
-            // [Crescendo]: this indicates we are in the few seconds post activation where the window is
+            // [Sigma]: this indicates we are in the few seconds post activation where the window is
             // still empty, simply take the selected parent timestamp
             return Ok(self.headers_store.get_timestamp(selected_parent).unwrap());
         }

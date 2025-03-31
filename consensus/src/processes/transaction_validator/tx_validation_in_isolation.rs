@@ -44,7 +44,7 @@ impl TransactionValidator {
         }
 
         /*
-        [Crescendo]: moved this specific check to body_validation_in_context since it depends on fork activation
+        [Sigma]: moved this specific check to body_validation_in_context since it depends on fork activation
                      TODO (post HF): move back here
 
         let outputs_limit = self.ghostdag_k as u64 + 2;
@@ -65,7 +65,7 @@ impl TransactionValidator {
             // We already check coinbase outputs count vs. Ghostdag K + 2
             return Ok(());
         }
-        // [Crescendo]: keep the check here over the upper limit. Add a tight check to in_header_context validation
+        // [Sigma]: keep the check here over the upper limit. Add a tight check to in_header_context validation
         if tx.outputs.len() > self.max_tx_outputs.upper_bound() {
             return Err(TxRuleError::TooManyOutputs(tx.outputs.len(), self.max_tx_inputs.upper_bound()));
         }
@@ -78,7 +78,7 @@ impl TransactionValidator {
             return Err(TxRuleError::NoTxInputs);
         }
 
-        // [Crescendo]: keep the check here over the upper limit. Add a tight check to in_header_context validation
+        // [Sigma]: keep the check here over the upper limit. Add a tight check to in_header_context validation
         if tx.inputs.len() > self.max_tx_inputs.upper_bound() {
             return Err(TxRuleError::TooManyInputs(tx.inputs.len(), self.max_tx_inputs.upper_bound()));
         }
@@ -88,7 +88,7 @@ impl TransactionValidator {
 
     // The main purpose of this check is to avoid overflows when calculating transaction mass later.
     fn check_transaction_signature_scripts(&self, tx: &Transaction) -> TxResult<()> {
-        // [Crescendo]: keep the check here over the upper limit. Add a tight check to in_header_context validation
+        // [Sigma]: keep the check here over the upper limit. Add a tight check to in_header_context validation
         if let Some(i) = tx.inputs.iter().position(|input| input.signature_script.len() > self.max_signature_script_len.upper_bound())
         {
             return Err(TxRuleError::TooBigSignatureScript(i, self.max_signature_script_len.upper_bound()));
@@ -99,7 +99,7 @@ impl TransactionValidator {
 
     // The main purpose of this check is to avoid overflows when calculating transaction mass later.
     fn check_transaction_script_public_keys(&self, tx: &Transaction) -> TxResult<()> {
-        // [Crescendo]: keep the check here over the upper limit. Add a tight check to in_header_context validation
+        // [Sigma]: keep the check here over the upper limit. Add a tight check to in_header_context validation
         if let Some(i) =
             tx.outputs.iter().position(|out| out.script_public_key.script().len() > self.max_script_public_key_len.upper_bound())
         {

@@ -100,15 +100,15 @@ impl ConsensusServices {
             storage.block_window_cache_for_past_median_time.clone(),
             params.max_difficulty_target,
             params.prior_target_time_per_block,
-            params.crescendo.target_time_per_block,
-            params.crescendo_activation,
+            params.sigma.target_time_per_block,
+            params.sigma_activation,
             params.prior_difficulty_window_size,
-            params.crescendo.sampled_difficulty_window_size as usize,
+            params.sigma.sampled_difficulty_window_size as usize,
             params.min_difficulty_window_size,
-            params.crescendo.difficulty_sample_rate,
+            params.sigma.difficulty_sample_rate,
             params.prior_past_median_time_window_size(),
             params.sampled_past_median_time_window_size(),
-            params.crescendo.past_median_time_sample_rate,
+            params.sigma.past_median_time_sample_rate,
         );
         let depth_manager = BlockDepthManager::new(
             params.merge_depth(),
@@ -152,7 +152,7 @@ impl ConsensusServices {
             params.coinbase_maturity(),
             tx_script_cache_counters,
             mass_calculator.clone(),
-            params.crescendo_activation,
+            params.sigma_activation,
         );
 
         let pruning_point_manager = PruningPointManager::new(

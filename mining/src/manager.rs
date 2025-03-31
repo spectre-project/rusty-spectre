@@ -47,7 +47,7 @@ pub struct MiningManager {
 }
 
 impl MiningManager {
-    // [Crescendo]: used for tests only so we can pass a single value target_time_per_block
+    // [Sigma]: used for tests only so we can pass a single value target_time_per_block
     pub fn new(
         target_time_per_block: u64,
         relay_non_std_transactions: bool,

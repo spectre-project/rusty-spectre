@@ -17,7 +17,7 @@ use spectre_consensus::model::stores::reachability::DbReachabilityStore;
 use spectre_consensus::model::stores::relations::DbRelationsStore;
 use spectre_consensus::model::stores::selected_chain::SelectedChainStoreReader;
 use spectre_consensus::params::{
-    ForkActivation, Params, CRESCENDO, DEVNET_PARAMS, MAINNET_PARAMS, MAX_DIFFICULTY_TARGET, MAX_DIFFICULTY_TARGET_AS_F64,
+    ForkActivation, Params, DEVNET_PARAMS, MAINNET_PARAMS, MAX_DIFFICULTY_TARGET, MAX_DIFFICULTY_TARGET_AS_F64, SIGMA,
 };
 use spectre_consensus::pipeline::monitor::ConsensusMonitor;
 use spectre_consensus::pipeline::ProcessingCounters;
@@ -569,7 +569,7 @@ async fn median_time_test() {
             config: ConfigBuilder::new(MAINNET_PARAMS)
                 .skip_proof_of_work()
                 .edit_consensus_params(|p| {
-                    p.crescendo_activation = ForkActivation::never();
+                    p.sigma_activation = ForkActivation::never();
                 })
                 .build(),
         },
@@ -578,10 +578,10 @@ async fn median_time_test() {
             config: ConfigBuilder::new(MAINNET_PARAMS)
                 .skip_proof_of_work()
                 .edit_consensus_params(|p| {
-                    p.crescendo_activation = ForkActivation::always();
+                    p.sigma_activation = ForkActivation::always();
                     p.timestamp_deviation_tolerance = 120;
-                    p.crescendo.past_median_time_sample_rate = 3;
-                    p.crescendo.past_median_time_sampled_window_size = (2 * 120 - 1) / 3;
+                    p.sigma.past_median_time_sample_rate = 3;
+                    p.sigma.past_median_time_sampled_window_size = (2 * 120 - 1) / 3;
                 })
                 .build(),
         },
@@ -847,8 +847,8 @@ impl SpectredGoParams {
             skip_proof_of_work: self.SkipProofOfWork,
             max_block_level: self.MaxBlockLevel,
             pruning_proof_m: self.PruningProofM,
-            crescendo: CRESCENDO,
-            crescendo_activation: ForkActivation::never(),
+            sigma: SIGMA,
+            sigma_activation: ForkActivation::never(),
         }
     }
 }
@@ -1415,7 +1415,7 @@ async fn difficulty_test() {
                 .edit_consensus_params(|p| {
                     p.prior_ghostdag_k = 1;
                     p.prior_difficulty_window_size = FULL_WINDOW_SIZE;
-                    p.crescendo_activation = ForkActivation::never();
+                    p.sigma_activation = ForkActivation::never();
                     // Define past median time so that calls to add_block_with_min_time create blocks
                     // which timestamps fit within the min-max timestamps found in the difficulty window
                     p.timestamp_deviation_tolerance = 60;
@@ -1429,15 +1429,15 @@ async fn difficulty_test() {
                 .skip_proof_of_work()
                 .edit_consensus_params(|p| {
                     p.prior_ghostdag_k = 1;
-                    p.crescendo.ghostdag_k = 1;
-                    p.crescendo.sampled_difficulty_window_size = SAMPLED_WINDOW_SIZE;
-                    p.crescendo.difficulty_sample_rate = SAMPLE_RATE;
-                    p.crescendo_activation = ForkActivation::always();
-                    p.prior_target_time_per_block = p.crescendo.target_time_per_block;
+                    p.sigma.ghostdag_k = 1;
+                    p.sigma.sampled_difficulty_window_size = SAMPLED_WINDOW_SIZE;
+                    p.sigma.difficulty_sample_rate = SAMPLE_RATE;
+                    p.sigma_activation = ForkActivation::always();
+                    p.prior_target_time_per_block = p.sigma.target_time_per_block;
                     // Define past median time so that calls to add_block_with_min_time create blocks
                     // which timestamps fit within the min-max timestamps found in the difficulty window
-                    p.crescendo.past_median_time_sample_rate = PMT_SAMPLE_RATE;
-                    p.crescendo.past_median_time_sampled_window_size = PMT_SAMPLED_WINDOW_SIZE;
+                    p.sigma.past_median_time_sample_rate = PMT_SAMPLE_RATE;
+                    p.sigma.past_median_time_sampled_window_size = PMT_SAMPLED_WINDOW_SIZE;
                     p.timestamp_deviation_tolerance = PMT_DEVIATION_TOLERANCE;
                 })
                 .build(),
@@ -1449,16 +1449,16 @@ async fn difficulty_test() {
                 .skip_proof_of_work()
                 .edit_consensus_params(|p| {
                     p.prior_ghostdag_k = 1;
-                    p.crescendo.ghostdag_k = 1;
+                    p.sigma.ghostdag_k = 1;
                     p.prior_target_time_per_block /= HIGH_BPS;
-                    p.crescendo.sampled_difficulty_window_size = HIGH_BPS_SAMPLED_WINDOW_SIZE;
-                    p.crescendo.difficulty_sample_rate = SAMPLE_RATE * HIGH_BPS;
-                    p.crescendo_activation = ForkActivation::always();
-                    p.prior_target_time_per_block = p.crescendo.target_time_per_block;
+                    p.sigma.sampled_difficulty_window_size = HIGH_BPS_SAMPLED_WINDOW_SIZE;
+                    p.sigma.difficulty_sample_rate = SAMPLE_RATE * HIGH_BPS;
+                    p.sigma_activation = ForkActivation::always();
+                    p.prior_target_time_per_block = p.sigma.target_time_per_block;
                     // Define past median time so that calls to add_block_with_min_time create blocks
                     // which timestamps fit within the min-max timestamps found in the difficulty window
-                    p.crescendo.past_median_time_sample_rate = PMT_SAMPLE_RATE * HIGH_BPS;
-                    p.crescendo.past_median_time_sampled_window_size = PMT_SAMPLED_WINDOW_SIZE;
+                    p.sigma.past_median_time_sample_rate = PMT_SAMPLE_RATE * HIGH_BPS;
+                    p.sigma.past_median_time_sampled_window_size = PMT_SAMPLED_WINDOW_SIZE;
                     p.timestamp_deviation_tolerance = PMT_DEVIATION_TOLERANCE;
                 })
                 .build(),
@@ -1831,7 +1831,7 @@ async fn run_kip10_activation_test() {
             cfg.params.genesis.hash = genesis_header.hash;
         })
         .edit_consensus_params(|p| {
-            p.crescendo_activation = ForkActivation::new(KIP10_ACTIVATION_DAA_SCORE);
+            p.sigma_activation = ForkActivation::new(KIP10_ACTIVATION_DAA_SCORE);
         })
         .build();
 
@@ -1884,7 +1884,7 @@ async fn run_kip10_activation_test() {
         // Insert our test transaction and recalculate block hashes
         block.transactions.push(tx.clone());
         block.header.hash_merkle_root =
-            calc_hash_merkle_root(block.transactions.iter(), config.crescendo_activation.is_active(block.header.daa_score));
+            calc_hash_merkle_root(block.transactions.iter(), config.sigma_activation.is_active(block.header.daa_score));
         let block_status = consensus.validate_and_insert_block(block.to_immutable()).virtual_state_task.await;
         assert!(matches!(block_status, Ok(BlockStatus::StatusDisqualifiedFromChain)));
         assert_eq!(consensus.lkg_virtual_state.load().daa_score, 2);
@@ -1906,8 +1906,8 @@ async fn payload_test() {
         .skip_proof_of_work()
         .edit_consensus_params(|p| {
             p.prior_coinbase_maturity = 0;
-            p.crescendo.coinbase_maturity = 0;
-            p.crescendo_activation = ForkActivation::always()
+            p.sigma.coinbase_maturity = 0;
+            p.sigma_activation = ForkActivation::always()
         })
         .build();
     let consensus = TestConsensus::new(&config);
@@ -1986,7 +1986,7 @@ async fn payload_activation_test() {
             cfg.params.genesis.hash = genesis_header.hash;
         })
         .edit_consensus_params(|p| {
-            p.crescendo_activation = ForkActivation::new(PAYLOAD_ACTIVATION_DAA_SCORE);
+            p.sigma_activation = ForkActivation::new(PAYLOAD_ACTIVATION_DAA_SCORE);
         })
         .build();
 
@@ -2040,7 +2040,7 @@ async fn payload_activation_test() {
         block.transactions.push(tx.tx.unwrap_or_clone());
 
         block.header.hash_merkle_root =
-            calc_hash_merkle_root(block.transactions.iter(), config.crescendo_activation.is_active(block.header.daa_score));
+            calc_hash_merkle_root(block.transactions.iter(), config.sigma_activation.is_active(block.header.daa_score));
         let block_status = consensus.validate_and_insert_block(block.to_immutable()).virtual_state_task.await;
         assert!(matches!(block_status, Err(RuleError::TxInContextFailed(tx, TxRuleError::NonCoinbaseTxHasPayload)) if tx == tx_id));
         assert_eq!(consensus.lkg_virtual_state.load().daa_score, PAYLOAD_ACTIVATION_DAA_SCORE - 1);
@@ -2119,7 +2119,7 @@ async fn runtime_sig_op_counting_test() {
             cfg.params.genesis.hash = genesis_header.hash;
         })
         .edit_consensus_params(|p| {
-            p.crescendo_activation = ForkActivation::new(RUNTIME_SIGOP_ACTIVATION_DAA_SCORE);
+            p.sigma_activation = ForkActivation::new(RUNTIME_SIGOP_ACTIVATION_DAA_SCORE);
         })
         .build();
 
@@ -2184,7 +2184,7 @@ async fn runtime_sig_op_counting_test() {
             consensus.build_utxo_valid_block_with_parents((index + 1).into(), vec![index.into()], miner_data.clone(), vec![]);
         block.transactions.push(tx.clone());
         block.header.hash_merkle_root =
-            calc_hash_merkle_root(block.transactions.iter(), config.crescendo_activation.is_active(block.header.daa_score));
+            calc_hash_merkle_root(block.transactions.iter(), config.sigma_activation.is_active(block.header.daa_score));
         let block_status = consensus.validate_and_insert_block(block.to_immutable()).virtual_state_task.await;
         assert!(matches!(block_status, Ok(BlockStatus::StatusDisqualifiedFromChain)));
         index += 1;

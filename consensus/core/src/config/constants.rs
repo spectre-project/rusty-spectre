@@ -56,7 +56,7 @@ pub mod consensus {
     /// With 4 seconds sampling interval, a value of 150 indicates 10 minutes of fixed
     /// difficulty until the window grows large enough.
     ///
-    /// TODO (crescendo): finalize
+    /// TODO (sigma): finalize
     pub const MIN_DIFFICULTY_WINDOW_SIZE: usize = 150;
 
     /// **Legacy** difficulty adjustment window size corresponding to ~44 minutes with 1 BPS

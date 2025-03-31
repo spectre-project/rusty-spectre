@@ -59,7 +59,7 @@ pub struct HeaderProcessingContext {
 
     // Staging data
     pub ghostdag_data: Option<Arc<GhostdagData>>,
-    pub selected_parent_daa_score: Option<u64>, // [Crescendo]
+    pub selected_parent_daa_score: Option<u64>, // [Sigma]
     pub block_window_for_difficulty: Option<Arc<BlockWindowHeap>>,
     pub block_window_for_past_median_time: Option<Arc<BlockWindowHeap>>,
     pub mergeset_non_daa: Option<BlockHashSet>,
@@ -127,7 +127,7 @@ pub struct HeaderProcessor {
     pub(super) mergeset_size_limit: ForkedParam<u64>,
     pub(super) skip_proof_of_work: bool,
     pub(super) max_block_level: BlockLevel,
-    pub(super) crescendo_activation: ForkActivation,
+    pub(super) sigma_activation: ForkActivation,
 
     // DB
     db: Arc<DB>,
@@ -214,7 +214,7 @@ impl HeaderProcessor {
             mergeset_size_limit: params.mergeset_size_limit(),
             skip_proof_of_work: params.skip_proof_of_work,
             max_block_level: params.max_block_level,
-            crescendo_activation: params.crescendo_activation,
+            sigma_activation: params.sigma_activation,
         }
     }
 
@@ -307,7 +307,7 @@ impl HeaderProcessor {
         self.validate_parent_relations(header)?;
         let mut ctx = self.build_processing_context(header, block_level);
         self.ghostdag(&mut ctx);
-        // [Crescendo]: persist the selected parent DAA score to be used for activation checks
+        // [Sigma]: persist the selected parent DAA score to be used for activation checks
         ctx.selected_parent_daa_score = Some(self.headers_store.get_daa_score(ctx.ghostdag_data().selected_parent).unwrap());
         self.pre_pow_validation(&mut ctx, header)?;
         if let Err(e) = self.post_pow_validation(&mut ctx, header) {

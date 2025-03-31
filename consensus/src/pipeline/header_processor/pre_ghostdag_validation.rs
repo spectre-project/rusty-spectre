@@ -49,7 +49,7 @@ impl HeaderProcessor {
             return Err(RuleError::NoParents);
         }
 
-        // [Crescendo]: moved the tight parents limit check to pre_pow_validation since it requires selected parent DAA score info
+        // [Sigma]: moved the tight parents limit check to pre_pow_validation since it requires selected parent DAA score info
         // which is available only post ghostdag. We keep this upper bound check here since this method is applied to trusted blocks
         // as well.
         if header.direct_parents().len() > self.max_block_parents.upper_bound() as usize {

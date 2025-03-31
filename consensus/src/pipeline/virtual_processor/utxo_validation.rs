@@ -44,19 +44,19 @@ use rayon::prelude::*;
 use smallvec::{smallvec, SmallVec};
 use std::{iter::once, ops::Deref};
 
-pub(crate) mod crescendo {
-    use spectre_core::{info, log::CRESCENDO_KEYWORD};
+pub(crate) mod sigma {
+    use spectre_core::{info, log::SIGMA_KEYWORD};
     use std::sync::{
         atomic::{AtomicU8, Ordering},
         Arc,
     };
 
     #[derive(Clone)]
-    pub(crate) struct CrescendoLogger {
+    pub(crate) struct SigmaLogger {
         steps: Arc<AtomicU8>,
     }
 
-    impl CrescendoLogger {
+    impl SigmaLogger {
         pub fn new() -> Self {
             Self { steps: Arc::new(AtomicU8::new(Self::ACTIVATE)) }
         }
@@ -65,7 +65,7 @@ pub(crate) mod crescendo {
 
         pub fn report_activation(&self) -> bool {
             if self.steps.compare_exchange(Self::ACTIVATE, Self::ACTIVATE + 1, Ordering::SeqCst, Ordering::SeqCst).is_ok() {
-                info!(target: CRESCENDO_KEYWORD, "[Crescendo] [--------- Crescendo activated for UTXO state processing rules ---------]");
+                info!(target: SIGMA_KEYWORD, "[Sigma] [--------- Sigma activated for UTXO state processing rules ---------]");
                 true
             } else {
                 false
@@ -176,11 +176,11 @@ impl VirtualStateProcessor {
             );
         }
 
-        // Before crescendo HF:
+        // Before sigma HF:
         //  - Make sure accepted tx ids are sorted before building the merkle root
-        // After crescendo HF:
+        // After sigma HF:
         //  - Preserve canonical order of accepted transactions after hard-fork
-        if !self.crescendo_activation.is_active(pov_daa_score) {
+        if !self.sigma_activation.is_active(pov_daa_score) {
             // Note that pov_daa_score is the score of the header which will have its accepted_id_merkle_root
             // set according to accepted_tx_ids, so we are consistent in activating via the correct score
             ctx.accepted_tx_ids.sort();
@@ -252,18 +252,18 @@ impl VirtualStateProcessor {
         header: &Header,
         ghostdag_data: CompactGhostdagData,
     ) -> BlockProcessResult<PruningPointReply> {
-        // [Crescendo]: changing expected pruning point check from header validity to chain qualification.
+        // [Sigma]: changing expected pruning point check from header validity to chain qualification.
         // Note that we activate here based on the selected parent DAA score thus complementing the deactivation
         // in header processor which is based on selected parent DAA score as well.
 
-        if self.crescendo_activation.is_within_range_from_activation(header.daa_score, 1000) {
-            self.crescendo_logger.report_activation();
+        if self.sigma_activation.is_within_range_from_activation(header.daa_score, 1000) {
+            self.sigma_logger.report_activation();
         }
 
         let selected_parent_daa_score = self.headers_store.get_daa_score(ghostdag_data.selected_parent).unwrap();
-        // [Crescendo]: we need to save reply.pruning_sample to the database also prior to activation
+        // [Sigma]: we need to save reply.pruning_sample to the database also prior to activation
         let reply = self.pruning_point_manager.expected_header_pruning_point_v2(ghostdag_data);
-        if self.crescendo_activation.is_active(selected_parent_daa_score) {
+        if self.sigma_activation.is_active(selected_parent_daa_score) {
             if reply.pruning_point != header.pruning_point {
                 return Err(WrongHeaderPruningPoint(reply.pruning_point, header.pruning_point));
             }
@@ -288,7 +288,7 @@ impl VirtualStateProcessor {
             .expected_coinbase_transaction(daa_score, miner_data, ghostdag_data, mergeset_rewards, mergeset_non_daa)
             .unwrap()
             .tx;
-        // [Crescendo]: we can pass include_mass_field = false here since post activation coinbase mass field
+        // [Sigma]: we can pass include_mass_field = false here since post activation coinbase mass field
         // is guaranteed to be zero (see check_coinbase_has_zero_mass), so after the fork we will be able to
         // safely remove the include_mass_field parameter. This is because internally include_mass_field = false
         // and mass = 0 are treated the same.
@@ -382,7 +382,7 @@ impl VirtualStateProcessor {
             Ok(calculated_fee) => Ok(ValidatedTransaction::new(populated_tx, calculated_fee)),
             Err(tx_rule_error) => {
                 // TODO (relaxed): aggregate by error types and log through the monitor (in order to not flood the logs)
-                // [Crescendo]: the above suggested aggregate seems not crucial for crescendo since unupdated miners
+                // [Sigma]: the above suggested aggregate seems not crucial for sigma since unupdated miners
                 // will mine invalid blocks (due to difficulty, coinbase etc)
                 info!("Rejecting transaction {} due to transaction rule error: {}", transaction.id(), tx_rule_error);
                 Err(tx_rule_error)
@@ -458,7 +458,7 @@ impl VirtualStateProcessor {
         accepted_tx_ids: impl ExactSizeIterator<Item = Hash>,
         selected_parent: Hash,
     ) -> Hash {
-        if self.crescendo_activation.is_active(daa_score) {
+        if self.sigma_activation.is_active(daa_score) {
             spectre_merkle::merkle_hash(
                 self.headers_store.get_header(selected_parent).unwrap().accepted_id_merkle_root,
                 spectre_merkle::calc_merkle_root(accepted_tx_ids),

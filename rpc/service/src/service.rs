@@ -287,8 +287,8 @@ impl RpcCoreService {
     }
 
     fn sanity_check_storage_mass(&self, block: Block) {
-        // [Crescendo]: warn non updated miners to upgrade their rpc flow before Crescendo activation
-        if self.config.crescendo_activation.is_active(block.header.daa_score) {
+        // [Sigma]: warn non updated miners to upgrade their rpc flow before Sigma activation
+        if self.config.sigma_activation.is_active(block.header.daa_score) {
             return;
         }
 
@@ -330,8 +330,8 @@ impl RpcCoreService {
                 if storage_mass_lower > 0 {
                     warn!("The RPC submitted block {} contains a transaction {} with mass = 0 while it should have been strictly positive.
 This indicates that the RPC conversion flow used by the miner does not preserve the mass values received from GetBlockTemplate.
-You must upgrade your miner flow to propagate the mass field correctly prior to the Crescendo hardfork activation. 
-Failure to do so will result in your blocks being considered invalid when Crescendo activates.",
+You must upgrade your miner flow to propagate the mass field correctly prior to the Sigma hardfork activation. 
+Failure to do so will result in your blocks being considered invalid when Sigma activates.",
                             block.hash(),
                             tx.id()
                         );
@@ -376,7 +376,7 @@ impl RpcApi for RpcCoreService {
             // A simple heuristic check which signals that the mined block is out of date
             // and should not be accepted unless user explicitly requests
             //
-            // [Crescendo]: switch to the larger duration only after a full window with the new duration is reached post activation
+            // [Sigma]: switch to the larger duration only after a full window with the new duration is reached post activation
             let difficulty_window_duration = self
                 .config
                 .difficulty_window_duration_in_block_units()

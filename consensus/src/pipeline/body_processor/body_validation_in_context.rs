@@ -62,12 +62,12 @@ impl BlockBodyProcessor {
     }
 
     fn check_coinbase_outputs_limit(&self, block: &Block) -> BlockProcessResult<()> {
-        // [Crescendo]: coinbase_outputs_limit depends on ghostdag k and thus depends on fork activation
+        // [Sigma]: coinbase_outputs_limit depends on ghostdag k and thus depends on fork activation
         // which makes it header contextual.
         //
         // TODO (post HF): move this check back to transaction in isolation validation
 
-        // [Crescendo]: Ghostdag k activation is decided based on selected parent DAA score
+        // [Sigma]: Ghostdag k activation is decided based on selected parent DAA score
         // so we follow the same methodology for coinbase output limit (which is driven from the
         // actual bound on the number of blue blocks in the mergeset).
         //

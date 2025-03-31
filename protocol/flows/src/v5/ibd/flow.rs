@@ -189,13 +189,13 @@ impl IbdFlow {
         }
 
         let hst_header = consensus.async_get_header(consensus.async_get_headers_selected_tip().await).await.unwrap();
-        // [Crescendo]: use the post crescendo pruning depth depending on hst's DAA score.
+        // [Sigma]: use the post sigma pruning depth depending on hst's DAA score.
         // Having a shorter depth for this condition for the fork transition period (if hst is shortly before activation)
         // is negligible since there are other conditions required for activating an headers proof IBD. The important
         // thing is that we eventually adjust to the longer period.
         let pruning_depth = self.ctx.config.pruning_depth().get(hst_header.daa_score);
         if relay_header.blue_score >= hst_header.blue_score + pruning_depth && relay_header.blue_work > hst_header.blue_work {
-            // [Crescendo]: switch to the new *shorter* finality duration only after sufficient time has passed
+            // [Sigma]: switch to the new *shorter* finality duration only after sufficient time has passed
             // since activation (measured via the new *larger* finality depth).
             // Note: these are not critical execution paths so such estimation heuristics are completely ok in this context.
             let finality_duration_in_milliseconds = self

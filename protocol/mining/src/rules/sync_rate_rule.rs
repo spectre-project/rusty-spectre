@@ -136,13 +136,13 @@ mod tests {
         let (use_sync_rate_rule, rule) = create_rule();
 
         let good_snapshot =
-            ProcessingCountersSnapshot { blocks_submitted: 100, header_counts: 100, body_counts: 100, ..Default::default() };
+            ProcessingCountersSnapshot { blocks_submitted: 80, header_counts: 80, body_counts: 80, ..Default::default() };
 
         let bad_snapshot = ProcessingCountersSnapshot::default();
 
         let extra_data = &ExtraData {
             elapsed_time: std::time::Duration::from_secs(10),
-            target_time_per_block: 100, // 10bps value
+            target_time_per_block: 125, // 8bps value
             finality_point_timestamp: unix_now(),
             finality_duration: 1000,
             has_sufficient_peer_connectivity: true,
@@ -192,7 +192,7 @@ mod tests {
 
         let extra_data = &ExtraData {
             elapsed_time: std::time::Duration::from_secs(10),
-            target_time_per_block: 100,                                        // 10bps value
+            target_time_per_block: 125,                                        // 5bps value
             finality_point_timestamp: unix_now().saturating_sub(1000 * 3) - 1, // the millisecond right before timestamp is "old enough"
             finality_duration: 1000,
             has_sufficient_peer_connectivity: true,
@@ -253,8 +253,8 @@ mod tests {
     fn test_sync_rate_window_update_result_when_window_is_filled() {
         let (_, rule) = create_rule();
 
-        let received_blocks = 10;
-        let expected_blocks = 10;
+        let received_blocks = 8;
+        let expected_blocks = 8;
 
         // Fill the window
         for _ in 0..SYNC_RATE_WINDOW_MAX_SIZE {

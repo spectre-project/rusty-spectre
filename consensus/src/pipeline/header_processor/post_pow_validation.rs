@@ -55,7 +55,7 @@ impl HeaderProcessor {
 
     pub fn check_indirect_parents(&self, ctx: &mut HeaderProcessingContext, header: &Header) -> BlockProcessResult<()> {
         let expected_block_parents = self.parents_manager.calc_block_parents(ctx.pruning_point(), header.direct_parents());
-        let crescendo_activated = self.crescendo_activation.is_active(ctx.selected_parent_daa_score());
+        let sigma_activated = self.sigma_activation.is_active(ctx.selected_parent_daa_score());
         if header.parents_by_level.len() != expected_block_parents.len()
             || !expected_block_parents.iter().enumerate().all(|(block_level, expected_level_parents)| {
                 let header_level_parents = &header.parents_by_level[block_level];
@@ -66,7 +66,7 @@ impl HeaderProcessor {
                 if header_level_parents == expected_level_parents {
                     return true;
                 }
-                if crescendo_activated {
+                if sigma_activated {
                     HashSet::<&Hash>::from_iter(header_level_parents) == HashSet::<&Hash>::from_iter(expected_level_parents)
                 } else {
                     let expected_set = HashSet::<&Hash>::from_iter(expected_level_parents);
@@ -83,8 +83,8 @@ impl HeaderProcessor {
     }
 
     pub fn check_pruning_point(&self, ctx: &mut HeaderProcessingContext, header: &Header) -> BlockProcessResult<()> {
-        // [Crescendo]: changing expected pruning point check from header validity to chain qualification
-        if !self.crescendo_activation.is_active(ctx.selected_parent_daa_score()) {
+        // [Sigma]: changing expected pruning point check from header validity to chain qualification
+        if !self.sigma_activation.is_active(ctx.selected_parent_daa_score()) {
             let expected =
                 self.pruning_point_manager.expected_header_pruning_point_v1(ctx.ghostdag_data().to_compact(), ctx.pruning_info);
             if expected != header.pruning_point {

@@ -830,7 +830,7 @@ impl ConsensusApi for Consensus {
     }
 
     fn calc_transaction_hash_merkle_root(&self, txs: &[Transaction], pov_daa_score: u64) -> Hash {
-        let storage_mass_activated = self.config.crescendo_activation.is_active(pov_daa_score);
+        let storage_mass_activated = self.config.sigma_activation.is_active(pov_daa_score);
         calc_hash_merkle_root(txs.iter(), storage_mass_activated)
     }
 
@@ -1086,7 +1086,7 @@ impl ConsensusApi for Consensus {
             return Err(ConsensusError::UnexpectedPruningPoint);
         }
 
-        // [Crescendo]: get ghostdag k based on the pruning point's DAA score. The off-by-one of not going by selected parent
+        // [Sigma]: get ghostdag k based on the pruning point's DAA score. The off-by-one of not going by selected parent
         // DAA score is not important here as we simply increase K one block earlier which is more conservative (saving/sending more data)
         let ghostdag_k = self.config.ghostdag_k().get(self.headers_store.get_daa_score(pruning_point).unwrap());
 

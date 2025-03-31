@@ -43,7 +43,7 @@ impl TransactionValidator {
         let total_in = self.check_transaction_input_amounts(tx)?;
         let total_out = Self::check_transaction_output_values(tx, total_in)?;
         let fee = total_in - total_out;
-        if flags != TxValidationFlags::SkipMassCheck && self.crescendo_activation.is_active(block_daa_score) {
+        if flags != TxValidationFlags::SkipMassCheck && self.sigma_activation.is_active(block_daa_score) {
             // Storage mass hardfork was activated
             self.check_mass_commitment(tx)?;
         }
@@ -55,7 +55,7 @@ impl TransactionValidator {
 
         match flags {
             TxValidationFlags::Full | TxValidationFlags::SkipMassCheck => {
-                if !self.crescendo_activation.is_active(block_daa_score) {
+                if !self.sigma_activation.is_active(block_daa_score) {
                     Self::check_sig_op_counts(tx)?;
                 }
                 self.check_scripts(tx, block_daa_score)?;
@@ -177,8 +177,8 @@ impl TransactionValidator {
         check_scripts(
             &self.sig_cache,
             tx,
-            self.crescendo_activation.is_active(block_daa_score),
-            self.crescendo_activation.is_active(block_daa_score),
+            self.sigma_activation.is_active(block_daa_score),
+            self.sigma_activation.is_active(block_daa_score),
         )
     }
 }

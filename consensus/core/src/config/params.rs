@@ -1,5 +1,5 @@
 pub use super::{
-    bps::{Bps, TenBps},
+    bps::{Bps, EightBps},
     constants::consensus::*,
     genesis::{GenesisBlock, DEVNET_GENESIS, GENESIS, SIMNET_GENESIS, TESTNET11_GENESIS, TESTNET_GENESIS},
 };
@@ -138,9 +138,9 @@ impl<T: Copy + Ord> ForkedParam<T> {
     }
 }
 
-/// Fork params for the Crescendo hardfork
+/// Fork params for the Sigma hardfork
 #[derive(Clone, Debug)]
-pub struct CrescendoParams {
+pub struct SigmaParams {
     pub past_median_time_sampled_window_size: u64,
     pub sampled_difficulty_window_size: u64,
 
@@ -165,24 +165,24 @@ pub struct CrescendoParams {
     pub coinbase_maturity: u64,
 }
 
-pub const CRESCENDO: CrescendoParams = CrescendoParams {
+pub const SIGMA: SigmaParams = SigmaParams {
     past_median_time_sampled_window_size: MEDIAN_TIME_SAMPLED_WINDOW_SIZE,
     sampled_difficulty_window_size: DIFFICULTY_SAMPLED_WINDOW_SIZE,
 
     //
     // ~~~~~~~~~~~~~~~~~~ BPS dependent constants ~~~~~~~~~~~~~~~~~~
     //
-    target_time_per_block: TenBps::target_time_per_block(),
-    ghostdag_k: TenBps::ghostdag_k(),
-    past_median_time_sample_rate: TenBps::past_median_time_sample_rate(),
-    difficulty_sample_rate: TenBps::difficulty_adjustment_sample_rate(),
-    max_block_parents: TenBps::max_block_parents(),
-    mergeset_size_limit: TenBps::mergeset_size_limit(),
-    merge_depth: TenBps::merge_depth_bound(),
-    finality_depth: TenBps::finality_depth(),
-    pruning_depth: TenBps::pruning_depth(),
+    target_time_per_block: EightBps::target_time_per_block(),
+    ghostdag_k: EightBps::ghostdag_k(),
+    past_median_time_sample_rate: EightBps::past_median_time_sample_rate(),
+    difficulty_sample_rate: EightBps::difficulty_adjustment_sample_rate(),
+    max_block_parents: EightBps::max_block_parents(),
+    mergeset_size_limit: EightBps::mergeset_size_limit(),
+    merge_depth: EightBps::merge_depth_bound(),
+    finality_depth: EightBps::finality_depth(),
+    pruning_depth: EightBps::pruning_depth(),
 
-    coinbase_maturity: TenBps::coinbase_maturity(),
+    coinbase_maturity: EightBps::coinbase_maturity(),
 
     // Limit the cost of calculating compute/transient/storage masses
     max_tx_inputs: 1000,
@@ -253,8 +253,8 @@ pub struct Params {
     pub max_block_level: BlockLevel,
     pub pruning_proof_m: u64,
 
-    pub crescendo: CrescendoParams,
-    pub crescendo_activation: ForkActivation,
+    pub sigma: SigmaParams,
+    pub sigma_activation: ForkActivation,
 }
 
 impl Params {
@@ -269,119 +269,105 @@ impl Params {
     #[inline]
     #[must_use]
     pub fn sampled_past_median_time_window_size(&self) -> usize {
-        self.crescendo.past_median_time_sampled_window_size as usize
+        self.sigma.past_median_time_sampled_window_size as usize
     }
 
     /// Returns the size of the blocks window that is inspected to calculate the past median time.
     #[inline]
     #[must_use]
     pub fn past_median_time_window_size(&self) -> ForkedParam<usize> {
-        ForkedParam::new(
-            self.prior_past_median_time_window_size(),
-            self.sampled_past_median_time_window_size(),
-            self.crescendo_activation,
-        )
+        ForkedParam::new(self.prior_past_median_time_window_size(), self.sampled_past_median_time_window_size(), self.sigma_activation)
     }
 
     /// Returns the past median time sample rate
     #[inline]
     #[must_use]
     pub fn past_median_time_sample_rate(&self) -> ForkedParam<u64> {
-        ForkedParam::new(1, self.crescendo.past_median_time_sample_rate, self.crescendo_activation)
+        ForkedParam::new(1, self.sigma.past_median_time_sample_rate, self.sigma_activation)
     }
 
     /// Returns the size of the blocks window that is inspected to calculate the difficulty
     #[inline]
     #[must_use]
     pub fn difficulty_window_size(&self) -> ForkedParam<usize> {
-        ForkedParam::new(
-            self.prior_difficulty_window_size,
-            self.crescendo.sampled_difficulty_window_size as usize,
-            self.crescendo_activation,
-        )
+        ForkedParam::new(self.prior_difficulty_window_size, self.sigma.sampled_difficulty_window_size as usize, self.sigma_activation)
     }
 
     /// Returns the difficulty sample rate
     #[inline]
     #[must_use]
     pub fn difficulty_sample_rate(&self) -> ForkedParam<u64> {
-        ForkedParam::new(1, self.crescendo.difficulty_sample_rate, self.crescendo_activation)
+        ForkedParam::new(1, self.sigma.difficulty_sample_rate, self.sigma_activation)
     }
 
     /// Returns the target time per block
     #[inline]
     #[must_use]
     pub fn target_time_per_block(&self) -> ForkedParam<u64> {
-        ForkedParam::new(self.prior_target_time_per_block, self.crescendo.target_time_per_block, self.crescendo_activation)
+        ForkedParam::new(self.prior_target_time_per_block, self.sigma.target_time_per_block, self.sigma_activation)
     }
 
     /// Returns the expected number of blocks per second
     #[inline]
     #[must_use]
     pub fn bps(&self) -> ForkedParam<u64> {
-        ForkedParam::new(
-            1000 / self.prior_target_time_per_block,
-            1000 / self.crescendo.target_time_per_block,
-            self.crescendo_activation,
-        )
+        ForkedParam::new(1000 / self.prior_target_time_per_block, 1000 / self.sigma.target_time_per_block, self.sigma_activation)
     }
 
     pub fn ghostdag_k(&self) -> ForkedParam<KType> {
-        ForkedParam::new(self.prior_ghostdag_k, self.crescendo.ghostdag_k, self.crescendo_activation)
+        ForkedParam::new(self.prior_ghostdag_k, self.sigma.ghostdag_k, self.sigma_activation)
     }
 
     pub fn max_block_parents(&self) -> ForkedParam<u8> {
-        ForkedParam::new(self.prior_max_block_parents, self.crescendo.max_block_parents, self.crescendo_activation)
+        ForkedParam::new(self.prior_max_block_parents, self.sigma.max_block_parents, self.sigma_activation)
     }
 
     pub fn mergeset_size_limit(&self) -> ForkedParam<u64> {
-        ForkedParam::new(self.prior_mergeset_size_limit, self.crescendo.mergeset_size_limit, self.crescendo_activation)
+        ForkedParam::new(self.prior_mergeset_size_limit, self.sigma.mergeset_size_limit, self.sigma_activation)
     }
 
     pub fn merge_depth(&self) -> ForkedParam<u64> {
-        ForkedParam::new(self.prior_merge_depth, self.crescendo.merge_depth, self.crescendo_activation)
+        ForkedParam::new(self.prior_merge_depth, self.sigma.merge_depth, self.sigma_activation)
     }
 
     pub fn finality_depth(&self) -> ForkedParam<u64> {
-        ForkedParam::new(self.prior_finality_depth, self.crescendo.finality_depth, self.crescendo_activation)
+        ForkedParam::new(self.prior_finality_depth, self.sigma.finality_depth, self.sigma_activation)
     }
 
     pub fn pruning_depth(&self) -> ForkedParam<u64> {
-        ForkedParam::new(self.prior_pruning_depth, self.crescendo.pruning_depth, self.crescendo_activation)
+        ForkedParam::new(self.prior_pruning_depth, self.sigma.pruning_depth, self.sigma_activation)
     }
 
     pub fn coinbase_maturity(&self) -> ForkedParam<u64> {
-        ForkedParam::new(self.prior_coinbase_maturity, self.crescendo.coinbase_maturity, self.crescendo_activation)
+        ForkedParam::new(self.prior_coinbase_maturity, self.sigma.coinbase_maturity, self.sigma_activation)
     }
 
     pub fn finality_duration_in_milliseconds(&self) -> ForkedParam<u64> {
         ForkedParam::new(
             self.prior_target_time_per_block * self.prior_finality_depth,
-            self.crescendo.target_time_per_block * self.crescendo.finality_depth,
-            self.crescendo_activation,
+            self.sigma.target_time_per_block * self.sigma.finality_depth,
+            self.sigma_activation,
         )
     }
 
     pub fn difficulty_window_duration_in_block_units(&self) -> ForkedParam<u64> {
         ForkedParam::new(
             self.prior_difficulty_window_size as u64,
-            self.crescendo.difficulty_sample_rate * self.crescendo.sampled_difficulty_window_size,
-            self.crescendo_activation,
+            self.sigma.difficulty_sample_rate * self.sigma.sampled_difficulty_window_size,
+            self.sigma_activation,
         )
     }
 
     pub fn expected_difficulty_window_duration_in_milliseconds(&self) -> ForkedParam<u64> {
         ForkedParam::new(
             self.prior_target_time_per_block * self.prior_difficulty_window_size as u64,
-            self.crescendo.target_time_per_block
-                * self.crescendo.difficulty_sample_rate
-                * self.crescendo.sampled_difficulty_window_size,
-            self.crescendo_activation,
+            self.sigma.target_time_per_block * self.sigma.difficulty_sample_rate * self.sigma.sampled_difficulty_window_size,
+            self.sigma_activation,
         )
     }
 
     /// Returns the depth at which the anticone of a chain block is final (i.e., is a permanently closed set).
-    /// Based on the analysis at <https://github.com/spectrenet/docs/blob/main/Reference/prunality/Prunality.pdf>
+    /// Based on the analysis at <https://github.com/kaspanet/docs/blob/main/Reference/prunality/Prunality.pdf>
     /// and on the decomposition of merge depth (rule R-I therein) from finality depth (φ)
     pub fn anticone_finalization_depth(&self) -> ForkedParam<u64> {
         let prior_anticone_finalization_depth = self.prior_finality_depth
@@ -390,10 +376,10 @@ impl Params {
             + 2 * self.prior_ghostdag_k as u64
             + 2;
 
-        let new_anticone_finalization_depth = self.crescendo.finality_depth
-            + self.crescendo.merge_depth
-            + 4 * self.crescendo.mergeset_size_limit * self.crescendo.ghostdag_k as u64
-            + 2 * self.crescendo.ghostdag_k as u64
+        let new_anticone_finalization_depth = self.sigma.finality_depth
+            + self.sigma.merge_depth
+            + 4 * self.sigma.mergeset_size_limit * self.sigma.ghostdag_k as u64
+            + 2 * self.sigma.ghostdag_k as u64
             + 2;
 
         // In mainnet it's guaranteed that `self.pruning_depth` is greater
@@ -403,25 +389,25 @@ impl Params {
         // not finalized.
         ForkedParam::new(
             min(self.prior_pruning_depth, prior_anticone_finalization_depth),
-            min(self.crescendo.pruning_depth, new_anticone_finalization_depth),
-            self.crescendo_activation,
+            min(self.sigma.pruning_depth, new_anticone_finalization_depth),
+            self.sigma_activation,
         )
     }
 
     pub fn max_tx_inputs(&self) -> ForkedParam<usize> {
-        ForkedParam::new(self.prior_max_tx_inputs, self.crescendo.max_tx_inputs, self.crescendo_activation)
+        ForkedParam::new(self.prior_max_tx_inputs, self.sigma.max_tx_inputs, self.sigma_activation)
     }
 
     pub fn max_tx_outputs(&self) -> ForkedParam<usize> {
-        ForkedParam::new(self.prior_max_tx_outputs, self.crescendo.max_tx_outputs, self.crescendo_activation)
+        ForkedParam::new(self.prior_max_tx_outputs, self.sigma.max_tx_outputs, self.sigma_activation)
     }
 
     pub fn max_signature_script_len(&self) -> ForkedParam<usize> {
-        ForkedParam::new(self.prior_max_signature_script_len, self.crescendo.max_signature_script_len, self.crescendo_activation)
+        ForkedParam::new(self.prior_max_signature_script_len, self.sigma.max_signature_script_len, self.sigma_activation)
     }
 
     pub fn max_script_public_key_len(&self) -> ForkedParam<usize> {
-        ForkedParam::new(self.prior_max_script_public_key_len, self.crescendo.max_script_public_key_len, self.crescendo_activation)
+        ForkedParam::new(self.prior_max_script_public_key_len, self.sigma.max_script_public_key_len, self.sigma_activation)
     }
 
     pub fn network_name(&self) -> String {
@@ -518,8 +504,8 @@ pub const MAINNET_PARAMS: Params = Params {
     max_block_level: 225,
     pruning_proof_m: 1000,
 
-    crescendo: CRESCENDO,
-    crescendo_activation: ForkActivation::never(),
+    sigma: SIGMA,
+    sigma_activation: ForkActivation::never(),
 };
 
 pub const TESTNET_PARAMS: Params = Params {
@@ -572,9 +558,9 @@ pub const TESTNET_PARAMS: Params = Params {
     max_block_level: 250,
     pruning_proof_m: 1000,
 
-    crescendo: CRESCENDO,
+    sigma: SIGMA,
     // TODO: set a date for TN10
-    crescendo_activation: ForkActivation::never(),
+    sigma_activation: ForkActivation::never(),
 };
 
 pub const SIMNET_PARAMS: Params = Params {
@@ -590,18 +576,18 @@ pub const SIMNET_PARAMS: Params = Params {
     //
     // ~~~~~~~~~~~~~~~~~~ BPS dependent constants ~~~~~~~~~~~~~~~~~~
     //
-    // Note we use a 10 BPS configuration for simnet
-    prior_ghostdag_k: TenBps::ghostdag_k(),
-    prior_target_time_per_block: TenBps::target_time_per_block(),
+    // Note we use a 8 BPS configuration for simnet
+    prior_ghostdag_k: EightBps::ghostdag_k(),
+    prior_target_time_per_block: EightBps::target_time_per_block(),
     // For simnet, we deviate from TN11 configuration and allow at least 64 parents in order to support mempool benchmarks out of the box
-    prior_max_block_parents: if TenBps::max_block_parents() > 64 { TenBps::max_block_parents() } else { 64 },
-    prior_mergeset_size_limit: TenBps::mergeset_size_limit(),
-    prior_merge_depth: TenBps::merge_depth_bound(),
-    prior_finality_depth: TenBps::finality_depth(),
-    prior_pruning_depth: TenBps::pruning_depth(),
-    deflationary_phase_daa_score: TenBps::deflationary_phase_daa_score(),
-    pre_deflationary_phase_base_subsidy: TenBps::pre_deflationary_phase_base_subsidy(),
-    prior_coinbase_maturity: TenBps::coinbase_maturity(),
+    prior_max_block_parents: if EightBps::max_block_parents() > 64 { EightBps::max_block_parents() } else { 64 },
+    prior_mergeset_size_limit: EightBps::mergeset_size_limit(),
+    prior_merge_depth: EightBps::merge_depth_bound(),
+    prior_finality_depth: EightBps::finality_depth(),
+    prior_pruning_depth: EightBps::pruning_depth(),
+    deflationary_phase_daa_score: EightBps::deflationary_phase_daa_score(),
+    pre_deflationary_phase_base_subsidy: EightBps::pre_deflationary_phase_base_subsidy(),
+    prior_coinbase_maturity: EightBps::coinbase_maturity(),
 
     coinbase_payload_script_public_key_max_len: 150,
     max_coinbase_payload_len: 204,
@@ -622,8 +608,8 @@ pub const SIMNET_PARAMS: Params = Params {
     max_block_level: 250,
     pruning_proof_m: PRUNING_PROOF_M,
 
-    crescendo: CRESCENDO,
-    crescendo_activation: ForkActivation::always(),
+    sigma: SIGMA,
+    sigma_activation: ForkActivation::always(),
 };
 
 pub const DEVNET_PARAMS: Params = Params {
@@ -672,6 +658,6 @@ pub const DEVNET_PARAMS: Params = Params {
     max_block_level: 250,
     pruning_proof_m: 1000,
 
-    crescendo: CRESCENDO,
-    crescendo_activation: ForkActivation::never(),
+    sigma: SIGMA,
+    sigma_activation: ForkActivation::never(),
 };

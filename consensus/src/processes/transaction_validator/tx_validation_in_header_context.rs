@@ -94,7 +94,7 @@ impl TransactionValidator {
 
     fn check_transaction_payload(&self, tx: &Transaction, ctx_daa_score: u64) -> TxResult<()> {
         // TODO (post HF): move back to in isolation validation
-        if self.crescendo_activation.is_active(ctx_daa_score) {
+        if self.sigma_activation.is_active(ctx_daa_score) {
             Ok(())
         } else {
             if !tx.is_coinbase() && !tx.payload.is_empty() {

@@ -147,7 +147,7 @@ impl<T: GhostdagStoreReader, S: RelationsStoreReader, U: ReachabilityService, V:
             // ORIGIN is always a single parent so both blue score and work should remain zero
             return GhostdagData::new_with_selected_parent(selected_parent, 1); // k is only a capacity hint here
         }
-        // [Crescendo]: get k as function of the selected parent DAA score
+        // [Sigma]: get k as function of the selected parent DAA score
         let k = self.k.get(self.headers_store.get_daa_score(selected_parent).unwrap());
         // Initialize new GHOSTDAG block data with the selected parent
         let mut new_block_data = GhostdagData::new_with_selected_parent(selected_parent, k);
@@ -235,7 +235,7 @@ impl<T: GhostdagStoreReader, S: RelationsStoreReader, U: ReachabilityService, V:
             // This is a sanity check that validates that a blue
             // block's blue anticone is not already larger than K.
             assert!(peer_blue_anticone_size <= k, "found blue anticone larger than K");
-            // [Crescendo]: this ^ is a valid assert since we are increasing k. Had we decreased k, this line would
+            // [Sigma]: this ^ is a valid assert since we are increasing k. Had we decreased k, this line would
             //              need to be removed and the condition above would need to be changed to >= k
         }
 

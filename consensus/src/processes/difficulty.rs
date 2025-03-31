@@ -8,7 +8,7 @@ use spectre_consensus_core::{
     errors::difficulty::{DifficultyError, DifficultyResult},
     BlockHashSet, BlueWorkType, MAX_WORK_LEVEL,
 };
-use spectre_core::{info, log::CRESCENDO_KEYWORD};
+use spectre_core::{info, log::SIGMA_KEYWORD};
 use spectre_hashes::Hash;
 use spectre_math::{Uint256, Uint320};
 use std::{
@@ -169,11 +169,11 @@ impl<T: HeaderStoreReader> DifficultyManagerExtension for FullDifficultyManager<
 }
 
 #[derive(Clone)]
-struct CrescendoLogger {
+struct SigmaLogger {
     steps: Arc<AtomicU8>,
 }
 
-impl CrescendoLogger {
+impl SigmaLogger {
     fn new() -> Self {
         Self { steps: Arc::new(AtomicU8::new(Self::ACTIVATE)) }
     }
@@ -186,23 +186,29 @@ impl CrescendoLogger {
         if self.steps.compare_exchange(step, step + 1, AtomicOrdering::SeqCst, AtomicOrdering::SeqCst).is_ok() {
             match step {
                 Self::ACTIVATE => {
-                    // TODO (Crescendo): finalize mainnet ascii art
-                    info!(target: CRESCENDO_KEYWORD,
+                    info!(target: SIGMA_KEYWORD,
                         r#"
-        ____                                  _             
-       / ___|_ __ ___  ___  ___ ___ _ __   __| | ___        
-      | |   | '__/ _ \/ __|/ __/ _ \ '_ \ / _` |/ _ \       
-      | |___| | |  __/\__ \ (_|  __/ | | | (_| | (_) |      
-       \____|_|  \___||___/\___\___|_| |_|\__,_|\___/       
-  _ _                       __      _  ___  _               
- / | |__  _ __  ___         \ \    / |/ _ \| |__  _ __  ___ 
- | | '_ \| '_ \/ __|    _____\ \   | | | | | '_ \| '_ \/ __|
- | | |_) | |_) \__ \   |_____/ /   | | |_| | |_) | |_) \__ \
- |_|_.__/| .__/|___/        /_/    |_|\___/|_.__/| .__/|___/
-         |_|                                     |_|    
-"#
+  πππππππππππππππππππππππππππππππππ
+  πππππππππππ            πππππππππ
+    ππππππππ                    ππ
+      ππππππππ                   ππ
+        ππππππππ                 .π
+          ππππππππ
+            ππππππππ
+              ππππππππ
+                πππππππ
+                  πππ
+                πππ
+              πππ
+            πππ
+          πππ                      .π
+       πππ                        ππ
+     ππππ                  πππππππππ
+   πππππππππππππππππππππππππππππππππ
+ πππππππππππππππππππππππππππππππππ
+                        "#
                     );
-                    info!(target: CRESCENDO_KEYWORD, "[Crescendo] Accelerating block rate 10 fold")
+                    info!(target: SIGMA_KEYWORD, "[Sigma] Accelerating block rate 8 fold")
                 }
                 Self::DYNAMIC => {}
                 Self::FULL => {}
@@ -248,8 +254,8 @@ pub struct SampledDifficultyManager<T: HeaderStoreReader, U: GhostdagStoreReader
     difficulty_sample_rate: u64,
     prior_target_time_per_block: u64,
     target_time_per_block: u64,
-    crescendo_activation: ForkActivation,
-    crescendo_logger: CrescendoLogger,
+    sigma_activation: ForkActivation,
+    sigma_logger: SigmaLogger,
 }
 
 impl<T: HeaderStoreReader, U: GhostdagStoreReader> SampledDifficultyManager<T, U> {
@@ -265,7 +271,7 @@ impl<T: HeaderStoreReader, U: GhostdagStoreReader> SampledDifficultyManager<T, U
         difficulty_sample_rate: u64,
         prior_target_time_per_block: u64,
         target_time_per_block: u64,
-        crescendo_activation: ForkActivation,
+        sigma_activation: ForkActivation,
     ) -> Self {
         Self::check_min_difficulty_window_size(difficulty_window_size, min_difficulty_window_size);
         Self {
@@ -279,8 +285,8 @@ impl<T: HeaderStoreReader, U: GhostdagStoreReader> SampledDifficultyManager<T, U
             difficulty_sample_rate,
             prior_target_time_per_block,
             target_time_per_block,
-            crescendo_activation,
-            crescendo_logger: CrescendoLogger::new(),
+            sigma_activation,
+            sigma_logger: SigmaLogger::new(),
         }
     }
 
@@ -315,9 +321,9 @@ impl<T: HeaderStoreReader, U: GhostdagStoreReader> SampledDifficultyManager<T, U
         (self.internal_calc_daa_score(ghostdag_data, &mergeset_non_daa), mergeset_non_daa)
     }
 
-    pub(crate) fn crescendo_activated(&self, selected_parent: Hash) -> bool {
+    pub(crate) fn sigma_activated(&self, selected_parent: Hash) -> bool {
         let sp_daa_score = self.headers_store.get_daa_score(selected_parent).unwrap();
-        self.crescendo_activation.is_active(sp_daa_score)
+        self.sigma_activation.is_active(sp_daa_score)
     }
 
     pub fn calculate_difficulty_bits(&self, window: &BlockWindowHeap, ghostdag_data: &GhostdagData) -> u32 {
@@ -325,7 +331,7 @@ impl<T: HeaderStoreReader, U: GhostdagStoreReader> SampledDifficultyManager<T, U
 
         // Until there are enough blocks for a valid calculation the difficulty should remain constant.
         //
-        // [Crescendo]: post activation special case -- first activated blocks which do not have
+        // [Sigma]: post activation special case -- first activated blocks which do not have
         // enough activated samples in their past
         if difficulty_blocks.len() < self.min_difficulty_window_size {
             let selected_parent = ghostdag_data.selected_parent;
@@ -336,9 +342,9 @@ impl<T: HeaderStoreReader, U: GhostdagStoreReader> SampledDifficultyManager<T, U
             // We will use the selected parent as a source for the difficulty bits
             let bits = self.headers_store.get_bits(selected_parent).unwrap();
 
-            // Check if the selected parent itself is already post crescendo activation (by checking the DAA score
+            // Check if the selected parent itself is already post sigma activation (by checking the DAA score
             // of its selected parent). We ruled out genesis, so we can safely assume the grandparent exists
-            if self.crescendo_activated(self.ghostdag_store.get_selected_parent(selected_parent).unwrap()) {
+            if self.sigma_activated(self.ghostdag_store.get_selected_parent(selected_parent).unwrap()) {
                 // In this case we simply take the selected parent bits as is
                 return bits;
             } else {
@@ -348,9 +354,9 @@ impl<T: HeaderStoreReader, U: GhostdagStoreReader> SampledDifficultyManager<T, U
                 let scaled_target = target * self.prior_target_time_per_block / self.target_time_per_block;
                 let scaled_bits = Uint256::try_from(scaled_target.min(self.max_difficulty_target)).unwrap().compact_target_bits();
 
-                if self.crescendo_logger.report_activation_progress(CrescendoLogger::ACTIVATE) {
-                    info!(target: CRESCENDO_KEYWORD, "[Crescendo] Block target time change: {} -> {} milliseconds", self.prior_target_time_per_block, self.target_time_per_block);
-                    info!(target: CRESCENDO_KEYWORD, "[Crescendo] Difficulty change: {} -> {} ", difficulty_desc(target), difficulty_desc(scaled_target));
+                if self.sigma_logger.report_activation_progress(SigmaLogger::ACTIVATE) {
+                    info!(target: SIGMA_KEYWORD, "[Sigma] Block target time change: {} -> {} milliseconds", self.prior_target_time_per_block, self.target_time_per_block);
+                    info!(target: SIGMA_KEYWORD, "[Sigma] Difficulty change: {} -> {} ", difficulty_desc(target), difficulty_desc(scaled_target));
                 }
 
                 return scaled_bits;
@@ -375,9 +381,9 @@ impl<T: HeaderStoreReader, U: GhostdagStoreReader> SampledDifficultyManager<T, U
         let new_target = average_target * measured_duration / expected_duration;
 
         if difficulty_blocks_len + 1 < self.difficulty_window_size as u64 {
-            if self.crescendo_logger.report_activation_progress(CrescendoLogger::DYNAMIC) {
-                info!(target: CRESCENDO_KEYWORD,
-                    "[Crescendo] Dynamic DAA reactivated, scaling the difficulty by the measured/expected duration ratio: \n\t\t\t\t\t\t  {} -> {} (measured duration: {}, expected duration: {}, ratio {:.4})",
+            if self.sigma_logger.report_activation_progress(SigmaLogger::DYNAMIC) {
+                info!(target: SIGMA_KEYWORD,
+                    "[Sigma] Dynamic DAA reactivated, scaling the difficulty by the measured/expected duration ratio: \n\t\t\t\t\t\t  {} -> {} (measured duration: {}, expected duration: {}, ratio {:.4})",
                     difficulty_desc(average_target),
                     difficulty_desc(new_target),
                     measured_duration,
@@ -386,8 +392,8 @@ impl<T: HeaderStoreReader, U: GhostdagStoreReader> SampledDifficultyManager<T, U
                 );
             }
             if CoinFlip::default().flip() {
-                info!(target: CRESCENDO_KEYWORD,
-                    "[Crescendo] DAA window increasing post activation: {} (target: {})",
+                info!(target: SIGMA_KEYWORD,
+                    "[Sigma] DAA window increasing post activation: {} (target: {})",
                     difficulty_blocks_len + 1,
                     self.difficulty_window_size
                 );

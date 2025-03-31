@@ -20,8 +20,8 @@ pub fn calculate_ghostdag_k(x: f64, delta: f64) -> u64 {
     }
 }
 
-/// Bps-related constants generator for 10-bps networks
-pub type TenBps = Bps<10>;
+/// Bps-related constants generator for 8-bps networks
+pub type EightBps = Bps<8>;
 
 /// Struct representing network blocks-per-second. Provides a bunch of const functions
 /// computing various constants which are functions of the BPS value

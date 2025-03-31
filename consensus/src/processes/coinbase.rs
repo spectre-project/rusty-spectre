@@ -33,14 +33,14 @@ pub struct CoinbaseManager {
     pre_deflationary_phase_base_subsidy: u64,
     bps: ForkedParam<u64>,
 
-    /// Precomputed subsidy by month tables (for before and after the Crescendo hardfork)
+    /// Precomputed subsidy by month tables (for before and after the Sigma hardfork)
     subsidy_by_month_table_before: SubsidyByMonthTable,
     subsidy_by_month_table_after: SubsidyByMonthTable,
 
-    /// The crescendo activation DAA score where BPS increased from 1 to 10.
+    /// The sigma activation DAA score where BPS increased from 1 to 8.
     /// This score is required here long-term (and not only for the actual forking), in
     /// order to correctly determine the subsidy month from the live DAA score of the network   
-    crescendo_activation_daa_score: u64,
+    sigma_activation_daa_score: u64,
 }
 
 /// Struct used to streamline payload parsing
@@ -71,7 +71,12 @@ impl CoinbaseManager {
     ) -> Self {
         // Precomputed subsidy by month table for the actual block per second rate
         // Here values are rounded up so that we keep the same number of rewarding months as in the original 1 BPS table.
-        // In a 10 BPS network, the induced increase in total rewards is 71 SPR (see tests::calc_high_bps_total_rewards_delta())
+        // In a 8 BPS network, the induced increase in total rewards is 30 SPR (see tests::calc_high_bps_total_rewards_delta())
+
+        // Total rewards: 116092439247877200 sompi => 1160924392 SPR
+        // Total high bps rewards: 116092445280638400 sompi => 1160924452 SPR
+        // Delta: 6032761200 sompi => 60 SPR
+
         let subsidy_by_month_table_before: SubsidyByMonthTable =
             core::array::from_fn(|i| SUBSIDY_BY_MONTH_TABLE[i].div_ceil(bps.before()));
         let subsidy_by_month_table_after: SubsidyByMonthTable =
@@ -84,7 +89,7 @@ impl CoinbaseManager {
             bps,
             subsidy_by_month_table_before,
             subsidy_by_month_table_after,
-            crescendo_activation_daa_score: bps.activation().daa_score(),
+            sigma_activation_daa_score: bps.activation().daa_score(),
         }
     }
 
@@ -118,7 +123,7 @@ impl CoinbaseManager {
         // single output rewarding all to the current block (the "merging" block)
         let mut red_reward = 0u64;
 
-        // bps activation = crescendo activation
+        // bps activation = sigma activation
         if self.bps.activation().is_active(daa_score) {
             for red in ghostdag_data.mergeset_reds.iter() {
                 let reward_data = mergeset_rewards.get(red).unwrap();
@@ -245,17 +250,17 @@ impl CoinbaseManager {
     ///
     /// Note that this function is called only if daa_score >= self.deflationary_phase_daa_score
     fn subsidy_month(&self, daa_score: u64) -> u64 {
-        let seconds_since_deflationary_phase_started = if self.crescendo_activation_daa_score < self.deflationary_phase_daa_score {
-            // crescendo_activation < deflationary_phase <= daa_score (activated before deflation)
+        let seconds_since_deflationary_phase_started = if self.sigma_activation_daa_score < self.deflationary_phase_daa_score {
+            // sigma_activation < deflationary_phase <= daa_score (activated before deflation)
             (daa_score - self.deflationary_phase_daa_score) / self.bps.after()
-        } else if daa_score < self.crescendo_activation_daa_score {
-            // deflationary_phase <= daa_score < crescendo_activation (pre activation)
+        } else if daa_score < self.sigma_activation_daa_score {
+            // deflationary_phase <= daa_score < sigma_activation (pre activation)
             (daa_score - self.deflationary_phase_daa_score) / self.bps.before()
         } else {
-            // Else - deflationary_phase <= crescendo_activation <= daa_score.
-            // Count seconds differently before and after Crescendo activation
-            (self.crescendo_activation_daa_score - self.deflationary_phase_daa_score) / self.bps.before()
-                + (daa_score - self.crescendo_activation_daa_score) / self.bps.after()
+            // Else - deflationary_phase <= sigma_activation <= daa_score.
+            // Count seconds differently before and after Sigma activation
+            (self.sigma_activation_daa_score - self.deflationary_phase_daa_score) / self.bps.before()
+                + (daa_score - self.sigma_activation_daa_score) / self.bps.after()
         };
 
         seconds_since_deflationary_phase_started / SECONDS_PER_MONTH
@@ -379,21 +384,21 @@ mod tests {
     }
 
     /// Takes over 60 seconds, run with the following command line:
-    /// `cargo test --release --package spectre-consensus --lib -- processes::coinbase::tests::verify_crescendo_emission_schedule --exact --nocapture --ignored`
+    /// `cargo test --release --package spectre-consensus --lib -- processes::coinbase::tests::verify_sigma_emission_schedule --exact --nocapture --ignored`
     #[test]
     #[ignore = "long"]
-    fn verify_crescendo_emission_schedule() {
+    fn verify_sigma_emission_schedule() {
         // No need to loop over all nets since the relevant params are only
         // deflation and activation DAA scores (and the test is long anyway)
         for network_id in [NetworkId::new(NetworkType::Mainnet)] {
             let mut params: Params = network_id.into();
-            params.crescendo_activation = ForkActivation::never();
+            params.sigma_activation = ForkActivation::never();
             let cbm = create_manager(&params);
             let (baseline_epochs, baseline_total) = calculate_emission(cbm);
 
             let mut activations = vec![10000, 33444444, 120727479];
             for network_id in NetworkId::iter() {
-                let activation = Params::from(network_id).crescendo_activation;
+                let activation = Params::from(network_id).sigma_activation;
                 if activation != ForkActivation::never() && activation != ForkActivation::always() {
                     activations.push(activation.daa_score());
                 }
@@ -401,16 +406,16 @@ mod tests {
 
             // Loop over a few random activation points + specified activation points for all nets
             for activation in activations {
-                params.crescendo_activation = ForkActivation::new(activation);
+                params.sigma_activation = ForkActivation::new(activation);
                 let cbm = create_manager(&params);
                 let (new_epochs, new_total) = calculate_emission(cbm);
 
                 // Epochs only represents the number of times the subsidy changed (lower after activation due to rounding)
                 println!("BASELINE:\t{}\tepochs, total emission: {}", baseline_epochs, baseline_total);
-                println!("CRESCENDO:\t{}\tepochs, total emission: {}, activation: {}", new_epochs, new_total, activation);
+                println!("SIGMA:\t{}\tepochs, total emission: {}, activation: {}", new_epochs, new_total, activation);
 
                 let diff = (new_total as i64 - baseline_total as i64) / SOMPI_PER_SPECTRE as i64;
-                assert!(diff.abs() <= 71, "activation: {}", activation);
+                assert!(diff.abs() <= 60, "activation: {}", activation);
                 println!("DIFF (SPR): {}", diff);
             }
         }
@@ -452,9 +457,9 @@ mod tests {
 
         for network_id in NetworkId::iter() {
             let mut params: Params = network_id.into();
-            if params.crescendo_activation != ForkActivation::always() {
-                // We test activation scenarios in verify_crescendo_emission_schedule
-                params.crescendo_activation = ForkActivation::never();
+            if params.sigma_activation != ForkActivation::always() {
+                // We test activation scenarios in verify_sigma_emission_schedule
+                params.sigma_activation = ForkActivation::never();
             }
             let cbm = create_manager(&params);
             let bps = params.bps().before();

@@ -298,7 +298,7 @@ impl PruningProofManager {
         let mut daa_window_blocks = BlockHashMap::new();
         let mut ghostdag_blocks = BlockHashMap::new();
 
-        // [Crescendo]: get ghostdag k based on the pruning point's DAA score. The off-by-one of not going by selected parent
+        // [Sigma]: get ghostdag k based on the pruning point's DAA score. The off-by-one of not going by selected parent
         // DAA score is not important here as we simply increase K one block earlier which is more conservative (saving/sending more data)
         let ghostdag_k = self.ghostdag_k.get(self.headers_store.get_daa_score(pruning_point).unwrap());
 
@@ -401,7 +401,7 @@ impl PruningProofManager {
         let virtual_state = self.virtual_stores.read().state.get().unwrap();
         let pp_bs = self.headers_store.get_blue_score(pp).unwrap();
 
-        // [Crescendo]: use pruning point DAA score for activation. This means that only after sufficient time
+        // [Sigma]: use pruning point DAA score for activation. This means that only after sufficient time
         // post activation we will require the increased finalization depth
         let pruning_point_daa_score = self.headers_store.get_daa_score(pp).unwrap();
 

@@ -74,7 +74,7 @@ impl<S: DepthStoreReader, U: ReachabilityStoreReader, V: GhostdagStoreReader, T:
             return ORIGIN;
         }
 
-        // [Crescendo]: we start from the depth/finality point of the selected parent. This makes the selection monotonic
+        // [Sigma]: we start from the depth/finality point of the selected parent. This makes the selection monotonic
         // also when the depth increases in the fork activation point. The loop below will simply not progress for a while,
         // until a new block above the previous point reaches the *new increased depth*.
         let mut current = match depth_type {

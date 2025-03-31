@@ -11,14 +11,14 @@ use spectre_consensus_core::{
 
 impl BlockBodyProcessor {
     pub fn validate_body_in_isolation(self: &Arc<Self>, block: &Block) -> BlockProcessResult<Mass> {
-        let crescendo_activated = self.crescendo_activation.is_active(block.header.daa_score);
+        let sigma_activated = self.sigma_activation.is_active(block.header.daa_score);
 
         Self::check_has_transactions(block)?;
-        Self::check_hash_merkle_root(block, crescendo_activated)?;
+        Self::check_hash_merkle_root(block, sigma_activated)?;
         Self::check_only_one_coinbase(block)?;
         self.check_transactions_in_isolation(block)?;
-        self.check_coinbase_has_zero_mass(block, crescendo_activated)?;
-        let mass = self.check_block_mass(block, crescendo_activated)?;
+        self.check_coinbase_has_zero_mass(block, sigma_activated)?;
+        let mass = self.check_block_mass(block, sigma_activated)?;
         self.check_duplicate_transactions(block)?;
         self.check_block_double_spends(block)?;
         self.check_no_chained_transactions(block)?;
@@ -34,8 +34,8 @@ impl BlockBodyProcessor {
         Ok(())
     }
 
-    fn check_hash_merkle_root(block: &Block, crescendo_activated: bool) -> BlockProcessResult<()> {
-        let calculated = calc_hash_merkle_root(block.transactions.iter(), crescendo_activated);
+    fn check_hash_merkle_root(block: &Block, sigma_activated: bool) -> BlockProcessResult<()> {
+        let calculated = calc_hash_merkle_root(block.transactions.iter(), sigma_activated);
         if calculated != block.header.hash_merkle_root {
             return Err(RuleError::BadMerkleRoot(block.header.hash_merkle_root, calculated));
         }
@@ -63,16 +63,16 @@ impl BlockBodyProcessor {
         Ok(())
     }
 
-    fn check_coinbase_has_zero_mass(&self, block: &Block, crescendo_activated: bool) -> BlockProcessResult<()> {
+    fn check_coinbase_has_zero_mass(&self, block: &Block, sigma_activated: bool) -> BlockProcessResult<()> {
         // TODO (post HF): move to check_coinbase_in_isolation
-        if crescendo_activated && block.transactions[0].mass() > 0 {
+        if sigma_activated && block.transactions[0].mass() > 0 {
             return Err(RuleError::CoinbaseNonZeroMassCommitment);
         }
         Ok(())
     }
 
-    fn check_block_mass(self: &Arc<Self>, block: &Block, crescendo_activated: bool) -> BlockProcessResult<Mass> {
-        if crescendo_activated {
+    fn check_block_mass(self: &Arc<Self>, block: &Block, sigma_activated: bool) -> BlockProcessResult<Mass> {
+        if sigma_activated {
             let mut total_compute_mass: u64 = 0;
             let mut total_transient_mass: u64 = 0;
             let mut total_storage_mass: u64 = 0;

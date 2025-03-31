@@ -86,7 +86,7 @@ use spectre_notify::{events::EventType, notifier::Notify};
 
 use super::{
     errors::{PruningImportError, PruningImportResult},
-    utxo_validation::crescendo::CrescendoLogger,
+    utxo_validation::sigma::SigmaLogger,
 };
 use crossbeam_channel::{Receiver as CrossbeamReceiver, Sender as CrossbeamSender};
 use itertools::Itertools;
@@ -172,10 +172,10 @@ pub struct VirtualStateProcessor {
     // Counters
     counters: Arc<ProcessingCounters>,
 
-    pub(super) crescendo_logger: CrescendoLogger,
+    pub(super) sigma_logger: SigmaLogger,
 
-    // Crescendo hardfork activation score (used here for activating KIPs 9,10)
-    pub(crate) crescendo_activation: ForkActivation,
+    // Sigma hardfork activation score (used here for activating KIPs 9,10)
+    pub(crate) sigma_activation: ForkActivation,
 
     // Mining Rule
     mining_rules: Arc<MiningRules>,
@@ -243,8 +243,8 @@ impl VirtualStateProcessor {
             pruning_lock,
             notification_root,
             counters,
-            crescendo_logger: CrescendoLogger::new(),
-            crescendo_activation: params.crescendo_activation,
+            sigma_logger: SigmaLogger::new(),
+            sigma_activation: params.sigma_activation,
             mining_rules,
         }
     }
@@ -1072,7 +1072,7 @@ impl VirtualStateProcessor {
         let parents_by_level = self.parents_manager.calc_block_parents(pruning_info.pruning_point, &virtual_state.parents);
 
         // Hash according to hardfork activation
-        let storage_mass_activated = self.crescendo_activation.is_active(virtual_state.daa_score);
+        let storage_mass_activated = self.sigma_activation.is_active(virtual_state.daa_score);
         let hash_merkle_root = calc_hash_merkle_root(txs.iter(), storage_mass_activated);
 
         let accepted_id_merkle_root = self.calc_accepted_id_merkle_root(
