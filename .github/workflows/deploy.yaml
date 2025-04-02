@@ -229,6 +229,15 @@ jobs:
         shell: msys2 {0}
         run: |
           export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin" # manually override path to select proper msys2 build tools.
+          pacman -U --noconfirm \
+            https://repo.msys2.org/mingw/clang64/mingw-w64-clang-x86_64-clang-18.1.8-2-any.pkg.tar.zst \
+            https://repo.msys2.org/mingw/clang64/mingw-w64-clang-x86_64-clang-libs-18.1.8-2-any.pkg.tar.zst \
+            https://repo.msys2.org/mingw/clang64/mingw-w64-clang-x86_64-compiler-rt-18.1.8-2-any.pkg.tar.zst \
+            https://repo.msys2.org/mingw/clang64/mingw-w64-clang-x86_64-libc++-18.1.8-2-any.pkg.tar.zst \
+            https://repo.msys2.org/mingw/clang64/mingw-w64-clang-x86_64-libunwind-18.1.8-2-any.pkg.tar.zst \
+            https://repo.msys2.org/mingw/clang64/mingw-w64-clang-x86_64-lld-18.1.8-2-any.pkg.tar.zst \
+            https://repo.msys2.org/mingw/clang64/mingw-w64-clang-x86_64-llvm-18.1.8-2-any.pkg.tar.zst \
+            https://repo.msys2.org/mingw/clang64/mingw-w64-clang-x86_64-llvm-libs-18.1.8-2-any.pkg.tar.zst
           rustup target add x86_64-pc-windows-gnullvm
           cargo build --target x86_64-pc-windows-gnullvm --bin spectred --release
           cargo build --target x86_64-pc-windows-gnullvm --bin simpa --release
