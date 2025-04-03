@@ -678,7 +678,7 @@ NOTE: This error usually indicates an RPC conversion error between the node and 
         let session = self.consensus_manager.consensus().session().await;
 
         // batch_size is set to 10 times the mergeset_size_limit.
-        // this means batch_size is 2480 on 10 bps, and 1800 on mainnet.
+        // this means batch_size is 2020 on 8 bps, and 1800 on mainnet.
         // this bounds by number of merged blocks, if include_accepted_transactions = true
         // else it returns the batch_size amount on pure chain blocks.
         // Note: batch_size does not bound removed chain blocks, only added chain blocks.

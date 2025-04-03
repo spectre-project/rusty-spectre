@@ -85,6 +85,9 @@ impl<
         // [Sigma]: These conditions ensure that blue score points with the same finality score before
         // the fork will remain with the same finality score post the fork. See below for the usage.
         assert!(finality_depth.before() <= finality_depth.after());
+        println!("finality_depth.before(): {}", finality_depth.before());
+        println!("finality_depth.after(): {}", finality_depth.after());
+        println!("Modulo result: {}", finality_depth.after() % finality_depth.before());
         assert!(finality_depth.after() % finality_depth.before() == 0);
         assert!(pruning_depth.before() <= pruning_depth.after());
 
@@ -327,7 +330,7 @@ impl<
             This means we can safely begin the search from C even in the few moments post the fork (i.e., there's no fear of needing to "pull" C back)
 
             Note that overall this search is guaranteed to provide the desired monotonicity described in KIP-14:
-            https://github.com/spectrenet/kips/blob/master/kip-0014.md#pruning-point-adjustment
+            https://github.com/kaspanet/kips/blob/master/kip-0014.md#pruning-point-adjustment
         */
         for selected_child in self.reachability_service.forward_chain_iterator(current_candidate, ghostdag_data.selected_parent, true)
         {

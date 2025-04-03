@@ -408,7 +408,7 @@ impl<T: GhostdagStoreReader, U: BlockWindowCacheReader + BlockWindowCacheWriter,
             Sigma extended explanation
 
             Background: for the post-activation window we filter all previously non activated blocks.
-            See https://github.com/spectrenet/kips/blob/master/kip-0014.md#handling-difficulty-adjustment-during-the-transition
+            See https://github.com/kaspanet/kips/blob/master/kip-0014.md#handling-difficulty-adjustment-during-the-transition
 
             We consider a block C to be not activated from the pov of this block (B) if either:
                 1. C's selected parent DAA score is below the activation threshold

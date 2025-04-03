@@ -240,7 +240,7 @@ fn difficulty_desc(target: Uint320) -> String {
     format!("{:.2} {}", rate, suffix)
 }
 
-/// A difficulty manager implementing [KIP-0004](https://github.com/spectrenet/kips/blob/master/kip-0004.md),
+/// A difficulty manager implementing [KIP-0004](https://github.com/kaspanet/kips/blob/master/kip-0004.md),
 /// so based on sampled windows
 #[derive(Clone)]
 pub struct SampledDifficultyManager<T: HeaderStoreReader, U: GhostdagStoreReader> {
