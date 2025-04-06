@@ -226,6 +226,7 @@ jobs:
         # We're using clang to link only the ucrt library statically.
         env:
           RUSTFLAGS: -L/clang64/lib -lstatic=c++
+          BINDGEN_EXTRA_CLANG_ARGS: "--target=x86_64-pc-windows-msvc"
         shell: msys2 {0}
         run: |
           export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin" # manually override path to select proper msys2 build tools.
