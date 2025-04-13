@@ -504,7 +504,7 @@ mod tests {
                 Test {
                     name: "after 16 years",
                     daa_score: params.deflationary_phase_daa_score + blocks_per_halving * 8,
-                    expected: (deflationary_phase_initial_subsidy + 255) / 256, // div_ceil
+                    expected: deflationary_phase_initial_subsidy.div_ceil(256),
                 },
                 Test {
                     name: "after 32 years",
@@ -512,7 +512,7 @@ mod tests {
                     expected: if bps == 1 {
                         deflationary_phase_initial_subsidy / 65536
                     } else {
-                        (deflationary_phase_initial_subsidy + 65535) / 65536 // div_ceil
+                        deflationary_phase_initial_subsidy.div_ceil(65536)
                     },
                 },
                 Test {
