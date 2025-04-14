@@ -189,6 +189,7 @@ impl ConsensusServices {
             params.anticone_finalization_depth(),
             params.ghostdag_k(),
             is_consensus_exiting,
+            params.matrix_activation,
         ));
 
         let sync_manager = SyncManager::new(

@@ -1,5 +1,8 @@
 /// BLOCK_VERSION represents the current block version
-pub const BLOCK_VERSION: u16 = 1;
+pub const BLOCK_VERSION: u16 = BLOCK_VERSION_SPECTREXV1;
+
+pub const BLOCK_VERSION_SPECTREXV1: u16 = 1;
+pub const BLOCK_VERSION_SPECTREXV2: u16 = 2;
 
 /// TX_VERSION is the current latest supported transaction version.
 pub const TX_VERSION: u16 = 0;

@@ -255,6 +255,7 @@ pub struct Params {
 
     pub sigma: SigmaParams,
     pub sigma_activation: ForkActivation,
+    pub matrix_activation: ForkActivation,
 }
 
 impl Params {
@@ -506,6 +507,7 @@ pub const MAINNET_PARAMS: Params = Params {
 
     sigma: SIGMA,
     sigma_activation: ForkActivation::never(),
+    matrix_activation: ForkActivation::never(),
 };
 
 pub const TESTNET_PARAMS: Params = Params {
@@ -561,6 +563,7 @@ pub const TESTNET_PARAMS: Params = Params {
     sigma: SIGMA,
     // TODO: set a date for TN10
     sigma_activation: ForkActivation::never(),
+    matrix_activation: ForkActivation::never(),
 };
 
 pub const SIMNET_PARAMS: Params = Params {
@@ -610,6 +613,7 @@ pub const SIMNET_PARAMS: Params = Params {
 
     sigma: SIGMA,
     sigma_activation: ForkActivation::always(),
+    matrix_activation: ForkActivation::always(),
 };
 
 pub const DEVNET_PARAMS: Params = Params {
@@ -659,5 +663,6 @@ pub const DEVNET_PARAMS: Params = Params {
     pruning_proof_m: 1000,
 
     sigma: SIGMA,
-    sigma_activation: ForkActivation::never(),
+    sigma_activation: ForkActivation::new(5000),
+    matrix_activation: ForkActivation::new(7200),
 };

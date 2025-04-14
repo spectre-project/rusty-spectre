@@ -17,7 +17,7 @@ use rocksdb::WriteBatch;
 
 use spectre_consensus_core::{
     blockhash::{self, BlockHashExtensions},
-    config::params::ForkedParam,
+    config::params::{ForkActivation, ForkedParam},
     errors::{
         consensus::{ConsensusError, ConsensusResult},
         pruning::{PruningImportError, PruningImportResult},
@@ -132,6 +132,8 @@ pub struct PruningProofManager {
     ghostdag_k: ForkedParam<KType>,
 
     is_consensus_exiting: Arc<AtomicBool>,
+
+    matrix_activation: ForkActivation,
 }
 
 impl PruningProofManager {
@@ -150,6 +152,7 @@ impl PruningProofManager {
         anticone_finalization_depth: ForkedParam<u64>,
         ghostdag_k: ForkedParam<KType>,
         is_consensus_exiting: Arc<AtomicBool>,
+        matrix_activation: ForkActivation,
     ) -> Self {
         Self {
             db,
@@ -187,6 +190,8 @@ impl PruningProofManager {
             level_relations_services: (0..=max_block_level)
                 .map(|level| MTRelationsService::new(storage.relations_stores.clone().clone(), level))
                 .collect_vec(),
+
+            matrix_activation,
         }
     }
 
@@ -212,7 +217,7 @@ impl PruningProofManager {
             if self.headers_store.has(header.hash).unwrap() {
                 return Ok(());
             }
-            let block_level = calc_block_level(header, self.max_block_level);
+            let block_level = calc_block_level(header, self.max_block_level, &self.matrix_activation);
             self.headers_store.insert(header.hash, header.clone(), block_level).unwrap();
             Ok(())
         })?;
