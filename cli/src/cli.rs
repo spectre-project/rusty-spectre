@@ -807,7 +807,7 @@ impl SpectreCli {
                 }
                 SyncState::UtxoResync => Some([style("SYNC").red().to_string(), style("UTXO").black().to_string()].join(" ")),
                 SyncState::NotSynced => Some([style("SYNC").red().to_string(), style("...").black().to_string()].join(" ")),
-                SyncState::Synced { .. } => None,
+                SyncState::Synced => None,
             }
         } else {
             Some(style("SYNC").red().to_string())
