@@ -663,6 +663,8 @@ pub const DEVNET_PARAMS: Params = Params {
     pruning_proof_m: 1000,
 
     sigma: SIGMA,
-    sigma_activation: ForkActivation::new(5000),
-    matrix_activation: ForkActivation::new(7200),
+
+    // TODO: set to always
+    sigma_activation: ForkActivation::new(10_000),
+    matrix_activation: ForkActivation::new(10_000),
 };
