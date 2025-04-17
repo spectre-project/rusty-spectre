@@ -70,12 +70,18 @@ impl MiningMonitor {
                     delta.low_priority_tx_counts,
                     delta.tx_accepted_counts,
                 );
+
+                info!(
+                    "Current mempool state: {} ready txs, {} total, {} orphans",
+                    snapshot.ready_txs_sample, snapshot.txs_sample, snapshot.orphans_sample,
+                );
+
                 let feerate_estimations = self
                     .mining_manager
                     .clone()
                     .get_realtime_feerate_estimations(self.consensus_manager.consensus().unguarded_session().get_virtual_daa_score())
                     .await;
-                debug!("Realtime feerate estimations: {}", feerate_estimations);
+                info!("Realtime feerate estimations: {}", feerate_estimations);
             }
             if delta.tx_evicted_counts > 0 {
                 info!(

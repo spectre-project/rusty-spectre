@@ -85,9 +85,9 @@ impl<
         // [Sigma]: These conditions ensure that blue score points with the same finality score before
         // the fork will remain with the same finality score post the fork. See below for the usage.
         assert!(finality_depth.before() <= finality_depth.after());
-        println!("finality_depth.before(): {}", finality_depth.before());
-        println!("finality_depth.after(): {}", finality_depth.after());
-        println!("Modulo result: {}", finality_depth.after() % finality_depth.before());
+        // println!("finality_depth.before(): {}", finality_depth.before());
+        // println!("finality_depth.after(): {}", finality_depth.after());
+        // println!("Modulo result: {}", finality_depth.after() % finality_depth.before());
         assert!(finality_depth.after() % finality_depth.before() == 0);
         assert!(pruning_depth.before() <= pruning_depth.after());
 

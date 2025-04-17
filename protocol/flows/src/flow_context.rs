@@ -500,9 +500,8 @@ impl FlowContext {
 
     /// Adds the rpc-submitted block to the DAG and propagates it to peers.
     pub async fn submit_rpc_block(&self, consensus: &ConsensusProxy, block: Block) -> Result<(), ProtocolError> {
-        // TODO: debug level
-        info!("NEW BLOCK ADDED ****************************************");
-        info!(
+        debug!("NEW BLOCK ADDED ****************************************");
+        debug!(
             "BlueWork [{}], BlueScore [{}], DAAScore [{}], Bits [{}], Version [{}]",
             block.header.blue_work, block.header.blue_score, block.header.daa_score, block.header.bits, block.header.version,
         );

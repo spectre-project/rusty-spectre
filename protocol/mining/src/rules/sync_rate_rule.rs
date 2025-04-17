@@ -192,7 +192,7 @@ mod tests {
 
         let extra_data = &ExtraData {
             elapsed_time: std::time::Duration::from_secs(10),
-            target_time_per_block: 125,                                        // 5bps value
+            target_time_per_block: 125,                                        // 8bps value
             finality_point_timestamp: unix_now().saturating_sub(1000 * 3) - 1, // the millisecond right before timestamp is "old enough"
             finality_duration: 1000,
             has_sufficient_peer_connectivity: true,
