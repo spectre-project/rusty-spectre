@@ -654,8 +654,7 @@ pub const DEVNET_PARAMS: Params = Params {
     // deflationary_phase_daa_score is the DAA score after which the pre-deflationary period
     // switches to the deflationary period. This number is calculated as follows:
     // We define a year as 365.25 days
-    // One week in seconds = 7 * 24 * 60 * 60 = 604800
-    deflationary_phase_daa_score: 604800,
+    deflationary_phase_daa_score: 100,
     pre_deflationary_phase_base_subsidy: 1500000000,
     prior_coinbase_maturity: 100,
     skip_proof_of_work: false,
