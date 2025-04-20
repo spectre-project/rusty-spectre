@@ -347,17 +347,24 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Install zig
-        if: runner.os == 'Linux'
-        uses: goto-bus-stop/setup-zig@v2 # needed for cargo-zigbuild
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+        
+      - name: Cache Toolchain
+        uses: actions/cache@v4
         with:
-          version: 0.13.0
+          path: |
+            ~/x-tools
+          key: ${{ runner.os }}-musl-${{ hashFiles('**/musl-toolchain/build-amd64.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-musl-
 
-      - name: Build on Linux
+      - name: Build on Linux with musl toolchain
         if: runner.os == 'Linux'
-
-        # We're using musl to make the binaries statically linked and portable
         run: |
-          cargo install cargo-zigbuild
-          cargo --verbose zigbuild --bin spectred --bin simpa --bin rothschild --release --target x86_64-unknown-linux-gnu.2.27 # Use an older glibc version
+          rustup target add x86_64-unknown-linux-musl
+          cargo fetch --target x86_64-unknown-linux-musl
+          # Run build script for musl toolchain
+          source musl-toolchain/build-amd64.sh
+          # Build for musl
+          cargo --verbose build --bin spectred --bin rothschild --bin spectre-wallet --release --target x86_64-unknown-linux-musl
