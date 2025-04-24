@@ -55,11 +55,14 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install zig on Linux
-        if: runner.os == 'Linux'
-        uses: goto-bus-stop/setup-zig@v2 # needed for cargo-zigbuild
+      - name: Cache Toolchain
+        uses: actions/cache@v4
         with:
-          version: 0.13.0
+          path: |
+            ~/x-tools
+          key: ${{ runner.os }}-musl-${{ hashFiles('**/musl-toolchain/build-amd64.sh', '**/musl-toolchain/build-aarch64.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-musl-
 
       - name: Install protoc on Linux
         if: runner.os == 'Linux'
@@ -89,12 +92,10 @@ jobs:
         run: |
           rustup target add x86_64-unknown-linux-gnu
           cargo build --target x86_64-unknown-linux-gnu --bin spectred --release
-          cargo build --target x86_64-unknown-linux-gnu --bin simpa --release
           cargo build --target x86_64-unknown-linux-gnu --bin rothschild --release
           cargo build --target x86_64-unknown-linux-gnu --bin spectre-wallet --release
           mkdir bin || true
           cp target/x86_64-unknown-linux-gnu/release/spectred bin/
-          cp target/x86_64-unknown-linux-gnu/release/simpa bin/
           cp target/x86_64-unknown-linux-gnu/release/rothschild bin/
           cp target/x86_64-unknown-linux-gnu/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-amd64.zip"
@@ -110,12 +111,10 @@ jobs:
           sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
           rustup target add aarch64-unknown-linux-gnu
           cargo build --target aarch64-unknown-linux-gnu --bin spectred --release
-          cargo build --target aarch64-unknown-linux-gnu --bin simpa --release
           cargo build --target aarch64-unknown-linux-gnu --bin rothschild --release
           cargo build --target aarch64-unknown-linux-gnu --bin spectre-wallet --release
           mkdir bin || true
           cp target/aarch64-unknown-linux-gnu/release/spectred bin/
-          cp target/aarch64-unknown-linux-gnu/release/simpa bin/
           cp target/aarch64-unknown-linux-gnu/release/rothschild bin/
           cp target/aarch64-unknown-linux-gnu/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-aarch64.zip"
@@ -131,12 +130,10 @@ jobs:
           sudo apt-get install -y gcc-riscv64-linux-gnu g++-riscv64-linux-gnu
           rustup target add riscv64gc-unknown-linux-gnu
           cargo build --target riscv64gc-unknown-linux-gnu --bin spectred --release
-          cargo build --target riscv64gc-unknown-linux-gnu --bin simpa --release
           cargo build --target riscv64gc-unknown-linux-gnu --bin rothschild --release
           cargo build --target riscv64gc-unknown-linux-gnu --bin spectre-wallet --release
           mkdir bin || true
           cp target/riscv64gc-unknown-linux-gnu/release/spectred bin/
-          cp target/riscv64gc-unknown-linux-gnu/release/simpa bin/
           cp target/riscv64gc-unknown-linux-gnu/release/rothschild bin/
           cp target/riscv64gc-unknown-linux-gnu/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-riscv64gc.zip"
@@ -152,12 +149,10 @@ jobs:
           sudo apt-get install -y gcc-powerpc64-linux-gnu g++-powerpc64-linux-gnu
           rustup target add powerpc64-unknown-linux-gnu
           cargo build --target powerpc64-unknown-linux-gnu --bin spectred --release
-          cargo build --target powerpc64-unknown-linux-gnu --bin simpa --release
           cargo build --target powerpc64-unknown-linux-gnu --bin rothschild --release
           cargo build --target powerpc64-unknown-linux-gnu --bin spectre-wallet --release
           mkdir bin || true
           cp target/powerpc64-unknown-linux-gnu/release/spectred bin/
-          cp target/powerpc64-unknown-linux-gnu/release/simpa bin/
           cp target/powerpc64-unknown-linux-gnu/release/rothschild bin/
           cp target/powerpc64-unknown-linux-gnu/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-powerpc64.zip"
@@ -173,12 +168,10 @@ jobs:
           sudo apt-get install -y gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu
           rustup target add powerpc64le-unknown-linux-gnu
           cargo build --target powerpc64le-unknown-linux-gnu --bin spectred --release
-          cargo build --target powerpc64le-unknown-linux-gnu --bin simpa --release
           cargo build --target powerpc64le-unknown-linux-gnu --bin rothschild --release
           cargo build --target powerpc64le-unknown-linux-gnu --bin spectre-wallet --release
           mkdir bin || true
           cp target/powerpc64le-unknown-linux-gnu/release/spectred bin/
-          cp target/powerpc64le-unknown-linux-gnu/release/simpa bin/
           cp target/powerpc64le-unknown-linux-gnu/release/rothschild bin/
           cp target/powerpc64le-unknown-linux-gnu/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-gnu-powerpc64le.zip"
@@ -187,16 +180,19 @@ jobs:
       - name: Build on Linux for linux-musl/amd64
         if: matrix.TARGET == 'linux-musl/amd64'
 
-        # We're using musl to make the binaries statically linked and portable.
-        env:
-          RUSTFLAGS: -C target-feature=-crt-static
+        # We're using musl to make the binaries statically linked and portable
         run: |
           rustup target add x86_64-unknown-linux-musl
-          cargo install cargo-zigbuild
-          cargo --verbose zigbuild --bin spectred --bin simpa --bin rothschild --bin spectre-wallet --release --target x86_64-unknown-linux-musl
+          cargo fetch --target x86_64-unknown-linux-musl
+
+          # Run build script for musl toolchain.
+          source musl-toolchain/build-amd64.sh
+          cd "${GITHUB_WORKSPACE}"
+
+          # Build for musl.
+          cargo --verbose build --bin spectred --bin rothschild --bin spectre-wallet --release --target x86_64-unknown-linux-musl
           mkdir bin || true
           cp target/x86_64-unknown-linux-musl/release/spectred bin/
-          cp target/x86_64-unknown-linux-musl/release/simpa bin/
           cp target/x86_64-unknown-linux-musl/release/rothschild bin/
           cp target/x86_64-unknown-linux-musl/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-musl-amd64.zip"
@@ -206,15 +202,18 @@ jobs:
         if: matrix.TARGET == 'linux-musl/aarch64'
 
         # We're using musl to make the binaries statically linked and portable.
-        env:
-          RUSTFLAGS: -C target-feature=-crt-static
         run: |
           rustup target add aarch64-unknown-linux-musl
-          cargo install cargo-zigbuild
-          cargo --verbose zigbuild --bin spectred --bin simpa --bin rothschild --bin spectre-wallet --release --target aarch64-unknown-linux-musl
+          cargo fetch --target aarch64-unknown-linux-musl
+
+          # Run build script for musl toolchain.
+          source musl-toolchain/build-aarch64.sh
+          cd "${GITHUB_WORKSPACE}"
+
+          # Build for musl.
+          cargo --verbose build --bin spectred --bin rothschild --bin spectre-wallet --release --target aarch64-unknown-linux-musl
           mkdir bin || true
           cp target/aarch64-unknown-linux-musl/release/spectred bin/
-          cp target/aarch64-unknown-linux-musl/release/simpa bin/
           cp target/aarch64-unknown-linux-musl/release/rothschild bin/
           cp target/aarch64-unknown-linux-musl/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-linux-musl-aarch64.zip"
@@ -240,12 +239,10 @@ jobs:
             https://repo.msys2.org/mingw/clang64/mingw-w64-clang-x86_64-llvm-libs-18.1.8-2-any.pkg.tar.zst
           rustup target add x86_64-pc-windows-gnullvm
           cargo build --target x86_64-pc-windows-gnullvm --bin spectred --release
-          cargo build --target x86_64-pc-windows-gnullvm --bin simpa --release
           cargo build --target x86_64-pc-windows-gnullvm --bin rothschild --release
           cargo build --target x86_64-pc-windows-gnullvm --bin spectre-wallet --release
           mkdir bin || true
           cp target/x86_64-pc-windows-gnullvm/release/spectred.exe bin/
-          cp target/x86_64-pc-windows-gnullvm/release/simpa.exe bin/
           cp target/x86_64-pc-windows-gnullvm/release/rothschild.exe bin/
           cp target/x86_64-pc-windows-gnullvm/release/spectre-wallet.exe bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-windows-gnullvm-amd64.zip"
@@ -258,12 +255,10 @@ jobs:
           export PATH="${PATH}:/c/Users/runneradmin/.cargo/bin" # manually override path to select proper msys2 build tools.
           rustup target add x86_64-pc-windows-msvc
           cargo build --target x86_64-pc-windows-msvc --bin spectred --release
-          cargo build --target x86_64-pc-windows-msvc --bin simpa --release
           cargo build --target x86_64-pc-windows-msvc --bin rothschild --release
           cargo build --target x86_64-pc-windows-msvc --bin spectre-wallet --release
           mkdir bin || true
           cp target/x86_64-pc-windows-msvc/release/spectred.exe bin/
-          cp target/x86_64-pc-windows-msvc/release/simpa.exe bin/
           cp target/x86_64-pc-windows-msvc/release/rothschild.exe bin/
           cp target/x86_64-pc-windows-msvc/release/spectre-wallet.exe bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-windows-msvc-amd64.zip"
@@ -274,12 +269,10 @@ jobs:
         run: |
           rustup target add x86_64-apple-darwin
           cargo build --target x86_64-apple-darwin --bin spectred --release
-          cargo build --target x86_64-apple-darwin --bin simpa --release
           cargo build --target x86_64-apple-darwin --bin rothschild --release
           cargo build --target x86_64-apple-darwin --bin spectre-wallet --release
           mkdir bin || true
           cp target/x86_64-apple-darwin/release/spectred bin/
-          cp target/x86_64-apple-darwin/release/simpa bin/
           cp target/x86_64-apple-darwin/release/rothschild bin/
           cp target/x86_64-apple-darwin/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-macos-amd64.zip"
@@ -290,12 +283,10 @@ jobs:
         run: |
           rustup target add aarch64-apple-darwin
           cargo build --target aarch64-apple-darwin --bin spectred --release
-          cargo build --target aarch64-apple-darwin --bin simpa --release
           cargo build --target aarch64-apple-darwin --bin rothschild --release
           cargo build --target aarch64-apple-darwin --bin spectre-wallet --release
           mkdir bin || true
           cp target/aarch64-apple-darwin/release/spectred bin/
-          cp target/aarch64-apple-darwin/release/simpa bin/
           cp target/aarch64-apple-darwin/release/rothschild bin/
           cp target/aarch64-apple-darwin/release/spectre-wallet bin/
           archive="bin/rusty-spectre-${{ github.event.release.tag_name }}-macos-aarch64.zip"
