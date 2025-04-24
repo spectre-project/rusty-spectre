@@ -55,18 +55,12 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install zig on Linux
-        if: matrix.TARGET == 'linux-musl/aarch64'
-        uses: goto-bus-stop/setup-zig@v2 # needed for cargo-zigbuild
-        with:
-          version: 0.13.0
-
       - name: Cache Toolchain
         uses: actions/cache@v4
         with:
           path: |
             ~/x-tools
-          key: ${{ runner.os }}-musl-${{ hashFiles('**/musl-toolchain/build-amd64.sh') }}
+          key: ${{ runner.os }}-musl-${{ hashFiles('**/musl-toolchain/build-amd64.sh', '**/musl-toolchain/build-aarch64.sh') }}
           restore-keys: |
             ${{ runner.os }}-musl-
 
