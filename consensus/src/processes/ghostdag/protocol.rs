@@ -109,7 +109,7 @@ impl<T: GhostdagStoreReader, S: RelationsStoreReader, U: ReachabilityService, V:
             .into_iter()
             .map(|parent| {
                 let blue_work = self.ghostdag_store.get_blue_work(parent).unwrap_or_else(|_| {
-                    log::warn!("Using fallback blue work value for parent {}", parent);
+                    log::debug!("Using fallback blue work value for parent {}", parent);
                     spectre_math::Uint192([0, 0, 0])
                 });
                 SortableBlock { hash: parent, blue_work }
