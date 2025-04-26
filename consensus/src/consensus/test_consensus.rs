@@ -1,6 +1,7 @@
 use async_channel::Sender;
 use parking_lot::RwLock;
 use spectre_consensus_core::coinbase::MinerData;
+use spectre_consensus_core::constants;
 use spectre_consensus_core::mining_rules::MiningRules;
 use spectre_consensus_core::tx::ScriptPublicKey;
 use spectre_consensus_core::{
@@ -127,6 +128,11 @@ impl TestConsensus {
             .pruning_point_manager
             .expected_header_pruning_point_v1(ghostdag_data.to_compact(), self.consensus.pruning_point_store.read().get().unwrap());
         let daa_window = self.consensus.services.window_manager.block_daa_window(&ghostdag_data).unwrap();
+        header.version = if self.params.matrix_activation.is_active(header.daa_score) {
+            constants::BLOCK_VERSION_SPECTREXV2
+        } else {
+            constants::BLOCK_VERSION_SPECTREXV1
+        };
         header.bits = self.consensus.services.window_manager.calculate_difficulty_bits(&ghostdag_data, &daa_window);
         header.daa_score = daa_window.daa_score;
         header.timestamp = self.consensus.services.window_manager.calc_past_median_time(&ghostdag_data).unwrap().0 + 1;
