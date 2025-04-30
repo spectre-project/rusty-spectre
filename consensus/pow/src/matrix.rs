@@ -51,15 +51,7 @@ impl Matrix {
 
     #[inline(always)]
     fn convert_to_float(&self) -> [[f64; 64]; 64] {
-        let mut out: [[f64; 64]; 64] = [[Default::default(); 64]; 64];
-
-        out.iter_mut().zip(self.0.iter()).for_each(|(out_row, mat_row)| {
-            out_row.iter_mut().zip(mat_row).for_each(|(out_element, &element)| {
-                *out_element = f64::from(element);
-            })
-        });
-
-        out
+        std::array::from_fn(|i| std::array::from_fn(|j| f64::from(self.0[i][j])))
     }
 
     pub fn compute_rank(&self) -> usize {
