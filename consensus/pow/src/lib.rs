@@ -6,6 +6,7 @@ pub mod wasm;
 #[doc(hidden)]
 pub mod xoshiro;
 
+use spectre_consensus_core::config::params::ForkActivation;
 use std::cmp::max;
 
 use crate::matrix::Matrix;
@@ -20,11 +21,12 @@ pub struct State {
     pub(crate) target: Uint256,
     // PRE_POW_HASH || TIME || 32 zero byte padding; without NONCE
     pub(crate) hasher: PowHash,
+    pub(crate) matrix_activated: bool,
 }
 
 impl State {
     #[inline]
-    pub fn new(header: &Header) -> Self {
+    pub fn new(header: &Header, matrix_activated: bool) -> Self {
         let target = Uint256::from_compact_target_bits(header.bits);
         // Zero out the time and nonce.
         let pre_pow_hash = hashing::header::hash_override_nonce_time(header, 0, 0);
@@ -32,7 +34,7 @@ impl State {
         let hasher = PowHash::new(pre_pow_hash, header.timestamp);
         let matrix = Matrix::generate(pre_pow_hash);
 
-        Self { matrix, target, hasher }
+        Self { matrix, target, hasher, matrix_activated }
     }
 
     #[inline]
@@ -42,7 +44,7 @@ impl State {
         // Hasher already contains PRE_POW_HASH || TIME || 32 zero byte padding; so only the NONCE is missing
         let hash = self.hasher.clone().finalize_with_nonce(nonce);
         let bwt_hash = astrobwtv3::astrobwtv3_hash(&hash.as_bytes());
-        let hash = self.matrix.heavy_hash(bwt_hash.into());
+        let hash = self.matrix.heavy_hash(bwt_hash.into(), self.matrix_activated);
         Uint256::from_le_bytes(hash.as_bytes())
     }
 
@@ -55,17 +57,22 @@ impl State {
     }
 }
 
-pub fn calc_block_level(header: &Header, max_block_level: BlockLevel) -> BlockLevel {
-    let (block_level, _) = calc_block_level_check_pow(header, max_block_level);
+pub fn calc_block_level(header: &Header, max_block_level: BlockLevel, matrix_activation: &ForkActivation) -> BlockLevel {
+    let (block_level, _) = calc_block_level_check_pow(header, max_block_level, matrix_activation);
     block_level
 }
 
-pub fn calc_block_level_check_pow(header: &Header, max_block_level: BlockLevel) -> (BlockLevel, bool) {
+pub fn calc_block_level_check_pow(
+    header: &Header,
+    max_block_level: BlockLevel,
+    matrix_activation: &ForkActivation,
+) -> (BlockLevel, bool) {
     if header.parents_by_level.is_empty() {
         return (max_block_level, true); // Genesis has the max block level
     }
 
-    let state = State::new(header);
+    let matrix_activated = matrix_activation.is_active(header.daa_score);
+    let state = State::new(header, matrix_activated);
     let (passed, pow) = state.check_pow(header.nonce);
     let block_level = calc_level_from_pow(pow, max_block_level);
     (block_level, passed)

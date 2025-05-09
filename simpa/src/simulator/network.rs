@@ -1,4 +1,5 @@
 use async_channel::unbounded;
+use spectre_consensus_core::mining_rules::MiningRules;
 use spectre_consensus_notify::root::ConsensusNotificationRoot;
 use spectre_core::time::unix_now;
 use std::sync::Arc;
@@ -86,6 +87,7 @@ impl SpectreNetworkSimulator {
                 Default::default(),
                 Default::default(),
                 unix_now(),
+                Arc::new(MiningRules::default()),
             ));
             let handles = consensus.run_processors();
             let (sk, pk) = secp.generate_keypair(&mut rng);

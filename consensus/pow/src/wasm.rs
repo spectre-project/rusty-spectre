@@ -47,7 +47,9 @@ impl PoW {
         let hasher = PowHash::new(pre_pow_hash, timestamp.unwrap_or(header.timestamp));
         let matrix = Matrix::generate(pre_pow_hash);
 
-        Ok(Self { inner: crate::State { matrix, target, hasher }, pre_pow_hash })
+        let matrix_activated = true;
+
+        Ok(Self { inner: crate::State { matrix, target, hasher, matrix_activated }, pre_pow_hash })
     }
 
     /// The target based on the provided bits.
@@ -87,7 +89,9 @@ impl PoW {
         let matrix = Matrix::generate(pre_pow_hash);
         let hasher = PowHash::new(pre_pow_hash, timestamp);
 
-        Ok(PoW { inner: crate::State { matrix, target, hasher }, pre_pow_hash })
+        let matrix_activated = true;
+
+        Ok(PoW { inner: crate::State { matrix, target, hasher, matrix_activated }, pre_pow_hash })
     }
 }
 

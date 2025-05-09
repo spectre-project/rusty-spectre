@@ -7,7 +7,7 @@
 //! meant to function as an IPC (Inter-Process Communication) mechanism for Rust applications.
 //!
 //! Rust examples on using wRPC client can be found in the
-//! [examples](https://github.com/spectrenet/rusty-spectre/tree/master/rpc/wrpc/examples) folder.
+//! [examples](https://github.com/spectre-project/rusty-spectre/tree/main/rpc/wrpc/examples) folder.
 //!
 //! WASM bindings for wRPC client can be found in the [`spectre-wrpc-wasm`](https://docs.rs/spectre-wrpc-wasm) crate.
 //!
