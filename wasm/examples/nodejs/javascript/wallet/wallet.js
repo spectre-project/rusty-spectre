@@ -63,7 +63,7 @@ setDefaultStorageFolder(storageFolder);
         }
         let transactionsResult = await wallet.transactionsDataGet({
             accountId,
-            networkId: "testnet-11",
+            networkId: "testnet-8",
             start:0,
             end:20
         })
@@ -93,7 +93,7 @@ setDefaultStorageFolder(storageFolder);
     try {
         
         const walletSecret = "abc";
-        wallet = new Wallet({resident: false, networkId: "testnet-11", resolver: new Resolver()});
+        wallet = new Wallet({resident: false, networkId: "testnet-8", resolver: new Resolver()});
         //console.log("wallet", wallet)
         // Ensure wallet file
         if (!await wallet.exists(filename)){

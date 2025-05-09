@@ -66,9 +66,9 @@ if (fs.existsSync(configFileName)) {
 function createConfigFile() {
     
     if (!network) {
-        console.log("... '--network=' argument is not specified ...defaulting to 'testnet-11'");
+        console.log("... '--network=' argument is not specified ...defaulting to 'testnet-8'");
     }
-    let networkId = network ?? "testnet-11";
+    let networkId = network ?? "testnet-8";
 
     let wallet = basicWallet(networkId, Mnemonic.random());
 

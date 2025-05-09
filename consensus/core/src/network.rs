@@ -6,7 +6,7 @@
 //!
 //! The suffix is used to differentiate between multiple networks of the same type and is used
 //! explicitly with `testnet` networks, allowing declaration of testnet versions such as
-//! `testnet-10`, `testnet-11`, etc.
+//! `testnet-8`, `testnet-11`, etc.
 //!
 
 #![allow(non_snake_case)]
@@ -255,7 +255,7 @@ impl NetworkId {
     pub fn iter() -> impl Iterator<Item = Self> {
         static NETWORK_IDS: [NetworkId; 4] = [
             NetworkId::new(NetworkType::Mainnet),
-            NetworkId::with_suffix(NetworkType::Testnet, 10),
+            NetworkId::with_suffix(NetworkType::Testnet, 8),
             NetworkId::new(NetworkType::Devnet),
             NetworkId::new(NetworkType::Simnet),
         ];

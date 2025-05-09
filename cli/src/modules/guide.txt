@@ -1,6 +1,6 @@
 Before you start, you must configure the default network setting. There are currently
-3 networks available: `mainnet`, `testnet-10`, and `testnet-11`. If you wish to experiment,
-you should select `testnet-11` by entering `network testnet-11`.
+2 networks available: `mainnet` and `testnet-8`. If you wish to experiment,
+you should select `testnet-8` by entering `network testnet-8`.
 
 The `server` command configures the target server. You can connect to any Rusty Spectre
 node that has wRPC enabled with `--rpclisten-borsh=0.0.0.0`. If the server setting 

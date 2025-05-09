@@ -444,7 +444,7 @@ impl From<NetworkId> for Params {
         match value.network_type {
             NetworkType::Mainnet => MAINNET_PARAMS,
             NetworkType::Testnet => match value.suffix {
-                Some(10) => TESTNET_PARAMS,
+                Some(8) => TESTNET_PARAMS,
                 Some(x) => panic!("Testnet suffix {} is not supported", x),
                 None => panic!("Testnet suffix not provided"),
             },
@@ -517,7 +517,7 @@ pub const TESTNET_PARAMS: Params = Params {
         "testnet-dnsseed-2.spectre-network.org",
         "testnet-dnsseed-3.spectre-network.xyz",
     ],
-    net: NetworkId::with_suffix(NetworkType::Testnet, 10),
+    net: NetworkId::with_suffix(NetworkType::Testnet, 8),
     genesis: TESTNET_GENESIS,
     prior_ghostdag_k: LEGACY_DEFAULT_GHOSTDAG_K,
     timestamp_deviation_tolerance: TIMESTAMP_DEVIATION_TOLERANCE,
@@ -561,7 +561,7 @@ pub const TESTNET_PARAMS: Params = Params {
     pruning_proof_m: 1000,
 
     sigma: SIGMA,
-    // TODO: set a date for TN10
+    // TODO: set a date for TN8
     sigma_activation: ForkActivation::never(),
     matrix_activation: ForkActivation::never(),
 };

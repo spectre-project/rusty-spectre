@@ -8,7 +8,7 @@ use crate::utxo::*;
 
 #[tokio::test]
 async fn test_utxo_subsystem_bootstrap() -> Result<()> {
-    let network_id = NetworkId::with_suffix(NetworkType::Testnet, 10);
+    let network_id = NetworkId::with_suffix(NetworkType::Testnet, 8);
     let rpc_api_mock = Arc::new(RpcCoreMock::new());
     let processor = UtxoProcessor::new(Some(rpc_api_mock.clone().into()), Some(network_id), None, None);
     let _context = UtxoContext::new(&processor, UtxoContextBinding::default());
@@ -22,7 +22,7 @@ async fn test_utxo_subsystem_bootstrap() -> Result<()> {
 
 #[test]
 fn test_utxo_generator_empty_utxo_noop() -> Result<()> {
-    let network_id = NetworkId::with_suffix(NetworkType::Testnet, 10);
+    let network_id = NetworkId::with_suffix(NetworkType::Testnet, 8);
     let output_address = output_address(network_id.into());
 
     let payment_output = PaymentOutput::new(output_address, spectre_to_sompi(2.0));

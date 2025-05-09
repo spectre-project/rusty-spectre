@@ -1,6 +1,6 @@
-# Spectre Testnet 10 (TN10) – Sigma Hardfork Node Setup Guide
+# Spectre Testnet 8 (TN8) – Sigma Hardfork Node Setup Guide
 
-Spectre is about to take a significant leap with the **Sigma Hardfork**, following a similar approach to [KIP14](https://github.com/kaspanet/kips/blob/master/kip-0014.md), but transitioning from 1 to 8 blocks per second instead of 10 BPS. By running TN10 and providing feedback, you help prepare for a smooth mainnet upgrade, planned for May.
+Spectre is about to take a significant leap with the **Sigma Hardfork**, following a similar approach to [KIP14](https://github.com/kaspanet/kips/blob/master/kip-0014.md), but transitioning from 1 to 8 blocks per second instead of 10 BPS. By running TN8 and providing feedback, you help prepare for a smooth mainnet upgrade, planned for May.
 
 ---
 
@@ -19,26 +19,26 @@ Spectre is about to take a significant leap with the **Sigma Hardfork**, followi
   - 512 GB SSD
   - Higher network bandwidth for robust peer support
 
-While the minimum specs suffice to sync and maintain a TN10 node with the accelerated 8 bps, increasing CPU cores, RAM, storage, and bandwidth allows your node to serve as a stronger focal point on the network. This leads to faster initial block download (IBD) for peers syncing from your node and provides more leeway for future storage growth and optimization.
+While the minimum specs suffice to sync and maintain a TN8 node with the accelerated 8 bps, increasing CPU cores, RAM, storage, and bandwidth allows your node to serve as a stronger focal point on the network. This leads to faster initial block download (IBD) for peers syncing from your node and provides more leeway for future storage growth and optimization.
 
 ---
 
-## 1. Install & Run Your TN10 Node
+## 1. Install & Run Your TN8 Node
 
 1. **Obtain Spectre binaries**  
    Download and extract the official [latest-release](https://github.com/spectre-project/rusty-spectre/releases/latest), or build from the `main` branch by following the instructions in the project README.
 
 2. **Launch the Node**  
-   While TN10 is the default netsuffix, specifying it explicitly is recommended:
+   While TN8 is the default netsuffix, specifying it explicitly is recommended:
 
    ```
-   spectred --testnet --netsuffix=10 --utxoindex
+   spectred --testnet --netsuffix=8 --utxoindex
    ```
 
    _(If running from source code:)_
 
    ```
-   cargo run --bin spectred --release -- --testnet --netsuffix=10 --utxoindex
+   cargo run --bin spectred --release -- --testnet --netsuffix=8 --utxoindex
    ```
 
 Leave this process running. Closing it will stop your node.
@@ -61,7 +61,7 @@ Leave this process running. Closing it will stop your node.
 rothschild
 ```
 
-This outputs a private key and a public address. Fund your wallet by mining to it or obtaining test coins from other TN10 participants.
+This outputs a private key and a public address. Fund your wallet by mining to it or obtaining test coins from other TN8 participants.
 
 2. **Broadcast Transactions**
 
@@ -73,10 +73,10 @@ Replace <your-private-key> with the key from step 1. The `-t=10` flag sets your 
 
 ---
 
-## 3. Mining on TN10
+## 3. Mining on TN8
 
 1. **Download the Miner**  
-   Use the latest Spectre CPU miner [latest-release](https://github.com/spectre-project/spectre-miner/releases/latest) which supports TN10.
+   Use the latest Spectre CPU miner [latest-release](https://github.com/spectre-project/spectre-miner/releases/latest) which supports TN8.
 
 2. **Start Mining**
 
@@ -84,14 +84,14 @@ Replace <your-private-key> with the key from step 1. The `-t=10` flag sets your 
 spectre-miner --testnet --mining-address <your-address> -p 18210 -t 1
 ```
 
-Replace <your-address> with your TN10 address (e.g., from Rothschild) if you want to mine and generate transactions simultaneously.
+Replace <your-address> with your TN8 address (e.g., from Rothschild) if you want to mine and generate transactions simultaneously.
 
 ---
 
 ## Summary & Next Steps
 
 - **Node Sync:**  
-  `spectred --testnet --netsuffix=10 --utxoindex`
+  `spectred --testnet --netsuffix=8 --utxoindex`
 - **Transaction Generation:**  
   `rothschild --private-key <your-private-key> -t=10`
 - **Mining:**  
