@@ -151,7 +151,10 @@ cfg_if::cfg_if! {
 
         pub use spectre_addresses::{Address, Version as AddressVersion};
         pub use spectre_consensus_core::tx::{ScriptPublicKey, Transaction, TransactionInput, TransactionOutpoint, TransactionOutput};
+
+        #[cfg(feature = "spectre-pow")]
         pub use spectre_pow::wasm::*;
+
         pub use spectre_txscript::wasm::*;
 
         pub mod rpc {
@@ -178,7 +181,10 @@ cfg_if::cfg_if! {
 
         pub use spectre_addresses::{Address, Version as AddressVersion};
         pub use spectre_consensus_core::tx::{ScriptPublicKey, Transaction, TransactionInput, TransactionOutpoint, TransactionOutput};
+
+        #[cfg(feature = "spectre-pow")]
         pub use spectre_pow::wasm::*;
+
         pub use spectre_txscript::wasm::*;
 
         pub mod rpc {
