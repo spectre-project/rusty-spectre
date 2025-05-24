@@ -51,7 +51,7 @@ impl PruningProofManager {
         let mut proof_stores_and_processes = self.init_validate_pruning_point_proof_stores_and_processes(proof)?;
         let proof_pp_header = proof[0].last().expect("checked if empty");
         let proof_pp = proof_pp_header.hash;
-        let proof_pp_level = calc_block_level(proof_pp_header, self.max_block_level);
+        let proof_pp_level = calc_block_level(proof_pp_header, self.max_block_level, &self.matrix_activation);
         let proof_selected_tip_by_level =
             self.populate_stores_for_validate_pruning_point_proof(proof, &mut proof_stores_and_processes, true)?;
         let proof_ghostdag_stores = proof_stores_and_processes.ghostdag_stores;
@@ -111,12 +111,15 @@ impl PruningProofManager {
             ) {
                 let proof_level_blue_work_diff = proof_selected_tip_gd.blue_work.saturating_sub(proof_common_ancestor_gd.blue_work);
                 for parent in self.parents_manager.parents_at_level(&current_pp_header, level).iter().copied() {
-                    let parent_blue_work = current_consensus_ghostdag_stores[level_idx].get_blue_work(parent).unwrap();
-                    let parent_blue_work_diff = parent_blue_work.saturating_sub(common_ancestor_gd.blue_work);
-                    if parent_blue_work_diff.saturating_add(pruning_period_work)
-                        >= proof_level_blue_work_diff.saturating_add(prover_claimed_pruning_period_work)
+                    // Not all parents by level are guaranteed to be GD populated, but at least one of them will (the proof level selected tip)
+                    if let Some(parent_blue_work) = current_consensus_ghostdag_stores[level_idx].get_blue_work(parent).unwrap_option()
                     {
-                        return Err(PruningImportError::PruningProofInsufficientBlueWork);
+                        let parent_blue_work_diff = parent_blue_work.saturating_sub(common_ancestor_gd.blue_work);
+                        if parent_blue_work_diff.saturating_add(pruning_period_work)
+                            >= proof_level_blue_work_diff.saturating_add(prover_claimed_pruning_period_work)
+                        {
+                            return Err(PruningImportError::PruningProofInsufficientBlueWork);
+                        }
                     }
                 }
 
@@ -174,6 +177,10 @@ impl PruningProofManager {
             return Err(PruningImportError::PruningProofNotEnoughHeaders);
         }
 
+        // [Sigma]: decide on ghostdag K based on proof pruning point DAA score
+        let proof_pp_daa_score = proof[0].last().expect("checked if empty").daa_score;
+        let ghostdag_k = self.ghostdag_k.get(proof_pp_daa_score);
+
         let headers_estimate = self.estimate_proof_unique_size(proof);
 
         let (db_lifetime, db) = spectre_database::create_temp_db!(ConnBuilder::default().with_files_limit(10));
@@ -200,7 +207,7 @@ impl PruningProofManager {
             .map(|(level, ghostdag_store)| {
                 GhostdagManager::with_level(
                     self.genesis_hash,
-                    self.ghostdag_k,
+                    ghostdag_k,
                     ghostdag_store,
                     relations_stores[level].clone(),
                     headers_store.clone(),
@@ -269,7 +276,7 @@ impl PruningProofManager {
                     processed = i + 1;
                     last_time = now;
                 }
-                let (header_level, pow_passes) = calc_block_level_check_pow(header, self.max_block_level);
+                let (header_level, pow_passes) = calc_block_level_check_pow(header, self.max_block_level, &self.matrix_activation);
                 if header_level < level {
                     return Err(PruningImportError::PruningProofWrongBlockLevel(header.hash, header_level, level));
                 }
