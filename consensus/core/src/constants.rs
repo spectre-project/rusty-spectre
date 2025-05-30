@@ -20,8 +20,11 @@ pub const STORAGE_MASS_PARAMETER: u64 = SOMPI_PER_SPECTRE * 10_000;
 
 /// The parameter defining how much mass per byte to charge for when calculating
 /// transient storage mass. Since normally the block mass limit is 500_000, this limits
-/// block body byte size to 125_000 (KIP-0013).
-pub const TRANSIENT_BYTE_TO_MASS_FACTOR: u64 = 4;
+/// block body byte size to 125_000 (KIP-0013). We use a factor of 3 instead of 4 to
+/// allow larger blocks and accommodate more transactions per block at our reduced BPS.
+/// worst_case_usage = ((pruning_depth + finality_depth) * block_mass_limit) / bytes_per_gb;
+///                    ((585128 + 259200) * 166667) / 1000000000 = 140.72 GB
+pub const TRANSIENT_BYTE_TO_MASS_FACTOR: u64 = 3; // 167KB Block Size
 
 /// MaxSompi is the maximum transaction amount allowed in sompi.
 pub const MAX_SOMPI: u64 = 1_161_000_000 * SOMPI_PER_SPECTRE;
