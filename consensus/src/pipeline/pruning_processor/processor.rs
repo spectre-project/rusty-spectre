@@ -82,6 +82,9 @@ pub struct PruningProcessor {
 
     // Signals
     is_consensus_exiting: Arc<AtomicBool>,
+
+    // PP Logging
+    last_log_time: std::sync::Mutex<u64>,
 }
 
 impl Deref for PruningProcessor {
@@ -113,6 +116,7 @@ impl PruningProcessor {
             pruning_lock,
             config,
             is_consensus_exiting,
+            last_log_time: std::sync::Mutex::new(0),
         }
     }
 
@@ -167,9 +171,60 @@ impl PruningProcessor {
         }
     }
 
+    fn should_log_periodic_pp_estimate(&self) -> bool {
+        let now = spectre_core::time::unix_now();
+        let mut last_log = self.last_log_time.lock().unwrap();
+
+        if now - *last_log > 60_000 {
+            *last_log = now;
+            true
+        } else {
+            false
+        }
+    }
+
     fn advance_pruning_point_and_candidate_if_possible(&self, sink_ghostdag_data: CompactGhostdagData) {
         let pruning_point_read = self.pruning_point_store.upgradable_read();
         let current_pruning_info = pruning_point_read.get().unwrap();
+
+        if self.should_log_periodic_pp_estimate() {
+            let virtual_blue_score = sink_ghostdag_data.blue_score;
+            let selected_parent_daa_score = self.headers_store.get_daa_score(sink_ghostdag_data.selected_parent).unwrap();
+
+            // finality_depth is F, pruning_depth is P
+            let finality_depth = self.config.finality_depth().get(selected_parent_daa_score);
+            let pruning_depth = self.config.pruning_depth().get(selected_parent_daa_score);
+            let target_time_per_block_ms = self.config.target_time_per_block().get(selected_parent_daa_score);
+
+            // The N pruning block is the first selected chain block to have a blue_score higher than N×F
+            // Pruning to the N pruning block occurs when a block with blue score N×F+P is reached
+            // If current virtual has blue score V, then pruning will occur at the minimal N×F+P>V
+            //
+            // find minimal N such that N×F>V-P, meaning time is always roughly (F-(V-P)%F)/BPS seconds away
+            // We estimate the time by first finding how far we are into the current finality using (V-P)%F,
+            // then calculating the remaining blocks during the current finality phase as F-(V-P)%F
+            // and finally dividing by BPS to get the time estimate
+            let blocks_until_pruning = (finality_depth - (virtual_blue_score - pruning_depth) % finality_depth) % finality_depth;
+            let time_until_next_pruning_sec = blocks_until_pruning as f64 * target_time_per_block_ms as f64 / 1000.0;
+
+            let time_display = if time_until_next_pruning_sec > 3600.0 {
+                format!("{:.2} h", time_until_next_pruning_sec / 3600.0)
+            } else {
+                format!("{:.2} s", time_until_next_pruning_sec)
+            };
+
+            warn!(
+                "Periodic PP advancing estimate: {} blocks (~{}), formula: (F({}) - (V({}) - P({})) % F) = {}",
+                blocks_until_pruning,
+                time_display,
+                //time_until_next_pruning_sec,
+                finality_depth,
+                virtual_blue_score,
+                pruning_depth,
+                blocks_until_pruning
+            );
+        }
+
         let (new_pruning_points, new_candidate) = self.pruning_point_manager.next_pruning_points(
             sink_ghostdag_data,
             current_pruning_info.candidate,
@@ -177,6 +232,22 @@ impl PruningProcessor {
         );
 
         if let Some(new_pruning_point) = new_pruning_points.last().copied() {
+            let old_pruning_point = current_pruning_info.pruning_point;
+            let old_blue_score = self.headers_store.get_blue_score(old_pruning_point).unwrap();
+            let new_blue_score = self.headers_store.get_blue_score(new_pruning_point).unwrap();
+            let selected_parent_daa_score = self.headers_store.get_daa_score(sink_ghostdag_data.selected_parent).unwrap();
+            let finality_depth = self.config.finality_depth().get(selected_parent_daa_score);
+            warn!(
+                "PP advancing: old={} (blue_score={}), new={} (blue_score={}), finality_score old={}, new={}, finality_depth={}",
+                old_pruning_point,
+                old_blue_score,
+                new_pruning_point,
+                new_blue_score,
+                old_blue_score / finality_depth,
+                new_blue_score / finality_depth,
+                finality_depth
+            );
+
             let retention_period_root = pruning_point_read.retention_period_root().unwrap();
 
             // Update past pruning points and pruning point stores
