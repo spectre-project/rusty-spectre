@@ -189,7 +189,10 @@ impl PruningProcessor {
 
         if self.should_log_periodic_pp_estimate() {
             let virtual_blue_score = sink_ghostdag_data.blue_score;
-            let selected_parent_daa_score = self.headers_store.get_daa_score(sink_ghostdag_data.selected_parent).unwrap();
+            let selected_parent_daa_score = match self.headers_store.get_daa_score(sink_ghostdag_data.selected_parent) {
+                Ok(score) => score,
+                Err(_) => return,
+            };
 
             // finality_depth is F, pruning_depth is P
             let finality_depth = self.config.finality_depth().get(selected_parent_daa_score);
@@ -204,7 +207,8 @@ impl PruningProcessor {
             // We estimate the time by first finding how far we are into the current finality using (V-P)%F,
             // then calculating the remaining blocks during the current finality phase as F-(V-P)%F
             // and finally dividing by BPS to get the time estimate
-            let blocks_until_pruning = (finality_depth - (virtual_blue_score - pruning_depth) % finality_depth) % finality_depth;
+            let blocks_until_pruning =
+                finality_depth.saturating_sub((virtual_blue_score.saturating_sub(pruning_depth)) % finality_depth);
             let time_until_next_pruning_sec = blocks_until_pruning as f64 * target_time_per_block_ms as f64 / 1000.0;
 
             let time_display = if time_until_next_pruning_sec > 3600.0 {
@@ -233,21 +237,23 @@ impl PruningProcessor {
 
         if let Some(new_pruning_point) = new_pruning_points.last().copied() {
             let old_pruning_point = current_pruning_info.pruning_point;
-            let old_blue_score = self.headers_store.get_blue_score(old_pruning_point).unwrap();
-            let new_blue_score = self.headers_store.get_blue_score(new_pruning_point).unwrap();
-            let selected_parent_daa_score = self.headers_store.get_daa_score(sink_ghostdag_data.selected_parent).unwrap();
-            let finality_depth = self.config.finality_depth().get(selected_parent_daa_score);
-            warn!(
-                "PP advancing: old={} (blue_score={}), new={} (blue_score={}), finality_score old={}, new={}, finality_depth={}",
-                old_pruning_point,
-                old_blue_score,
-                new_pruning_point,
-                new_blue_score,
-                old_blue_score / finality_depth,
-                new_blue_score / finality_depth,
-                finality_depth
-            );
-
+            if let (Ok(old_blue_score), Ok(new_blue_score), Ok(selected_parent_daa_score)) = (
+                self.headers_store.get_blue_score(old_pruning_point),
+                self.headers_store.get_blue_score(new_pruning_point),
+                self.headers_store.get_daa_score(sink_ghostdag_data.selected_parent),
+            ) {
+                let finality_depth = self.config.finality_depth().get(selected_parent_daa_score);
+                warn!(
+                    "PP advancing: old={} (blue_score={}), new={} (blue_score={}), finality_score old={}, new={}, finality_depth={}",
+                    old_pruning_point,
+                    old_blue_score,
+                    new_pruning_point,
+                    new_blue_score,
+                    old_blue_score / finality_depth,
+                    new_blue_score / finality_depth,
+                    finality_depth
+                );
+            }
             let retention_period_root = pruning_point_read.retention_period_root().unwrap();
 
             // Update past pruning points and pruning point stores
