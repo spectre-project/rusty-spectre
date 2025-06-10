@@ -29,7 +29,7 @@ impl HeaderProcessor {
     }
 
     fn check_header_version(&self, header: &Header) -> BlockProcessResult<()> {
-        let expected_version = if self.matrix_activation.is_active(header.daa_score) {
+        let expected_version = if self.sigma_activation.is_active(header.daa_score) {
             constants::BLOCK_VERSION_SPECTREXV2
         } else {
             constants::BLOCK_VERSION_SPECTREXV1
@@ -108,8 +108,8 @@ impl HeaderProcessor {
     }
 
     fn check_pow_and_calc_block_level(&self, header: &Header) -> BlockProcessResult<BlockLevel> {
-        let matrix_activated = self.matrix_activation.is_active(header.daa_score);
-        let state = spectre_pow::State::new(header, matrix_activated);
+        let sigma_activated = self.sigma_activation.is_active(header.daa_score);
+        let state = spectre_pow::State::new(header, sigma_activated);
 
         let (passed, pow) = state.check_pow(header.nonce);
         if passed || self.skip_proof_of_work {

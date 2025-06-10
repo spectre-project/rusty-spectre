@@ -51,7 +51,7 @@ impl PruningProofManager {
         let mut proof_stores_and_processes = self.init_validate_pruning_point_proof_stores_and_processes(proof)?;
         let proof_pp_header = proof[0].last().expect("checked if empty");
         let proof_pp = proof_pp_header.hash;
-        let proof_pp_level = calc_block_level(proof_pp_header, self.max_block_level, &self.matrix_activation);
+        let proof_pp_level = calc_block_level(proof_pp_header, self.max_block_level, &self.sigma_activation);
         let proof_selected_tip_by_level =
             self.populate_stores_for_validate_pruning_point_proof(proof, &mut proof_stores_and_processes, true)?;
         let proof_ghostdag_stores = proof_stores_and_processes.ghostdag_stores;
@@ -276,7 +276,7 @@ impl PruningProofManager {
                     processed = i + 1;
                     last_time = now;
                 }
-                let (header_level, pow_passes) = calc_block_level_check_pow(header, self.max_block_level, &self.matrix_activation);
+                let (header_level, pow_passes) = calc_block_level_check_pow(header, self.max_block_level, &self.sigma_activation);
                 if header_level < level {
                     return Err(PruningImportError::PruningProofWrongBlockLevel(header.hash, header_level, level));
                 }

@@ -849,7 +849,6 @@ impl SpectredGoParams {
             pruning_proof_m: self.PruningProofM,
             sigma: SIGMA,
             sigma_activation: ForkActivation::never(),
-            matrix_activation: ForkActivation::never(),
         }
     }
 }

@@ -174,11 +174,8 @@ pub struct VirtualStateProcessor {
 
     pub(super) sigma_logger: SigmaLogger,
 
-    // Sigma hardfork activation score (used here for activating KIPs 9,10)
+    // Sigma hardfork activation score (used here for activating KIPs 4,9,10,13)
     pub(crate) sigma_activation: ForkActivation,
-
-    // matrix hardfork activation score
-    pub(crate) matrix_activation: ForkActivation,
 
     // Mining Rule
     mining_rules: Arc<MiningRules>,
@@ -248,7 +245,6 @@ impl VirtualStateProcessor {
             counters,
             sigma_logger: SigmaLogger::new(),
             sigma_activation: params.sigma_activation,
-            matrix_activation: params.matrix_activation,
             mining_rules,
         }
     }
@@ -1072,11 +1068,8 @@ impl VirtualStateProcessor {
             )
             .unwrap();
         txs.insert(0, coinbase.tx);
-        let version = if self.matrix_activation.is_active(virtual_state.daa_score) {
-            BLOCK_VERSION_SPECTREXV2
-        } else {
-            BLOCK_VERSION_SPECTREXV1
-        };
+        let version =
+            if self.sigma_activation.is_active(virtual_state.daa_score) { BLOCK_VERSION_SPECTREXV2 } else { BLOCK_VERSION_SPECTREXV1 };
         let parents_by_level = self.parents_manager.calc_block_parents(pruning_info.pruning_point, &virtual_state.parents);
 
         // Hash according to hardfork activation

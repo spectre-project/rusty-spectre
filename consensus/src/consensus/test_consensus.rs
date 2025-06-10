@@ -128,7 +128,7 @@ impl TestConsensus {
             .pruning_point_manager
             .expected_header_pruning_point_v1(ghostdag_data.to_compact(), self.consensus.pruning_point_store.read().get().unwrap());
         let daa_window = self.consensus.services.window_manager.block_daa_window(&ghostdag_data).unwrap();
-        header.version = if self.params.matrix_activation.is_active(header.daa_score) {
+        header.version = if self.params.sigma_activation.is_active(header.daa_score) {
             constants::BLOCK_VERSION_SPECTREXV2
         } else {
             constants::BLOCK_VERSION_SPECTREXV1
