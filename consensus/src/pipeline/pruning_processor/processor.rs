@@ -217,7 +217,7 @@ impl PruningProcessor {
                 format!("{:.2} s", time_until_next_pruning_sec)
             };
 
-            warn!(
+            info!(
                 "Periodic PP advancing estimate: {} blocks (~{}), formula: (F({}) - (V({}) - P({})) % F) = {}",
                 blocks_until_pruning,
                 time_display,
@@ -243,7 +243,7 @@ impl PruningProcessor {
                 self.headers_store.get_daa_score(sink_ghostdag_data.selected_parent),
             ) {
                 let finality_depth = self.config.finality_depth().get(selected_parent_daa_score);
-                warn!(
+                info!(
                     "PP advancing: old={} (blue_score={}), new={} (blue_score={}), finality_score old={}, new={}, finality_depth={}",
                     old_pruning_point,
                     old_blue_score,
@@ -280,7 +280,7 @@ impl PruningProcessor {
             trace!("New Pruning Point: {} | New Retention Period Root: {}", new_pruning_point, adjusted_retention_period_root);
 
             // Inform the user
-            info!("Periodic pruning point movement: advancing from {} to {}", current_pruning_info.pruning_point, new_pruning_point);
+            // info!("Periodic pruning point movement: advancing from {} to {}", current_pruning_info.pruning_point, new_pruning_point);
 
             // Advance the pruning point utxoset to the state of the new pruning point using chain-block UTXO diffs
             if !self.advance_pruning_utxoset(current_pruning_info.pruning_point, new_pruning_point) {
