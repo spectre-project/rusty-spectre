@@ -97,22 +97,12 @@ impl<T: GhostdagStoreReader, S: RelationsStoreReader, U: ReachabilityService, V:
         ))
     }
 
-    /// Historically we have some weird floating blocks back from Golang
-    /// times because AstroBWTv3 implemnentation was slow and in some
-    /// cases too slow to fit the 1s block window constantly. With latest
-    /// upstream merges from Kaspa the boomerang bounces back hard.
-    /// It fails because block neither exist in Ghostdag nor Ghostdag
-    /// Compact. Since the block doesn't exist, we will assume blue
-    /// work to be 0 and return it as fallback.
     pub fn find_selected_parent(&self, parents: impl IntoIterator<Item = Hash>) -> Hash {
         parents
             .into_iter()
-            .map(|parent| {
-                let blue_work = self.ghostdag_store.get_blue_work(parent).unwrap_or_else(|_| {
-                    log::debug!("Using fallback blue work value for parent {}", parent);
-                    spectre_math::Uint192([0, 0, 0])
-                });
-                SortableBlock { hash: parent, blue_work }
+            .map(|parent| SortableBlock {
+                hash: parent,
+                blue_work: self.ghostdag_store.get_blue_work(parent).unwrap_or(spectre_math::Uint192([0, 0, 0])),
             })
             .max()
             .unwrap()
