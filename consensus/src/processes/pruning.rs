@@ -585,6 +585,15 @@ mod tests {
             let finality_depth = params.finality_depth();
             let ghostdag_k = params.ghostdag_k();
 
+            println!("Network: {:?}", net);
+            println!("finality_depth.before(): {}", finality_depth.before());
+            println!("finality_depth.after(): {}", finality_depth.after());
+            println!("mod result: {}", finality_depth.after() % finality_depth.before());
+            println!("pruning_depth.before(): {}", pruning_depth.before());
+            println!("pruning_depth.after(): {}", pruning_depth.after());
+            println!("ghostdag_k.before(): {}", ghostdag_k.before());
+            println!("ghostdag_k.after(): {}", ghostdag_k.after());
+
             // Assert P is not a multiple of F +- noise(K)
             let mod_before = pruning_depth.before() % finality_depth.before();
             assert!((ghostdag_k.before() as u64) < mod_before && mod_before < finality_depth.before() - ghostdag_k.before() as u64);
