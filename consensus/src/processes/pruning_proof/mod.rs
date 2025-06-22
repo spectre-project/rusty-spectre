@@ -216,7 +216,7 @@ impl PruningProofManager {
             if self.headers_store.has(header.hash).unwrap() {
                 return Ok(());
             }
-            let block_level = calc_block_level(header, self.max_block_level, &self.sigma_activation);
+            let block_level = calc_block_level(header, self.max_block_level);
             self.headers_store.insert(header.hash, header.clone(), block_level).unwrap();
             Ok(())
         })?;

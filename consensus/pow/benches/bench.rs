@@ -23,7 +23,7 @@ fn bench_pow(c: &mut Criterion) {
     c.bench_function("HeavyHash", |b| {
         b.iter(|| {
             for (matrix, &hash) in matrices.iter().zip(hashes.iter()) {
-                black_box(matrix.heavy_hash(hash, false));
+                black_box(matrix.heavy_hash(hash));
             }
         });
     });

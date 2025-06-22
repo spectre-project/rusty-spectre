@@ -1,4 +1,5 @@
 use super::*;
+use crate::constants;
 use crate::errors::{BlockProcessResult, RuleError};
 use crate::model::services::reachability::ReachabilityService;
 use crate::processes::window::WindowManager;
@@ -6,10 +7,25 @@ use spectre_consensus_core::header::Header;
 
 impl HeaderProcessor {
     pub(super) fn pre_pow_validation(&self, ctx: &mut HeaderProcessingContext, header: &Header) -> BlockProcessResult<()> {
+        self.check_header_version(ctx, header)?;
         self.check_parents_limit(ctx, header)?;
         self.check_pruning_violation(ctx)?;
         self.check_difficulty_and_daa_score(ctx, header)?;
         Ok(())
+    }
+
+    fn check_header_version(&self, ctx: &HeaderProcessingContext, header: &Header) -> BlockProcessResult<()> {
+        let expected_version = if self.sigma_activation.is_active(ctx.selected_parent_daa_score()) {
+            constants::BLOCK_VERSION_SPECTREXV2
+        } else {
+            constants::BLOCK_VERSION_SPECTREXV1
+        };
+
+        if header.version != expected_version {
+            Err(RuleError::WrongBlockVersion(header.version, expected_version))
+        } else {
+            Ok(())
+        }
     }
 
     // TODO (post HF): move back to pre_ghostdag_validation (substitute for check_parents_limit_upper_bound)

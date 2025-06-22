@@ -6,10 +6,10 @@ pub mod wasm;
 #[doc(hidden)]
 pub mod xoshiro;
 
-use spectre_consensus_core::config::params::ForkActivation;
 use std::cmp::max;
 
 use crate::matrix::Matrix;
+use spectre_consensus_core::constants;
 use spectre_consensus_core::{hashing, header::Header, BlockLevel};
 use spectre_hashes::PowHash;
 use spectre_math::Uint256;
@@ -21,12 +21,13 @@ pub struct State {
     pub(crate) target: Uint256,
     // PRE_POW_HASH || TIME || 32 zero byte padding; without NONCE
     pub(crate) hasher: PowHash,
-    pub(crate) sigma_activated: bool,
+    pub(crate) header_version: u16,
 }
 
 impl State {
     #[inline]
-    pub fn new(header: &Header, sigma_activated: bool) -> Self {
+    pub fn new(header: &Header) -> Self {
+        let header_version = header.version;
         let target = Uint256::from_compact_target_bits(header.bits);
         // Zero out the time and nonce.
         let pre_pow_hash = hashing::header::hash_override_nonce_time(header, 0, 0);
@@ -34,45 +35,63 @@ impl State {
         let hasher = PowHash::new(pre_pow_hash, header.timestamp);
         let matrix = Matrix::generate(pre_pow_hash);
 
-        Self { matrix, target, hasher, sigma_activated }
+        Self { matrix, target, hasher, header_version }
+    }
+
+    #[inline]
+    #[must_use]
+    /// PRE_POW_HASH || TIME || 32 zero byte padding || NONCE
+    pub fn calculate_spectrex_v1(&self, nonce: u64) -> Uint256 {
+        // Hasher already contains PRE_POW_HASH || TIME || 32 zero byte padding; so only the NONCE is missing
+        let hash = self.hasher.clone().finalize_with_nonce(nonce);
+        let bwt_hash = astrobwtv3::astrobwtv3_hash(&hash.as_bytes());
+        let hash = self.matrix.heavy_hash(bwt_hash.into());
+        Uint256::from_le_bytes(hash.as_bytes())
+    }
+
+    #[inline]
+    #[must_use]
+    /// PRE_POW_HASH || TIME || 32 zero byte padding || NONCE
+    pub fn calculate_spectrex_v2(&self, nonce: u64) -> Uint256 {
+        // Hasher already contains PRE_POW_HASH || TIME || 32 zero byte padding; so only the NONCE is missing
+        let hash = self.hasher.clone().finalize_with_nonce(nonce);
+        let bwt_hash = astrobwtv3::astrobwtv3_hash(&hash.as_bytes());
+        let hash = self.matrix.heavy_hash_v2(bwt_hash.into());
+        Uint256::from_le_bytes(hash.as_bytes())
     }
 
     #[inline]
     #[must_use]
     /// PRE_POW_HASH || TIME || 32 zero byte padding || NONCE
     pub fn calculate_pow(&self, nonce: u64) -> Uint256 {
-        // Hasher already contains PRE_POW_HASH || TIME || 32 zero byte padding; so only the NONCE is missing
-        let hash = self.hasher.clone().finalize_with_nonce(nonce);
-        let bwt_hash = astrobwtv3::astrobwtv3_hash(&hash.as_bytes());
-        let hash = self.matrix.heavy_hash(bwt_hash.into(), self.sigma_activated);
-        Uint256::from_le_bytes(hash.as_bytes())
+        match self.header_version {
+            constants::BLOCK_VERSION_SPECTREXV1 => self.calculate_spectrex_v1(nonce),
+            constants::BLOCK_VERSION_SPECTREXV2 => self.calculate_spectrex_v2(nonce),
+            _ => unreachable!("wrong header version: {}", self.header_version),
+        }
     }
 
     #[inline]
     #[must_use]
     pub fn check_pow(&self, nonce: u64) -> (bool, Uint256) {
         let pow = self.calculate_pow(nonce);
+        // println!("nonce: {}, pow.bits(): {}, zeros {}, passed: {}", nonce, pow.bits(), (256 - pow.bits()), pow <= self.target);
         // The pow hash must be less or equal than the claimed target.
         (pow <= self.target, pow)
     }
 }
 
-pub fn calc_block_level(header: &Header, max_block_level: BlockLevel, sigma_activation: &ForkActivation) -> BlockLevel {
-    let (block_level, _) = calc_block_level_check_pow(header, max_block_level, sigma_activation);
+pub fn calc_block_level(header: &Header, max_block_level: BlockLevel) -> BlockLevel {
+    let (block_level, _) = calc_block_level_check_pow(header, max_block_level);
     block_level
 }
 
-pub fn calc_block_level_check_pow(
-    header: &Header,
-    max_block_level: BlockLevel,
-    sigma_activation: &ForkActivation,
-) -> (BlockLevel, bool) {
+pub fn calc_block_level_check_pow(header: &Header, max_block_level: BlockLevel) -> (BlockLevel, bool) {
     if header.parents_by_level.is_empty() {
         return (max_block_level, true); // Genesis has the max block level
     }
 
-    let sigma_activated = sigma_activation.is_active(header.daa_score);
-    let state = State::new(header, sigma_activated);
+    let state = State::new(header);
     let (passed, pow) = state.check_pow(header.nonce);
     let block_level = calc_level_from_pow(pow, max_block_level);
     (block_level, passed)

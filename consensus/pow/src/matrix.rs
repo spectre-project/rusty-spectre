@@ -92,7 +92,7 @@ impl Matrix {
         rank
     }
 
-    pub fn heavy_hash(&self, hash: Hash, sigma_activated: bool) -> Hash {
+    pub fn heavy_hash(&self, hash: Hash) -> Hash {
         // SAFETY: An uninitialized MaybrUninit is always safe.
         let mut vec: [MaybeUninit<u8>; 64] = unsafe { MaybeUninit::uninit().assume_init() };
         for (i, element) in hash.as_bytes().into_iter().enumerate() {
@@ -110,12 +110,35 @@ impl Matrix {
                 sum1 += self.0[2 * i][j] * (elem as u16);
                 sum2 += self.0[2 * i + 1][j] * (elem as u16);
             }
-            if sigma_activated {
-                (((sum1 & 0xF) ^ ((sum1 >> 4) & 0xF) ^ ((sum1 >> 8) & 0xF)) << 4) as u8
-                    | ((sum2 & 0xF) ^ ((sum2 >> 4) & 0xF) ^ ((sum2 >> 8) & 0xF)) as u8
-            } else {
-                ((sum1 >> 10) << 4) as u8 | (sum2 >> 10) as u8
+            ((sum1 >> 10) << 4) as u8 | (sum2 >> 10) as u8
+        });
+
+        // Concatenate 4 LSBs back to 8 bit xor with sum1
+        product.iter_mut().zip(hash.as_bytes()).for_each(|(p, h)| *p ^= h);
+        KHeavyHash::hash(Hash::from_bytes(product))
+    }
+
+    pub fn heavy_hash_v2(&self, hash: Hash) -> Hash {
+        // SAFETY: An uninitialized MaybrUninit is always safe.
+        let mut vec: [MaybeUninit<u8>; 64] = unsafe { MaybeUninit::uninit().assume_init() };
+        for (i, element) in hash.as_bytes().into_iter().enumerate() {
+            vec[2 * i].write(element >> 4);
+            vec[2 * i + 1].write(element & 0x0F);
+        }
+        // SAFETY: The loop above wrote into all indexes.
+        let vec: [u8; 64] = unsafe { std::mem::transmute(vec) };
+
+        // Matrix-vector multiplication, convert to 4 bits, and then combine back to 8 bits.
+        let mut product: [u8; 32] = array_from_fn(|i| {
+            let mut sum1 = 0;
+            let mut sum2 = 0;
+            for (j, &elem) in vec.iter().enumerate() {
+                sum1 += self.0[2 * i][j] * (elem as u16);
+                sum2 += self.0[2 * i + 1][j] * (elem as u16);
             }
+            // XOR the lower 12 bits in 4-bit chunks (replaces >> 10 bit shift from v1)
+            (((sum1 & 0xF) ^ ((sum1 >> 4) & 0xF) ^ ((sum1 >> 8) & 0xF)) << 4) as u8
+                | ((sum2 & 0xF) ^ ((sum2 >> 4) & 0xF) ^ ((sum2 >> 8) & 0xF)) as u8
         });
 
         // Concatenate 4 LSBs back to 8 bit xor with sum1
@@ -236,7 +259,7 @@ mod tests {
             82, 46, 212, 218, 28, 192, 143, 92, 213, 66, 86, 63, 245, 241, 155, 189, 73, 159, 229, 180, 202, 105, 159, 166, 109, 172,
             128, 136, 169, 195, 97, 41,
         ]);
-        assert_eq!(test_matrix.heavy_hash(hash, false), expected_hash);
+        assert_eq!(test_matrix.heavy_hash(hash), expected_hash);
     }
     #[test]
     fn test_generate_matrix() {

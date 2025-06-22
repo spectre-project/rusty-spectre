@@ -43,13 +43,14 @@ impl PoW {
         let target = Uint256::from_compact_target_bits(header.bits);
         // Zero out the time and nonce.
         let pre_pow_hash = hashing::header::hash_override_nonce_time(header, 0, 0);
+
+        let header_version = header.version;
+
         // PRE_POW_HASH || TIME || 32 zero byte padding || NONCE
         let hasher = PowHash::new(pre_pow_hash, timestamp.unwrap_or(header.timestamp));
         let matrix = Matrix::generate(pre_pow_hash);
 
-        let sigma_activated = true;
-
-        Ok(Self { inner: crate::State { matrix, target, hasher, sigma_activated }, pre_pow_hash })
+        Ok(Self { inner: crate::State { matrix, target, hasher, header_version }, pre_pow_hash })
     }
 
     /// The target based on the provided bits.
@@ -78,7 +79,7 @@ impl PoW {
 
     /// Can be used for parsing Stratum templates.
     #[wasm_bindgen(js_name=fromRaw)]
-    pub fn from_raw(pre_pow_hash: &str, timestamp: u64, target_bits: Option<u32>) -> Result<PoW> {
+    pub fn from_raw(pre_pow_hash: &str, timestamp: u64, target_bits: Option<u32>, header_version: u16) -> Result<PoW> {
         // Convert the pre_pow_hash from hex string to Hash
         let pre_pow_hash = Hash::from_hex(pre_pow_hash).map_err(|err| Error::custom(format!("{err:?}")))?;
 
@@ -89,9 +90,7 @@ impl PoW {
         let matrix = Matrix::generate(pre_pow_hash);
         let hasher = PowHash::new(pre_pow_hash, timestamp);
 
-        let sigma_activated = true;
-
-        Ok(PoW { inner: crate::State { matrix, target, hasher, sigma_activated }, pre_pow_hash })
+        Ok(PoW { inner: crate::State { matrix, target, hasher, header_version }, pre_pow_hash })
     }
 }
 

@@ -122,13 +122,16 @@ impl TestConsensus {
     pub fn build_header_with_parents(&self, hash: Hash, parents: Vec<Hash>) -> Header {
         let mut header = header_from_precomputed_hash(hash, parents);
         let ghostdag_data = self.consensus.services.ghostdag_manager.ghostdag(header.direct_parents());
+        let selected_parent = ghostdag_data.selected_parent;
+        let selected_parent_daa_score = self.consensus.headers_store.get_daa_score(selected_parent).unwrap();
+
         header.pruning_point = self
             .consensus
             .services
             .pruning_point_manager
             .expected_header_pruning_point_v1(ghostdag_data.to_compact(), self.consensus.pruning_point_store.read().get().unwrap());
         let daa_window = self.consensus.services.window_manager.block_daa_window(&ghostdag_data).unwrap();
-        header.version = if self.params.sigma_activation.is_active(header.daa_score) {
+        header.version = if self.params.sigma_activation.is_active(selected_parent_daa_score) {
             constants::BLOCK_VERSION_SPECTREXV2
         } else {
             constants::BLOCK_VERSION_SPECTREXV1

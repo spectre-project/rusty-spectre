@@ -1068,8 +1068,13 @@ impl VirtualStateProcessor {
             )
             .unwrap();
         txs.insert(0, coinbase.tx);
-        let version =
-            if self.sigma_activation.is_active(virtual_state.daa_score) { BLOCK_VERSION_SPECTREXV2 } else { BLOCK_VERSION_SPECTREXV1 };
+        let selected_parent_hash = virtual_state.ghostdag_data.selected_parent;
+        let selected_parent_daa_score = self.headers_store.get_daa_score(selected_parent_hash).unwrap();
+        let version = if self.sigma_activation.is_active(selected_parent_daa_score) {
+            BLOCK_VERSION_SPECTREXV2
+        } else {
+            BLOCK_VERSION_SPECTREXV1
+        };
         let parents_by_level = self.parents_manager.calc_block_parents(pruning_info.pruning_point, &virtual_state.parents);
 
         // Hash according to hardfork activation

@@ -418,7 +418,7 @@ async fn header_in_isolation_validation_test() {
         let block_version = BLOCK_VERSION - 1;
         block.header.version = block_version;
         match consensus.validate_and_insert_block(block.to_immutable()).virtual_state_task.await {
-            Err(RuleError::WrongBlockVersion(wrong_version)) => {
+            Err(RuleError::WrongBlockVersion(wrong_version, _expected_block_version)) => {
                 assert_eq!(wrong_version, block_version)
             }
             res => {
