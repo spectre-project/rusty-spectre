@@ -101,6 +101,9 @@ impl PruningProofManager {
                 self.relations_stores.write()[level].insert(header.hash, parents.clone()).unwrap();
 
                 if level == 0 {
+                    // insert origin_ghostdag_data because level_ancestors filtering may leave blocks with only ORIGIN as parent
+                    let _ = self.ghostdag_store.insert(ORIGIN, self.ghostdag_manager.origin_ghostdag_data());
+
                     let gd = if let Some(gd) = trusted_gd_map.get(&header.hash) {
                         gd.clone()
                     } else {
