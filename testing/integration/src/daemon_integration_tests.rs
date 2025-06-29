@@ -84,7 +84,7 @@ async fn daemon_mining_test() {
 
         while let Ok(notification) = match tokio::time::timeout(Duration::from_secs(1), event_receiver.recv()).await {
             Ok(res) => res,
-            Err(elapsed) => panic!("expected virtual event before {}", elapsed),
+            Err(elapsed) => panic!("expected virtual event before {elapsed}"),
         } {
             match notification {
                 Notification::VirtualDaaScoreChanged(msg) if msg.virtual_daa_score == i + 1 => {
@@ -141,7 +141,7 @@ async fn daemon_utxos_propagation_test() {
     };
     let total_fd_limit = 10;
 
-    let coinbase_maturity = SIMNET_PARAMS.coinbase_maturity;
+    let coinbase_maturity = SIMNET_PARAMS.coinbase_maturity().before();
     let mut spectred1 = Daemon::new_random_with_args(args.clone(), total_fd_limit);
     let mut spectred2 = Daemon::new_random_with_args(args, total_fd_limit);
     let rpc_client1 = spectred1.start().await;
@@ -194,7 +194,7 @@ async fn daemon_utxos_propagation_test() {
 
         while let Ok(notification) = match tokio::time::timeout(Duration::from_secs(1), event_receiver1.recv()).await {
             Ok(res) => res,
-            Err(elapsed) => panic!("expected virtual event before {}", elapsed),
+            Err(elapsed) => panic!("expected virtual event before {elapsed}"),
         } {
             match notification {
                 Notification::VirtualDaaScoreChanged(msg) if msg.virtual_daa_score == i + 1 => {
@@ -217,7 +217,7 @@ async fn daemon_utxos_propagation_test() {
             async fn daa_score_reached(client: GrpcClient) -> bool {
                 let virtual_daa_score = client.get_server_info().await.unwrap().virtual_daa_score;
                 trace!("Virtual DAA score: {}", virtual_daa_score);
-                virtual_daa_score == SIMNET_PARAMS.coinbase_maturity
+                virtual_daa_score == SIMNET_PARAMS.coinbase_maturity().before()
             }
             Box::pin(daa_score_reached(check_client.clone()))
         },

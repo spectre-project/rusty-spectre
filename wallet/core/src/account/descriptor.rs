@@ -75,7 +75,7 @@ impl std::fmt::Display for AccountDescriptorProperty {
             AccountDescriptorProperty::XpubKeys => write!(f, "Xpub Keys"),
             AccountDescriptorProperty::Ecdsa => write!(f, "ECDSA"),
             AccountDescriptorProperty::DerivationMeta => write!(f, "Derivation Indexes"),
-            AccountDescriptorProperty::Other(other) => write!(f, "{}", other),
+            AccountDescriptorProperty::Other(other) => write!(f, "{other}"),
         }
     }
 }
@@ -122,19 +122,19 @@ impl TryFrom<AccountDescriptorValue> for JsValue {
 impl std::fmt::Display for AccountDescriptorValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            AccountDescriptorValue::U64(value) => write!(f, "{}", value),
-            AccountDescriptorValue::String(value) => write!(f, "{}", value),
-            AccountDescriptorValue::Bool(value) => write!(f, "{}", value),
-            AccountDescriptorValue::AddressDerivationMeta(value) => write!(f, "{}", value),
+            AccountDescriptorValue::U64(value) => write!(f, "{value}"),
+            AccountDescriptorValue::String(value) => write!(f, "{value}"),
+            AccountDescriptorValue::Bool(value) => write!(f, "{value}"),
+            AccountDescriptorValue::AddressDerivationMeta(value) => write!(f, "{value}"),
             AccountDescriptorValue::XPubKeys(value) => {
                 let mut s = vec![];
                 for xpub in value.iter() {
                     //s.push(xpub.to_string(None));
-                    s.push(format!("{}", xpub));
+                    s.push(format!("{xpub}"));
                 }
                 write!(f, "{}", s.join("\n"))
             }
-            AccountDescriptorValue::Json(value) => write!(f, "{}", value),
+            AccountDescriptorValue::Json(value) => write!(f, "{value}"),
         }
     }
 }

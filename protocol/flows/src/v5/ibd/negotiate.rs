@@ -60,7 +60,7 @@ impl IbdFlow {
                         lowest_unknown_syncer_chain_hash = Some(syncer_chain_hash);
                     }
                     Some(BlockStatus::StatusInvalid) => {
-                        return Err(ProtocolError::OtherOwned(format!("sent invalid chain block {}", syncer_chain_hash)));
+                        return Err(ProtocolError::OtherOwned(format!("sent invalid chain block {syncer_chain_hash}")));
                     }
                     Some(_) => {
                         current_highest_known_syncer_chain_hash = Some(syncer_chain_hash);
@@ -117,8 +117,7 @@ impl IbdFlow {
                     // Since the zoom-in always queries two consecutive entries in the previous locator, it is
                     // expected to decrease in size at least every two iterations
                     return Err(ProtocolError::OtherOwned(format!(
-                        "IBD chain negotiation: Number of zoom-in steps {} exceeded the upper bound of 2*{}",
-                        negotiation_zoom_counts, initial_locator_len
+                        "IBD chain negotiation: Number of zoom-in steps {negotiation_zoom_counts} exceeded the upper bound of 2*{initial_locator_len}"
                     )));
                 }
             } else {
@@ -131,7 +130,7 @@ impl IbdFlow {
                         self.router, negotiation_restart_counter
                     )));
                 }
-                if negotiation_restart_counter > self.ctx.config.bps() {
+                if negotiation_restart_counter > self.ctx.config.bps().upper_bound() {
                     // bps is just an intuitive threshold here
                     warn!("IBD chain negotiation with syncer {} restarted {} times", self.router, negotiation_restart_counter);
                 } else {

@@ -142,8 +142,8 @@ fn format_duration(seconds: u64) -> String {
     let seconds = seconds % 60;
 
     if days > 0 {
-        format!("{0} days {1:02} hours, {2:02} minutes, {3:02} seconds", days, hours, minutes, seconds)
+        format!("{days} days {hours:02} hours, {minutes:02} minutes, {seconds:02} seconds")
     } else {
-        format!("{0:02} hours, {1:02} minutes, {2:02} seconds", hours, minutes, seconds)
+        format!("{hours:02} hours, {minutes:02} minutes, {seconds:02} seconds")
     }
 }

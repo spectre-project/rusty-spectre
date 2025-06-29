@@ -34,7 +34,7 @@ pub fn main() {
             }
         }
         Err(err) => {
-            println!("Unable to initialize the necessary OS file descriptor limit (soft FD limit) to: {}", err);
+            println!("Unable to initialize the necessary OS file descriptor limit (soft FD limit) to: {err}");
             println!("The spectred node requires a setting of at least {DESIRED_DAEMON_SOFT_FD_LIMIT} to operate properly.");
         }
     }

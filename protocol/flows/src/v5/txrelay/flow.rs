@@ -115,8 +115,8 @@ impl RelayTransactionsFlow {
 
             let session = self.ctx.consensus().unguarded_session();
 
-            // Transaction relay is disabled if the node is out of sync and thus not mining
-            if !session.async_is_nearly_synced().await {
+            // Transaction relay is disabled if the node is out of sync
+            if !self.ctx.is_nearly_synced(&session).await {
                 continue;
             }
 
@@ -227,7 +227,7 @@ impl RelayTransactionsFlow {
                 Ok(_) => {}
                 Err(MiningManagerError::MempoolError(RuleError::RejectInvalid(transaction_id))) => {
                     // TODO: discuss a banning process
-                    return Err(ProtocolError::MisbehavingPeer(format!("rejected invalid transaction {}", transaction_id)));
+                    return Err(ProtocolError::MisbehavingPeer(format!("rejected invalid transaction {transaction_id}")));
                 }
                 Err(MiningManagerError::MempoolError(RuleError::RejectSpamTransaction(_)))
                 | Err(MiningManagerError::MempoolError(RuleError::RejectNonStandard(..))) => {

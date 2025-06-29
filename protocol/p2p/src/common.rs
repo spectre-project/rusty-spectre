@@ -102,7 +102,7 @@ impl ProtocolError {
             ProtocolError::IgnorableReject(reason)
         } else if reason.contains("cannot find full block") {
             let hint = "Hint: If this error persists, it might be due to the other peer having pruned block data after syncing headers and UTXOs. In such a case, you may need to reset the database.";
-            let detailed_reason = format!("{}. {}", reason, hint);
+            let detailed_reason = format!("{reason}. {hint}");
             ProtocolError::Rejected(detailed_reason)
         } else {
             ProtocolError::Rejected(reason)

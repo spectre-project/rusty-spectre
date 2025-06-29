@@ -55,7 +55,7 @@ declare! {
          */
         encoding?: Encoding;
         /**
-         * Network identifier: `mainnet`, `testnet-10` etc.
+         * Network identifier: `mainnet`, `testnet-8` etc.
          * `networkId` is required when using a resolver.
          */
         networkId?: NetworkId | string;
@@ -121,7 +121,7 @@ impl FromStr for NotificationEvent {
         } else if let Ok(event) = EventType::from_str(s) {
             Ok(NotificationEvent::Notification(event))
         } else {
-            Err(Error::custom(format!("Invalid notification event type: `{}`", s)))
+            Err(Error::custom(format!("Invalid notification event type: `{s}`")))
         }
     }
 }
@@ -132,7 +132,7 @@ impl TryFrom<JsValue> for NotificationEvent {
         if let Some(event) = event.as_string() {
             event.parse()
         } else {
-            Err(Error::custom(format!("Invalid notification event: `{:?}`", event)))
+            Err(Error::custom(format!("Invalid notification event: `{event:?}`")))
         }
     }
 }

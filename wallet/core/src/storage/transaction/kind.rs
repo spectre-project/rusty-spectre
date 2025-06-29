@@ -122,7 +122,7 @@ impl TryFrom<JsValue> for TransactionKind {
                 _ => Err(Error::InvalidTransactionKind(s)),
             }
         } else {
-            Err(Error::InvalidTransactionKind(format!("{:?}", js_value)))
+            Err(Error::InvalidTransactionKind(format!("{js_value:?}")))
         }
     }
 }

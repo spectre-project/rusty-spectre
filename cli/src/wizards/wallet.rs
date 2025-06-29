@@ -170,7 +170,7 @@ pub(crate) async fn create(
     }
 
     term.writeln("");
-    term.writeln(format!("Your wallet is stored in: {}", storage_descriptor));
+    term.writeln(format!("Your wallet is stored in: {storage_descriptor}"));
     term.writeln("");
 
     let receive_address = account.receive_address()?;

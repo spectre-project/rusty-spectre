@@ -32,7 +32,7 @@ window.changeNetwork = (network) => {
 
 function createMenu() {
     let menu = document.getElementById('menu');
-    [ 'mainnet', 'testnet-10', 'testnet-11' ].forEach((network) => {
+    [ 'mainnet', 'testnet-8' ].forEach((network) => {
         if (network === currentNetwork()) {
             let el = document.createElement('text');
             el.innerHTML = ` [${network}] `;

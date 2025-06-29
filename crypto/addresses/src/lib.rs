@@ -236,7 +236,7 @@ impl Address {
 impl Address {
     #[wasm_bindgen(constructor)]
     pub fn constructor(address: &str) -> Address {
-        address.try_into().unwrap_or_else(|err| panic!("Address::constructor() - address error `{}`: {err}", address))
+        address.try_into().unwrap_or_else(|err| panic!("Address::constructor() - address error `{address}`: {err}"))
     }
 
     #[wasm_bindgen(js_name=validate)]

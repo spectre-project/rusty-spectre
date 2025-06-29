@@ -46,7 +46,7 @@ impl Sink {
                 .map_err(|_| JsValue::from("'handleEvent()' is not a function"))?;
             Ok(Sink::new(callback).with_context(Some(context.clone())))
         } else {
-            Err(JsValue::from(format!("Invalid event listener callback: {:?}", value)))
+            Err(JsValue::from(format!("Invalid event listener callback: {value:?}")))
         }
     }
 }

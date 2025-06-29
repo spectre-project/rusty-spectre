@@ -26,8 +26,8 @@ pub struct Inner {
 impl Inner {
     async fn open_db(&self, db_name: String) -> Result<IdbDatabase> {
         call_async_no_send!(async move {
-            let mut db_req: OpenDbRequest = IdbDatabase::open_u32(&db_name, 2)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb database {:?}", err)))?;
+            let mut db_req: OpenDbRequest =
+                IdbDatabase::open_u32(&db_name, 2).map_err(|err| Error::Custom(format!("Failed to open indexdb database {err:?}")))?;
             let fix_timestamp = Arc::new(Mutex::new(false));
             let fix_timestamp_clone = fix_timestamp.clone();
             let on_upgrade_needed = move |evt: &IdbVersionChangeEvent| -> Result<(), JsValue> {
@@ -66,23 +66,23 @@ impl Inner {
             db_req.set_on_upgrade_needed(Some(on_upgrade_needed));
 
             let db =
-                db_req.await.map_err(|err| Error::Custom(format!("Open database request failed for indexdb database {:?}", err)))?;
+                db_req.await.map_err(|err| Error::Custom(format!("Open database request failed for indexdb database {err:?}")))?;
 
             if *fix_timestamp.lock().unwrap() {
                 log_info!("DEBUG: fixing timestamp");
                 let idb_tx = db
                     .transaction_on_one_with_mode(TRANSACTIONS_STORE_NAME, IdbTransactionMode::Readwrite)
-                    .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for reading {:?}", err)))?;
+                    .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for reading {err:?}")))?;
                 let store = idb_tx
                     .object_store(TRANSACTIONS_STORE_NAME)
-                    .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for reading {:?}", err)))?;
+                    .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for reading {err:?}")))?;
                 let binding = store
                     .index(TRANSACTIONS_STORE_TIMESTAMP_INDEX)
-                    .map_err(|err| Error::Custom(format!("Failed to open indexdb indexed store cursor {:?}", err)))?;
+                    .map_err(|err| Error::Custom(format!("Failed to open indexdb indexed store cursor {err:?}")))?;
                 let cursor = binding
                     .open_cursor_with_range_and_direction(&JsValue::NULL, web_sys::IdbCursorDirection::Prev)
-                    .map_err(|err| Error::Custom(format!("Failed to open indexdb store cursor for reading {:?}", err)))?;
-                let cursor = cursor.await.map_err(|err| Error::Custom(format!("Failed to open indexdb store cursor {:?}", err)))?;
+                    .map_err(|err| Error::Custom(format!("Failed to open indexdb store cursor for reading {err:?}")))?;
+                let cursor = cursor.await.map_err(|err| Error::Custom(format!("Failed to open indexdb store cursor {err:?}")))?;
 
                 // let next_year_date = Date::new_0();
                 // next_year_date.set_full_year(next_year_date.get_full_year() + 1);
@@ -99,9 +99,9 @@ impl Inner {
 
                                 cursor
                                     .update(&new_js_value)
-                                    .map_err(|err| Error::Custom(format!("Failed to update record timestamp {:?}", err)))?
+                                    .map_err(|err| Error::Custom(format!("Failed to update record timestamp {err:?}")))?
                                     .await
-                                    .map_err(|err| Error::Custom(format!("Failed to update record timestamp {:?}", err)))?;
+                                    .map_err(|err| Error::Custom(format!("Failed to update record timestamp {err:?}")))?;
                             }
                         }
                         if let Ok(b) = cursor.continue_cursor() {
@@ -148,7 +148,7 @@ impl TransactionStore {
 
     pub fn make_db_name(&self, binding: &str, network_id: &str) -> String {
         // format!("{}_{}_{}", self.name, binding, network_id)
-        format!("{}_{}", binding, network_id)
+        format!("{binding}_{network_id}")
     }
 
     pub fn database_is_registered(&self, binding: &str, network_id: &str) -> bool {
@@ -220,20 +220,20 @@ impl TransactionRecordStore for TransactionStore {
 
             let idb_tx = db
                 .transaction_on_one_with_mode(TRANSACTIONS_STORE_NAME, IdbTransactionMode::Readonly)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for reading {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for reading {err:?}")))?;
             let store = idb_tx
                 .object_store(TRANSACTIONS_STORE_NAME)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for reading {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for reading {err:?}")))?;
 
             let js_value: JsValue = store
                 .get_owned(&id_str)
-                .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {:?}", err)))?
+                .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {err:?}")))?
                 .await
-                .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {:?}", err)))?
+                .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {err:?}")))?
                 .ok_or_else(|| Error::Custom("Transaction record not found in indexdb".to_string()))?;
 
             let transaction_record = transaction_record_from_js_value(&js_value, None)
-                .map_err(|err| Error::Custom(format!("Failed to deserialize transaction record from indexdb {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to deserialize transaction record from indexdb {err:?}")))?;
 
             Ok(Arc::new(transaction_record))
         })
@@ -259,22 +259,22 @@ impl TransactionRecordStore for TransactionStore {
 
             let idb_tx = db
                 .transaction_on_one_with_mode(TRANSACTIONS_STORE_NAME, IdbTransactionMode::Readonly)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for reading {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for reading {err:?}")))?;
             let store = idb_tx
                 .object_store(TRANSACTIONS_STORE_NAME)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for reading {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for reading {err:?}")))?;
 
             let mut transaction_records = Vec::with_capacity(id_strs.len());
             for id_str in id_strs {
                 let js_value: JsValue = store
                     .get_owned(&id_str)
-                    .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {:?}", err)))?
+                    .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {err:?}")))?
                     .await
-                    .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {:?}", err)))?
+                    .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {err:?}")))?
                     .ok_or_else(|| Error::Custom("Transaction record not found in indexdb".to_string()))?;
 
                 let transaction_record = transaction_record_from_js_value(&js_value, None)
-                    .map_err(|err| Error::Custom(format!("Failed to deserialize transaction record from indexdb {:?}", err)))?;
+                    .map_err(|err| Error::Custom(format!("Failed to deserialize transaction record from indexdb {err:?}")))?;
                 transaction_records.push(Arc::new(transaction_record));
             }
 
@@ -298,31 +298,31 @@ impl TransactionRecordStore for TransactionStore {
             let db = inner.open_db(db_name).await?;
             let idb_tx = db
                 .transaction_on_one_with_mode(TRANSACTIONS_STORE_NAME, IdbTransactionMode::Readonly)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for reading {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for reading {err:?}")))?;
             let store = idb_tx
                 .object_store(TRANSACTIONS_STORE_NAME)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for reading {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for reading {err:?}")))?;
             let total = store
                 .count()
-                .map_err(|err| Error::Custom(format!("Failed to count indexdb records {:?}", err)))?
+                .map_err(|err| Error::Custom(format!("Failed to count indexdb records {err:?}")))?
                 .await
-                .map_err(|err| Error::Custom(format!("Failed to count indexdb records from future {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to count indexdb records from future {err:?}")))?;
 
             let binding = store
                 .index(TRANSACTIONS_STORE_TIMESTAMP_INDEX)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb indexed store cursor {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb indexed store cursor {err:?}")))?;
             let cursor = binding
                 .open_cursor_with_range_and_direction(&JsValue::NULL, web_sys::IdbCursorDirection::Prev)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb store cursor for reading {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb store cursor for reading {err:?}")))?;
             let mut records = vec![];
-            let cursor = cursor.await.map_err(|err| Error::Custom(format!("Failed to open indexdb store cursor {:?}", err)))?;
+            let cursor = cursor.await.map_err(|err| Error::Custom(format!("Failed to open indexdb store cursor {err:?}")))?;
             if let Some(cursor) = cursor {
                 if range.start > 0 {
                     let res = cursor
                         .advance(range.start as u32)
-                        .map_err(|err| Error::Custom(format!("Unable to advance indexdb cursor {:?}", err)))?
+                        .map_err(|err| Error::Custom(format!("Unable to advance indexdb cursor {err:?}")))?
                         .await;
-                    let _res = res.map_err(|err| Error::Custom(format!("Unable to advance indexdb cursor future {:?}", err)))?;
+                    let _res = res.map_err(|err| Error::Custom(format!("Unable to advance indexdb cursor future {err:?}")))?;
                     // if !res {
                     //     //return Err(Error::Custom(format!("Unable to advance indexdb cursor future {:?}", err)));
                     // }
@@ -395,10 +395,10 @@ impl TransactionRecordStore for TransactionStore {
 
                 let idb_tx = db
                     .transaction_on_one_with_mode(TRANSACTIONS_STORE_NAME, IdbTransactionMode::Readwrite)
-                    .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for writing {:?}", err)))?;
+                    .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for writing {err:?}")))?;
                 let store = idb_tx
                     .object_store(TRANSACTIONS_STORE_NAME)
-                    .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for writing {:?}", err)))?;
+                    .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for writing {err:?}")))?;
 
                 for item in items {
                     store
@@ -426,10 +426,10 @@ impl TransactionRecordStore for TransactionStore {
 
             let idb_tx = db
                 .transaction_on_one_with_mode(TRANSACTIONS_STORE_NAME, IdbTransactionMode::Readwrite)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for writing {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for writing {err:?}")))?;
             let store = idb_tx
                 .object_store(TRANSACTIONS_STORE_NAME)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for writing {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for writing {err:?}")))?;
 
             for id_str in id_strs {
                 store
@@ -461,20 +461,20 @@ impl TransactionRecordStore for TransactionStore {
 
             let idb_tx = db
                 .transaction_on_one_with_mode(TRANSACTIONS_STORE_NAME, IdbTransactionMode::Readwrite)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for writing {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for writing {err:?}")))?;
             let store = idb_tx
                 .object_store(TRANSACTIONS_STORE_NAME)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for writing {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for writing {err:?}")))?;
 
             let js_value: JsValue = store
                 .get_owned(&id_str)
-                .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {:?}", err)))?
+                .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {err:?}")))?
                 .await
-                .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {:?}", err)))?
+                .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {err:?}")))?
                 .ok_or_else(|| Error::Custom("Transaction record not found in indexdb".to_string()))?;
 
             let mut transaction_record = transaction_record_from_js_value(&js_value, None)
-                .map_err(|err| Error::Custom(format!("Failed to deserialize transaction record from indexdb {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to deserialize transaction record from indexdb {err:?}")))?;
 
             transaction_record.note = note;
 
@@ -508,20 +508,20 @@ impl TransactionRecordStore for TransactionStore {
 
             let idb_tx = db
                 .transaction_on_one_with_mode(TRANSACTIONS_STORE_NAME, IdbTransactionMode::Readwrite)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for writing {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb transaction for writing {err:?}")))?;
             let store = idb_tx
                 .object_store(TRANSACTIONS_STORE_NAME)
-                .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for writing {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to open indexdb object store for writing {err:?}")))?;
 
             let js_value: JsValue = store
                 .get_owned(&id_str)
-                .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {:?}", err)))?
+                .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {err:?}")))?
                 .await
-                .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {:?}", err)))?
+                .map_err(|err| Error::Custom(format!("Failed to get transaction record from indexdb {err:?}")))?
                 .ok_or_else(|| Error::Custom("Transaction record not found in indexdb".to_string()))?;
 
             let mut transaction_record = transaction_record_from_js_value(&js_value, None)
-                .map_err(|err| Error::Custom(format!("Failed to deserialize transaction record from indexdb {:?}", err)))?;
+                .map_err(|err| Error::Custom(format!("Failed to deserialize transaction record from indexdb {err:?}")))?;
 
             transaction_record.metadata = metadata;
 
@@ -615,7 +615,7 @@ fn transaction_record_from_js_value(js_value: &JsValue, secret: Option<&Secret>)
         let borsh_data_jsv = object.get_value("data")?;
         let borsh_data = borsh_data_jsv
             .try_as_vec_u8()
-            .map_err(|err| Error::Custom(format!("failed to get blob from transaction record object: {:?}", err)))?;
+            .map_err(|err| Error::Custom(format!("failed to get blob from transaction record object: {err:?}")))?;
 
         let encryptable = Encryptable::<TransactionRecord>::try_from_slice(borsh_data.as_slice())?;
         let transaction_record = encryptable.decrypt(secret)?;

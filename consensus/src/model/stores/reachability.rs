@@ -185,7 +185,7 @@ impl DbReachabilityStore {
     }
 
     pub fn with_block_level(db: Arc<DB>, cache_policy: CachePolicy, sets_cache_policy: CachePolicy, level: BlockLevel) -> Self {
-        assert_ne!(SEPARATOR, level, "level {} is reserved for the separator", level);
+        assert_ne!(SEPARATOR, level, "level {level} is reserved for the separator");
         Self::with_prefix_end(db, cache_policy, sets_cache_policy, level)
     }
 

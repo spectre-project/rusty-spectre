@@ -6,7 +6,7 @@
 //!
 //! The suffix is used to differentiate between multiple networks of the same type and is used
 //! explicitly with `testnet` networks, allowing declaration of testnet versions such as
-//! `testnet-10`, `testnet-11`, etc.
+//! `testnet-8`, `testnet-11`, etc.
 //!
 
 #![allow(non_snake_case)]
@@ -253,10 +253,9 @@ impl NetworkId {
     }
 
     pub fn iter() -> impl Iterator<Item = Self> {
-        static NETWORK_IDS: [NetworkId; 5] = [
+        static NETWORK_IDS: [NetworkId; 4] = [
             NetworkId::new(NetworkType::Mainnet),
-            NetworkId::with_suffix(NetworkType::Testnet, 10),
-            NetworkId::with_suffix(NetworkType::Testnet, 11),
+            NetworkId::with_suffix(NetworkType::Testnet, 8),
             NetworkId::new(NetworkType::Devnet),
             NetworkId::new(NetworkType::Simnet),
         ];
@@ -265,7 +264,7 @@ impl NetworkId {
 
     /// Returns a textual description of the network prefixed with `spectre-`
     pub fn to_prefixed(&self) -> String {
-        format!("spectre-{}", self)
+        format!("spectre-{self}")
     }
 
     pub fn from_prefixed(prefixed: &str) -> Result<Self, NetworkIdError> {
@@ -475,8 +474,8 @@ mod tests {
         for test in tests {
             let Test { name, expr, expected } = test;
             match NetworkId::from_str(expr) {
-                Ok(nid) => assert_eq!(nid, expected.unwrap(), "{}: unexpected result", name),
-                Err(err) => assert_eq!(err.to_string(), expected.unwrap_err().to_string(), "{}: unexpected error", name),
+                Ok(nid) => assert_eq!(nid, expected.unwrap(), "{name}: unexpected result"),
+                Err(err) => assert_eq!(err.to_string(), expected.unwrap_err().to_string(), "{name}: unexpected error"),
             }
         }
     }

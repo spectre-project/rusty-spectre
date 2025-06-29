@@ -25,7 +25,7 @@ impl Mempool {
     ) -> RuleResult<TransactionPreValidation> {
         self.validate_transaction_unacceptance(&transaction)?;
         // Populate mass and estimated_size in the beginning, it will be used in multiple places throughout the validation and insertion.
-        transaction.calculated_compute_mass = Some(consensus.calculate_transaction_compute_mass(&transaction.tx));
+        transaction.calculated_non_contextual_masses = Some(consensus.calculate_transaction_non_contextual_masses(&transaction.tx));
         self.validate_transaction_in_isolation(&transaction)?;
         let feerate_threshold = self.get_replace_by_fee_constraint(&transaction, rbf_policy)?;
         self.populate_mempool_entries(&mut transaction);
@@ -89,7 +89,7 @@ impl Mempool {
         if !txs_to_remove.is_empty() {
             let transaction_pool_len_before = self.transaction_pool.len();
             for x in txs_to_remove.iter() {
-                self.remove_transaction(x, true, TxRemovalReason::MakingRoom, format!(" for {}", transaction_id).as_str())?;
+                self.remove_transaction(x, true, TxRemovalReason::MakingRoom, format!(" for {transaction_id}").as_str())?;
                 // self.transaction_pool.limit_transaction_count(&transaction) returns the
                 // smallest prefix of `ready_transactions` (sorted by ascending fee-rate)
                 // that makes enough room for `transaction`, but since each call to `self.remove_transaction`

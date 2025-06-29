@@ -14,6 +14,7 @@ spectre-core.workspace = true
 spectre-consensus-core.workspace = true
 spectre-consensus-notify.workspace = true
 spectre-p2p-lib.workspace = true
+spectre-p2p-mining.workspace = true
 spectre-utils.workspace = true
 spectre-utils-tower.workspace = true
 spectre-hashes.workspace = true

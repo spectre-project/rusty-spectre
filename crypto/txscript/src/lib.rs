@@ -341,11 +341,11 @@ impl<'a, T: VerifiableTransaction, Reused: SigHashReusedValues> TxScriptEngine<'
         let script_result = parse_script(script).try_for_each(|opcode| {
             let opcode = opcode?;
             if opcode.is_disabled() {
-                return Err(TxScriptError::OpcodeDisabled(format!("{:?}", opcode)));
+                return Err(TxScriptError::OpcodeDisabled(format!("{opcode:?}")));
             }
 
             if opcode.always_illegal() {
-                return Err(TxScriptError::OpcodeReserved(format!("{:?}", opcode)));
+                return Err(TxScriptError::OpcodeReserved(format!("{opcode:?}")));
             }
 
             if verify_only_push && !opcode.is_push_opcode() {

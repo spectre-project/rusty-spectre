@@ -25,7 +25,7 @@ impl Export {
                     export_single_key_account(ctx, account).await
                 }
             }
-            _ => Err(format!("Invalid argument: {}", what).into()),
+            _ => Err(format!("Invalid argument: {what}").into()),
         }
     }
 }

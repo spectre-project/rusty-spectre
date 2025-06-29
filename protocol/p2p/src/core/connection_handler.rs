@@ -98,7 +98,7 @@ impl ConnectionHandler {
         let Some(socket_address) = peer_address.to_socket_addrs()?.next() else {
             return Err(ConnectionError::NoAddress);
         };
-        let peer_address = format!("http://{}", peer_address); // Add scheme prefix as required by Tonic
+        let peer_address = format!("http://{peer_address}"); // Add scheme prefix as required by Tonic
 
         let channel = tonic::transport::Endpoint::new(peer_address)?
             .timeout(Duration::from_millis(Self::communication_timeout()))

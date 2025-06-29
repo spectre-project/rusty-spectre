@@ -163,9 +163,9 @@ impl std::fmt::Display for UtxosChangedScope {
         let addresses = match self.addresses.len() {
             0 => "all".to_string(),
             1 => format!("{}", self.addresses[0]),
-            n => format!("{} addresses", n),
+            n => format!("{n} addresses"),
         };
-        write!(f, "UtxosChangedScope ({})", addresses)
+        write!(f, "UtxosChangedScope ({addresses})")
     }
 }
 

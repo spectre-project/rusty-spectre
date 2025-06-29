@@ -411,7 +411,7 @@ impl Interface for LocalStore {
 
         let mut descriptors = vec![];
         for filename in wallets.into_iter() {
-            let path = folder.join(format!("{}.wallet", filename));
+            let path = folder.join(format!("{filename}.wallet"));
             // TODO - refactor on native to read directly from file (skip temporary buffer creation)
             let wallet_data = fs::read(&path).await;
             let title =

@@ -15,11 +15,11 @@ pub struct ParseHostOutput<'a> {
 impl Display for ParseHostOutput<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(scheme) = self.scheme {
-            write!(f, "{}://", scheme)?;
+            write!(f, "{scheme}://")?;
         }
         write!(f, "{}", self.host)?;
         if let Some(port) = self.port {
-            write!(f, ":{}", port)?;
+            write!(f, ":{port}")?;
         }
         Ok(())
     }
@@ -36,10 +36,10 @@ pub enum Host<'a> {
 impl Display for Host<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Host::Domain(domain) => write!(f, "{}", domain),
-            Host::Hostname(hostname) => write!(f, "{}", hostname),
-            Host::Ipv4(ipv4) => write!(f, "{}", ipv4),
-            Host::Ipv6(ipv6) => write!(f, "[{}]", ipv6),
+            Host::Domain(domain) => write!(f, "{domain}"),
+            Host::Hostname(hostname) => write!(f, "{hostname}"),
+            Host::Ipv4(ipv4) => write!(f, "{ipv4}"),
+            Host::Ipv6(ipv6) => write!(f, "[{ipv6}]"),
         }
     }
 }
