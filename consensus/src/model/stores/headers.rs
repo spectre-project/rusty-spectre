@@ -155,7 +155,7 @@ impl HeaderStore for DbHeadersStore {
             return Err(StoreError::HashAlreadyExists(hash));
         }
         if self.compact_headers_access.has(hash)? {
-            return Err(StoreError::DataInconsistency(format!("store has compact data for {} but is missing full data", hash)));
+            return Err(StoreError::DataInconsistency(format!("store has compact data for {hash} but is missing full data")));
         }
         let mut batch = WriteBatch::default();
         self.compact_headers_access.write(BatchDbWriter::new(&mut batch), hash, header.as_ref().into())?;

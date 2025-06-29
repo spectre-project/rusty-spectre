@@ -484,7 +484,7 @@ impl UtxoProcessor {
         let this = self.clone();
         self.inner.metrics.register_sink(Arc::new(Box::new(move |snapshot: MetricsSnapshot| {
             if let Err(err) = this.deliver_metrics_snapshot(Box::new(snapshot)) {
-                println!("Error ingesting metrics snapshot: {}", err);
+                println!("Error ingesting metrics snapshot: {err}");
             }
             None
         })));

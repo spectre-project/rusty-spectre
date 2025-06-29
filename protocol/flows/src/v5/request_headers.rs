@@ -50,18 +50,17 @@ impl RequestHeadersFlow {
                 Ok(is_ancestor) => {
                     if !is_ancestor {
                         return Err(ProtocolError::OtherOwned(format!(
-                            "get_hashes_between's low hash {} is not a chain ancestor of {}",
-                            low, high
+                            "get_hashes_between's low hash {low} is not a chain ancestor of {high}"
                         )));
                     }
                 }
                 Err(e) => return Err(e.into()),
             };
-            debug!("Received RequestHeaders: high {}, low {}", high, low);
+            debug!("Received RequestHeaders: high {high}, low {low}");
 
             // max_blocks MUST be > merge_set_size_limit
             while low != high {
-                debug!("Getting block headers between {} and {}", high, low);
+                debug!("Getting block headers between {high} and {low}");
 
                 // We spawn the I/O-intensive operation of reading a bunch of headers as a tokio blocking task
                 let (block_headers, last) =

@@ -33,7 +33,7 @@ impl FromStr for Track {
             "pending" => Ok(Track::Pending),
             "tx" => Ok(Track::Tx),
             "utxo" => Ok(Track::Utxo),
-            _ => Err(format!("unknown attribute '{}'", s)),
+            _ => Err(format!("unknown attribute '{s}'")),
         }
     }
 }

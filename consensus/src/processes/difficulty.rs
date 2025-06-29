@@ -71,9 +71,7 @@ trait DifficultyManagerExtension {
     fn check_min_difficulty_window_size(difficulty_window_size: usize, min_difficulty_window_size: usize) {
         assert!(
             min_difficulty_window_size <= difficulty_window_size,
-            "min_difficulty_window_size {} is expected to be <= difficulty_window_size {}",
-            min_difficulty_window_size,
-            difficulty_window_size
+            "min_difficulty_window_size {min_difficulty_window_size} is expected to be <= difficulty_window_size {difficulty_window_size}"
         );
     }
 }
@@ -237,7 +235,7 @@ fn difficulty_desc(target: Uint320) -> String {
     let difficulty = MAX_DIFFICULTY_TARGET_AS_F64 / target.as_f64();
     let hashrate = difficulty * 2.0;
     let (rate, suffix) = hash_suffix(hashrate);
-    format!("{:.2} {}", rate, suffix)
+    format!("{rate:.2} {suffix}")
 }
 
 /// A difficulty manager implementing [KIP-0004](https://github.com/kaspanet/kips/blob/master/kip-0004.md),
@@ -490,7 +488,7 @@ mod tests {
             let (percent_diff, overflowed) = (true_level_work - calc_level_work).overflowing_mul(BlueWorkType::from_u64(100));
             let is_good_enough = percent_diff <= calc_level_work;
 
-            println!("Level {}:", level);
+            println!("Level {level}:");
             println!(
                 "    data | {} | {} | {} / {} |",
                 level_target.compact_target_bits(),

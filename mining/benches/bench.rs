@@ -188,7 +188,7 @@ pub fn bench_mempool_selectors(c: &mut Criterion) {
             frontier.insert(item).then_some(()).unwrap();
         }
 
-        group.bench_function(format!("rebalancing selector ({})", len), |b| {
+        group.bench_function(format!("rebalancing selector ({len})"), |b| {
             b.iter(|| {
                 black_box({
                     let mut selector = frontier.build_rebalancing_selector();
@@ -200,7 +200,7 @@ pub fn bench_mempool_selectors(c: &mut Criterion) {
         let mut collisions = 0;
         let mut n = 0;
 
-        group.bench_function(format!("sample inplace selector ({})", len), |b| {
+        group.bench_function(format!("sample inplace selector ({len})"), |b| {
             b.iter(|| {
                 black_box({
                     let mut selector = frontier.build_selector_sample_inplace(&mut collisions);
@@ -215,7 +215,7 @@ pub fn bench_mempool_selectors(c: &mut Criterion) {
         }
 
         if frontier.total_mass() <= 500_000 {
-            group.bench_function(format!("take all selector ({})", len), |b| {
+            group.bench_function(format!("take all selector ({len})"), |b| {
                 b.iter(|| {
                     black_box({
                         let mut selector = frontier.build_selector_take_all();
@@ -225,7 +225,7 @@ pub fn bench_mempool_selectors(c: &mut Criterion) {
             });
         }
 
-        group.bench_function(format!("dynamic selector ({})", len), |b| {
+        group.bench_function(format!("dynamic selector ({len})"), |b| {
             b.iter(|| {
                 black_box({
                     let mut selector = frontier.build_selector(&Policy::new(500_000));
@@ -260,7 +260,7 @@ pub fn bench_inplace_sampling_worst_case(c: &mut Criterion) {
         let mut collisions = 0;
         let mut n = 0;
 
-        group.bench_function(format!("inplace sampling worst case (subgroup size: {})", subgroup_size), |b| {
+        group.bench_function(format!("inplace sampling worst case (subgroup size: {subgroup_size})"), |b| {
             b.iter(|| {
                 black_box({
                     let mut selector = frontier.build_selector_sample_inplace(&mut collisions);

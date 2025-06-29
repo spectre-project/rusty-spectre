@@ -125,10 +125,10 @@ mod tests {
         let key3 = DbKey::new(&[Reachability.into(), level], Hash::from_u64_word(345690));
         let key4 = DbKey::new(&[RelationsParents.into(), level], Hash::from_u64_word(345690));
 
-        assert!(key1.to_string().starts_with(&format!("{:?}/{:?}/00", ReachabilityRelations, RelationsParents)));
-        assert!(key2.to_string().starts_with(&format!("{:?}/00", Reachability)));
-        assert!(key3.to_string().starts_with(&format!("{:?}/{}/00", Reachability, level)));
-        assert!(key4.to_string().starts_with(&format!("{:?}/{}/00", RelationsParents, level)));
+        assert!(key1.to_string().starts_with(&format!("{ReachabilityRelations:?}/{RelationsParents:?}/00")));
+        assert!(key2.to_string().starts_with(&format!("{Reachability:?}/00")));
+        assert!(key3.to_string().starts_with(&format!("{Reachability:?}/{level}/00")));
+        assert!(key4.to_string().starts_with(&format!("{RelationsParents:?}/{level}/00")));
 
         let key5 = DbKey::new(b"human/readable", Hash::from_bytes([SEPARATOR; HASH_SIZE]));
         let key6 = DbKey::prefix_only(&[0xC0, 0xC1, 0xF5, 0xF6]);

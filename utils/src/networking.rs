@@ -210,7 +210,7 @@ impl BorshDeserialize for IpAddress {
                 IpAddr::V6(Ipv6Addr::from(octets))
             }
             _ => {
-                let msg = format!("Unexpected variant index: {:?}", variant_idx);
+                let msg = format!("Unexpected variant index: {variant_idx:?}");
                 return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, msg));
             }
         };

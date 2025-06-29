@@ -197,7 +197,7 @@ impl WalletDerivationManager {
         let purpose = if is_multisig { 45 } else { 44 };
         let mut path = format!("m/{purpose}'/123456'/{account_index}'");
         if let Some(cosigner_index) = cosigner_index {
-            path = format!("{path}/{}", cosigner_index)
+            path = format!("{path}/{cosigner_index}")
         }
         if let Some(address_type) = address_type {
             path = format!("{path}/{}", address_type.index());
@@ -539,7 +539,7 @@ mod tests {
             "drived kpub not matched"
         );
 
-        println!("Extended kpub: {}\n", xpub_str);
+        println!("Extended kpub: {xpub_str}\n");
     }
 
     #[tokio::test]

@@ -264,7 +264,7 @@ impl NetworkId {
 
     /// Returns a textual description of the network prefixed with `spectre-`
     pub fn to_prefixed(&self) -> String {
-        format!("spectre-{}", self)
+        format!("spectre-{self}")
     }
 
     pub fn from_prefixed(prefixed: &str) -> Result<Self, NetworkIdError> {
@@ -474,8 +474,8 @@ mod tests {
         for test in tests {
             let Test { name, expr, expected } = test;
             match NetworkId::from_str(expr) {
-                Ok(nid) => assert_eq!(nid, expected.unwrap(), "{}: unexpected result", name),
-                Err(err) => assert_eq!(err.to_string(), expected.unwrap_err().to_string(), "{}: unexpected error", name),
+                Ok(nid) => assert_eq!(nid, expected.unwrap(), "{name}: unexpected result"),
+                Err(err) => assert_eq!(err.to_string(), expected.unwrap_err().to_string(), "{name}: unexpected error"),
             }
         }
     }

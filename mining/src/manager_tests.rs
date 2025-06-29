@@ -1509,6 +1509,6 @@ mod tests {
 
     fn assert_transaction_count(mining_manager: &MiningManager, expected_count: usize, message: &str) {
         let count = mining_manager.transaction_count(TransactionQuery::TransactionsOnly);
-        assert_eq!(expected_count, count, "{message} mempool transaction count: expected {}, got {}", expected_count, count);
+        assert_eq!(expected_count, count, "{message} mempool transaction count: expected {expected_count}, got {count}");
     }
 }

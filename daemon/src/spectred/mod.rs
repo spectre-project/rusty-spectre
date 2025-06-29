@@ -131,9 +131,9 @@ impl TryFrom<SpectredConfig> for Vec<String> {
 
         let grpc_port = network.default_rpc_port();
         let grpc_listen_flag = if args.is_grpc_public {
-            format!("--rpclisten=0.0.0.0:{}", grpc_port)
+            format!("--rpclisten=0.0.0.0:{grpc_port}")
         } else {
-            format!("--rpclisten=127.0.0.1:{}", grpc_port)
+            format!("--rpclisten=127.0.0.1:{grpc_port}")
         };
         if args.enable_grpc {
             argv.push(grpc_listen_flag.as_str());

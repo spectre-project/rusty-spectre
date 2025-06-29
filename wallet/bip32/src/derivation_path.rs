@@ -100,7 +100,7 @@ impl Display for DerivationPath {
         f.write_str(PREFIX)?;
 
         for child_number in self.iter() {
-            write!(f, "/{}", child_number)?;
+            write!(f, "/{child_number}")?;
         }
 
         Ok(())

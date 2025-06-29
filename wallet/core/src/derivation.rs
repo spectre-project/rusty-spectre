@@ -68,7 +68,7 @@ impl AddressManager {
     ) -> Result<Self> {
         let length = pubkey_managers.len();
         if length < minimum_signatures {
-            return Err(format!{"The minimum amount of signatures ({}) is greater than the amount of provided public keys ({length})", minimum_signatures}.into());
+            return Err(format!{"The minimum amount of signatures ({minimum_signatures}) is greater than the amount of provided public keys ({length})"}.into());
         }
 
         for m in pubkey_managers.iter() {
@@ -494,7 +494,7 @@ pub fn create_address(
 ) -> Result<Address> {
     let length = keys.len();
     if length < minimum_signatures {
-        return Err(format!{"The minimum amount of signatures ({}) is greater than the amount of provided public keys ({length})", minimum_signatures}.into());
+        return Err(format!{"The minimum amount of signatures ({minimum_signatures}) is greater than the amount of provided public keys ({length})"}.into());
     }
 
     if length > 1 {
@@ -537,7 +537,7 @@ pub async fn create_xpub_from_xprv(
         LEGACY_ACCOUNT_KIND => WalletDerivationManagerV0::derive_extended_key_from_master_key(xprv, false, account_index)?,
         MULTISIG_ACCOUNT_KIND => WalletDerivationManager::derive_extended_key_from_master_key(xprv, true, account_index)?,
         BIP32_ACCOUNT_KIND => WalletDerivationManager::derive_extended_key_from_master_key(xprv, false, account_index)?,
-        _ => panic!("create_xpub_from_xprv not supported for account kind: {:?}", account_kind),
+        _ => panic!("create_xpub_from_xprv not supported for account kind: {account_kind:?}"),
     };
 
     let xkey = ExtendedPublicKey { public_key: secret_key.get_public_key(), attrs };
@@ -558,7 +558,7 @@ pub fn build_derivate_path(
             Ok(WalletDerivationManager::build_derivate_path(true, account_index, Some(cosigner_index), Some(address_type))?)
         }
         _ => {
-            panic!("build derivate path not supported for account kind: {:?}", account_kind);
+            panic!("build derivate path not supported for account kind: {account_kind:?}");
         }
     }
 }

@@ -517,7 +517,7 @@ impl SpectreRpcClient {
                 } else if protocol == "https:" {
                     Ok("wss")
                 } else {
-                    Err(Error::Custom(format!("Unsupported protocol: {}", protocol)))
+                    Err(Error::Custom(format!("Unsupported protocol: {protocol}")))
                 }
             })?
             .to_lowercase();

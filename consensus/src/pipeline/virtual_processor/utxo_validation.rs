@@ -497,7 +497,7 @@ mod tests {
 
         collected.iter().tuple_windows().for_each(|(prev, curr)| {
             // Data was originally sorted, so we check if they remain sorted after filtering
-            assert!(prev < curr, "expected {} < {} if original sort was preserved", prev, curr);
+            assert!(prev < curr, "expected {prev} < {curr} if original sort was preserved");
         });
 
         let reduced: SmallVec<[u16; 2]> = data
@@ -521,7 +521,7 @@ mod tests {
 
         reduced.iter().tuple_windows().for_each(|(prev, curr)| {
             // Data was originally sorted, so we check if they remain sorted after filtering
-            assert!(prev < curr, "expected {} < {} if original sort was preserved", prev, curr);
+            assert!(prev < curr, "expected {prev} < {curr} if original sort was preserved");
         });
     }
 }

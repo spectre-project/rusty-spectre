@@ -3372,8 +3372,7 @@ mod test {
                             assert_eq!(
                                 vm.dstack,
                                 vec![<Vec<u8> as OpcodeData<i64>>::serialize(&(input_count as i64)).unwrap()],
-                                "Input count mismatch for {} inputs",
-                                input_count
+                                "Input count mismatch for {input_count} inputs"
                             );
                             vm.dstack.clear();
 
@@ -3382,8 +3381,7 @@ mod test {
                             assert_eq!(
                                 vm.dstack,
                                 vec![<Vec<u8> as OpcodeData<i64>>::serialize(&(output_count as i64)).unwrap()],
-                                "Output count mismatch for {} outputs",
-                                output_count
+                                "Output count mismatch for {output_count} outputs"
                             );
                             vm.dstack.clear();
                         } else {

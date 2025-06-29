@@ -405,8 +405,7 @@ mod tests {
         // Verify we are correctly testing the parallelism case (applied here as sanity for all tests)
         assert!(
             tx2.inputs.len() > CHECK_SCRIPTS_PARALLELISM_THRESHOLD,
-            "The script tests must cover the case of a tx with inputs.len() > {}",
-            CHECK_SCRIPTS_PARALLELISM_THRESHOLD
+            "The script tests must cover the case of a tx with inputs.len() > {CHECK_SCRIPTS_PARALLELISM_THRESHOLD}"
         );
     }
 

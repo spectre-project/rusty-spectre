@@ -43,7 +43,7 @@ where
                 if let Some(chunk) = frame.data_ref() {
                     trace!("[SIZE MW] body chunk size = {}", chunk.len());
                     let _previous = this.counter.fetch_add(chunk.len(), Ordering::Relaxed);
-                    trace!("[SIZE MW] total count: {}", _previous);
+                    trace!("[SIZE MW] total count: {_previous}");
                 }
 
                 Poll::Ready(Some(Ok(frame)))

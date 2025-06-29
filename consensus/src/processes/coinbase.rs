@@ -368,16 +368,14 @@ mod tests {
                 assert_eq!(
                     SUBSIDY_BY_MONTH_TABLE[i].div_ceil(cbm.bps().before()),
                     *x,
-                    "{}: locally computed and precomputed values must match",
-                    network_id
+                    "{network_id}: locally computed and precomputed values must match"
                 );
             });
             cbm.subsidy_by_month_table_after.iter().enumerate().for_each(|(i, x)| {
                 assert_eq!(
                     SUBSIDY_BY_MONTH_TABLE[i].div_ceil(cbm.bps().after()),
                     *x,
-                    "{}: locally computed and precomputed values must match",
-                    network_id
+                    "{network_id}: locally computed and precomputed values must match"
                 );
             });
         }
@@ -411,12 +409,12 @@ mod tests {
                 let (new_epochs, new_total) = calculate_emission(cbm);
 
                 // Epochs only represents the number of times the subsidy changed (lower after activation due to rounding)
-                println!("BASELINE:\t{}\tepochs, total emission: {}", baseline_epochs, baseline_total);
-                println!("SIGMA:\t{}\tepochs, total emission: {}, activation: {}", new_epochs, new_total, activation);
+                println!("BASELINE:\t{baseline_epochs}\tepochs, total emission: {baseline_total}");
+                println!("SIGMA:\t{new_epochs}\tepochs, total emission: {new_total}, activation: {activation}");
 
                 let diff = (new_total as i64 - baseline_total as i64) / SOMPI_PER_SPECTRE as i64;
-                assert!(diff.abs() <= 60, "activation: {}", activation);
-                println!("DIFF (SPR): {}", diff);
+                assert!(diff.abs() <= 60, "activation: {activation}");
+                println!("DIFF (SPR): {diff}");
             }
         }
     }
@@ -438,7 +436,7 @@ mod tests {
             }
             total += subsidy;
             if subsidy != prev {
-                println!("epoch: {}, subsidy: {}", epoch, subsidy);
+                println!("epoch: {epoch}, subsidy: {subsidy}");
                 prev = subsidy;
                 epoch += 1;
             }

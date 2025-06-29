@@ -444,7 +444,7 @@ impl From<NetworkId> for Params {
             NetworkType::Mainnet => MAINNET_PARAMS,
             NetworkType::Testnet => match value.suffix {
                 Some(8) => TESTNET_PARAMS,
-                Some(x) => panic!("Testnet suffix {} is not supported", x),
+                Some(x) => panic!("Testnet suffix {x} is not supported"),
                 None => panic!("Testnet suffix not provided"),
             },
             NetworkType::Devnet => DEVNET_PARAMS,

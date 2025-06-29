@@ -338,7 +338,7 @@ impl IbdFlow {
                         info!("Validating the locally built proof (sanity test fallback #2)");
                         // Note: the proof is validated in the context of *current* consensus
                         if let Err(err) = con.validate_pruning_proof(&built_proof, &proof_metadata) {
-                            panic!("Locally built proof failed validation: {}", err);
+                            panic!("Locally built proof failed validation: {err}");
                         }
                         info!("Locally built proof was validated successfully");
                     } else {

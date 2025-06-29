@@ -82,7 +82,7 @@ impl NetworkParams {
             NetworkType::Mainnet => &MAINNET_NETWORK_PARAMS,
             NetworkType::Testnet => match value.suffix {
                 Some(8) => &TESTNET8_NETWORK_PARAMS,
-                Some(x) => panic!("Testnet suffix {} is not supported", x),
+                Some(x) => panic!("Testnet suffix {x} is not supported"),
                 None => panic!("Testnet suffix not provided"),
             },
             NetworkType::Devnet => &DEVNET_NETWORK_PARAMS,

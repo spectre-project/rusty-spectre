@@ -74,7 +74,7 @@ async fn test_client_server_connections() {
             for (i, closing) in self.ends.iter().enumerate() {
                 match *closing {
                     ClosingEnd::Client => {
-                        assert!(clients[i].disconnect().await.is_ok(), "client {} failed to disconnect", i);
+                        assert!(clients[i].disconnect().await.is_ok(), "client {i} failed to disconnect");
                         clients_left -= 1;
                     }
                     ClosingEnd::Server => {}
@@ -85,8 +85,7 @@ async fn test_client_server_connections() {
                 assert_eq!(
                     server.active_connections().len(),
                     clients_left,
-                    "server should have {} client(s) left connected",
-                    clients_left
+                    "server should have {clients_left} client(s) left connected"
                 );
             }
 
@@ -95,7 +94,7 @@ async fn test_client_server_connections() {
                 server.terminate_all_connections().await;
                 tokio::time::sleep(std::time::Duration::from_millis(25)).await;
                 for (i, client) in clients.iter().enumerate() {
-                    assert!(!client.is_connected(), "server failed to disconnect client {}", i);
+                    assert!(!client.is_connected(), "server failed to disconnect client {i}");
                 }
                 assert!(!server.has_connections(), "server should have no more clients");
             }
@@ -110,7 +109,7 @@ async fn test_client_server_connections() {
             if !self.terminate_clients {
                 tokio::time::sleep(std::time::Duration::from_millis(25)).await;
                 for (i, client) in clients.iter().enumerate() {
-                    assert!(!client.is_connected(), "server failed to disconnect client {}", i);
+                    assert!(!client.is_connected(), "server failed to disconnect client {i}");
                 }
                 assert!(!server.has_connections(), "server should have no more clients");
             }

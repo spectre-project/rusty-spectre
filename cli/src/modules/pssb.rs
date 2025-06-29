@@ -240,7 +240,7 @@ impl Pssb {
     fn parse_input_pssb(input: &str) -> Result<Bundle> {
         match Bundle::try_from(input) {
             Ok(bundle) => Ok(bundle),
-            Err(e) => Err(Error::custom(format!("Error while parsing input PSSB {}", e))),
+            Err(e) => Err(Error::custom(format!("Error while parsing input PSSB {e}"))),
         }
     }
 

@@ -84,7 +84,7 @@ async fn daemon_mining_test() {
 
         while let Ok(notification) = match tokio::time::timeout(Duration::from_secs(1), event_receiver.recv()).await {
             Ok(res) => res,
-            Err(elapsed) => panic!("expected virtual event before {}", elapsed),
+            Err(elapsed) => panic!("expected virtual event before {elapsed}"),
         } {
             match notification {
                 Notification::VirtualDaaScoreChanged(msg) if msg.virtual_daa_score == i + 1 => {
@@ -194,7 +194,7 @@ async fn daemon_utxos_propagation_test() {
 
         while let Ok(notification) = match tokio::time::timeout(Duration::from_secs(1), event_receiver1.recv()).await {
             Ok(res) => res,
-            Err(elapsed) => panic!("expected virtual event before {}", elapsed),
+            Err(elapsed) => panic!("expected virtual event before {elapsed}"),
         } {
             match notification {
                 Notification::VirtualDaaScoreChanged(msg) if msg.virtual_daa_score == i + 1 => {

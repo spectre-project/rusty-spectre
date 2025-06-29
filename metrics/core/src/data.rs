@@ -294,7 +294,7 @@ impl Metric {
                 if f.is_nan() {
                     "---".to_string()
                 } else {
-                    format!("{:1.2}%", f)
+                    format!("{f:1.2}%")
                 }
             }
             Metric::NodeResidentSetSizeBytes => as_mb(f, si, short),

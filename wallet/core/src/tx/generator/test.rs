@@ -205,7 +205,7 @@ where
     let utxo_entries = pt.utxo_entries().values().cloned().collect::<Vec<_>>();
     let storage_mass = calc.calc_storage_mass_for_transaction_parts(&utxo_entries, &tx.outputs).unwrap_or(u64::MAX);
     if DISPLAY_LOGS && storage_mass != 0 {
-        println!("calculated storage mass: {} calculated_compute_mass: {}", storage_mass, compute_mass,);
+        println!("calculated storage mass: {storage_mass} calculated_compute_mass: {compute_mass}",);
     }
 
     let calculated_mass = calc.combine_mass(compute_mass, storage_mass) + additional_mass;
@@ -213,7 +213,7 @@ where
 
     if storage_mass != 0 {
         println!("PT outputs: {}", tx.outputs.len());
-        println!("PT storage mass: {:?}", storage_mass);
+        println!("PT storage mass: {storage_mass:?}");
     }
 
     assert_eq!(pt.inner.mass, calculated_mass, "pending transaction mass does not match calculated mass");
@@ -223,9 +223,7 @@ where
             let total_fees_expected = priority_fees + calculated_fees;
             assert!(
                 total_fees_expected <= pt_fees,
-                "[Fees SENDER] total fees expected: {} are greater than the PT fees: {}",
-                total_fees_expected,
-                pt_fees
+                "[Fees SENDER] total fees expected: {total_fees_expected} are greater than the PT fees: {pt_fees}"
             );
 
             // test that fee difference is below dust value as this condition can
@@ -246,9 +244,7 @@ where
             let total_fees_expected = priority_fees + calculated_fees;
             assert!(
                 total_fees_expected <= pt_fees,
-                "[Fees RECEIVER] total fees expected: {} is greater than PT fees: {}",
-                total_fees_expected,
-                pt_fees
+                "[Fees RECEIVER] total fees expected: {total_fees_expected} is greater than PT fees: {pt_fees}"
             );
 
             // test that fee difference is below dust value as this condition can
@@ -266,7 +262,7 @@ where
             );
         }
         FeesExpected::None => {
-            assert!(calculated_fees <= pt_fees, "total fees expected: {} is greater than PT fees: {}", calculated_fees, pt_fees);
+            assert!(calculated_fees <= pt_fees, "total fees expected: {calculated_fees} is greater than PT fees: {pt_fees}");
 
             // test that fee difference is below dust value as this condition can
             // occur if a dust output has been consumed to fees, resulting in
@@ -300,7 +296,7 @@ impl Harness {
             println!("{}", style(format!("fetch - checking transaction: {}", self.accumulator.borrow().list.len())).magenta());
 
             if DISPLAY_EXPECTED {
-                println!("{:#?}", expected);
+                println!("{expected:#?}");
             }
         }
         self.generator.generate_transaction().unwrap().unwrap().accumulate(&mut self.accumulator.borrow_mut()).expect(expected);
@@ -355,11 +351,11 @@ impl Harness {
                 pending = self.generator.generate_transaction().unwrap();
             }
 
-            panic!("received extra `{}` unexpected transactions", count);
+            panic!("received extra `{count}` unexpected transactions");
         }
         let summary = self.generator.summary();
         if DISPLAY_LOGS {
-            println!("{:#?}", summary);
+            println!("{summary:#?}");
         }
         summary.check(&self.accumulator.borrow());
     }
@@ -370,7 +366,7 @@ impl Harness {
                 panic!("expected insufficient funds, instead received a transaction");
             }
             Err(err) => {
-                assert!(matches!(&err, Error::InsufficientFunds { .. }), "expecting insufficient funds error, received: {:?}", err);
+                assert!(matches!(&err, Error::InsufficientFunds { .. }), "expecting insufficient funds error, received: {err:?}");
             }
         }
     }

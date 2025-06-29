@@ -15,7 +15,7 @@ fn main() {
     // Create the PSST.
     let created = PSST::<Creator>::default().inputs_modifiable().outputs_modifiable();
     let ser = serde_json::to_string_pretty(&created).expect("Failed to serialize after creation");
-    println!("Serialized after creation: {}", ser);
+    println!("Serialized after creation: {ser}");
 
     // The first constructor entity receives the PSST and adds an input.
     let psst: PSST<Creator> = serde_json::from_str(&ser).expect("Failed to deserialize");
@@ -37,18 +37,18 @@ fn main() {
         .unwrap();
     let psst_in0 = psst.constructor().input(input_0);
     let ser_in_0 = serde_json::to_string_pretty(&psst_in0).expect("Failed to serialize after adding first input");
-    println!("Serialized after adding first input: {}", ser_in_0);
+    println!("Serialized after adding first input: {ser_in_0}");
 
     let combiner_psst: PSST<Combiner> = serde_json::from_str(&ser).expect("Failed to deserialize");
     let combined_psst = (combiner_psst + psst_in0).unwrap();
     let ser_combined = serde_json::to_string_pretty(&combined_psst).expect("Failed to serialize after adding output");
-    println!("Serialized after combining: {}", ser_combined);
+    println!("Serialized after combining: {ser_combined}");
 
     // The PSST is now ready for handling with the updater role.
     let updater_psst: PSST<Updater> = serde_json::from_str(&ser_combined).expect("Failed to deserialize");
     let updater_psst = updater_psst.set_sequence(u64::MAX, 0).expect("Failed to set sequence");
     let ser_updated = serde_json::to_string_pretty(&updater_psst).expect("Failed to serialize after setting sequence");
-    println!("Serialized after setting sequence: {}", ser_updated);
+    println!("Serialized after setting sequence: {ser_updated}");
 
     let signer_psst: PSST<Signer> = serde_json::from_str(&ser_updated).expect("Failed to deserialize");
     let reused_values = SigHashReusedValuesUnsync::new();
@@ -78,7 +78,7 @@ fn main() {
     let combiner_psst: PSST<Combiner> = serde_json::from_str(&ser_updated).expect("Failed to deserialize");
     let combined_signed = (combiner_psst + signed_0).and_then(|combined| combined + signed_1).unwrap();
     let ser_combined_signed = serde_json::to_string_pretty(&combined_signed).expect("Failed to serialize after combining signed");
-    println!("Combined Signed: {}", ser_combined_signed);
+    println!("Combined Signed: {ser_combined_signed}");
     let psst_finalizer: PSST<Finalizer> = serde_json::from_str(&ser_combined_signed).expect("Failed to deserialize");
     let psst_finalizer = psst_finalizer
         .finalize_sync(|inner: &Inner| -> Result<Vec<Vec<u8>>, String> {
@@ -112,10 +112,10 @@ fn main() {
         })
         .unwrap();
     let ser_finalized = serde_json::to_string_pretty(&psst_finalizer).expect("Failed to serialize after finalizing");
-    println!("Finalized: {}", ser_finalized);
+    println!("Finalized: {ser_finalized}");
 
     let extractor_psst: PSST<Extractor> = serde_json::from_str(&ser_finalized).expect("Failed to deserialize");
     let tx = extractor_psst.extract_tx().unwrap()(10).0;
     let ser_tx = serde_json::to_string_pretty(&tx).unwrap();
-    println!("Tx: {}", ser_tx);
+    println!("Tx: {ser_tx}");
 }

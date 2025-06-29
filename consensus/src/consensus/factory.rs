@@ -36,7 +36,7 @@ impl ConsensusEntry {
     }
 
     pub fn from_key(key: u64) -> Self {
-        Self { key, directory_name: format!("consensus-{:0>3}", key), creation_timestamp: unix_now() }
+        Self { key, directory_name: format!("consensus-{key:0>3}"), creation_timestamp: unix_now() }
     }
 }
 

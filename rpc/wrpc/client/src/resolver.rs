@@ -175,7 +175,7 @@ impl Resolver {
                 Err(error) => errors.push(error),
             }
         }
-        Err(Error::Custom(format!("Failed to connect: {:?}", errors)))
+        Err(Error::Custom(format!("Failed to connect: {errors:?}")))
     }
 
     /// Obtain a Spectre p2p [`NodeDescriptor`] from the resolver based on the supplied [`Encoding`] and [`NetworkId`].

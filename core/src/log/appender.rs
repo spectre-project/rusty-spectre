@@ -37,7 +37,7 @@ impl AppenderSpec {
             let trigger = Box::new(SizeTrigger::new(LOG_FILE_MAX_SIZE));
 
             let file_path = PathBuf::from(log_dir).join(file_name);
-            let roller_pattern = PathBuf::from(log_dir).join(format!("{}{}", file_name, LOG_ARCHIVE_SUFFIX));
+            let roller_pattern = PathBuf::from(log_dir).join(format!("{file_name}{LOG_ARCHIVE_SUFFIX}"));
             let roller = Box::new(
                 FixedWindowRoller::builder()
                     .base(LOG_FILE_BASE_ROLLS)

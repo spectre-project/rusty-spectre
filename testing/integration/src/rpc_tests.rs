@@ -126,7 +126,7 @@ async fn sanity_test() {
                     // Wait for virtual event indicating the block was processed and entered past(virtual)
                     while let Ok(notification) = match tokio::time::timeout(Duration::from_secs(1), event_receiver.recv()).await {
                         Ok(res) => res,
-                        Err(elapsed) => panic!("expected virtual event before {}", elapsed),
+                        Err(elapsed) => panic!("expected virtual event before {elapsed}"),
                     } {
                         match notification {
                             Notification::VirtualDaaScoreChanged(msg) if msg.virtual_daa_score == 1 => {

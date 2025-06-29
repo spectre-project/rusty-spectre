@@ -128,7 +128,7 @@ mod tests {
             Default::default(),
         );
         let json = serde_json::to_string(&header).unwrap();
-        println!("{}", json);
+        println!("{json}");
 
         let v = serde_json::from_str::<Value>(&json).unwrap();
         let blue_work = v.get("blueWork").expect("missing `blueWork` property");

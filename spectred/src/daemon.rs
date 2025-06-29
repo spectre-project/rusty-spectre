@@ -117,7 +117,7 @@ fn get_user_approval_or_exit(message: &str, approve: bool) {
     if approve {
         return;
     }
-    println!("{}", message);
+    println!("{message}");
     let mut input = String::new();
     match std::io::stdin().read_line(&mut input) {
         Ok(_) => {
@@ -126,7 +126,7 @@ fn get_user_approval_or_exit(message: &str, approve: bool) {
             if answer == "y" || answer == "yes" {
                 // return
             } else {
-                println!("Operation was rejected ({}), exiting..", answer);
+                println!("Operation was rejected ({answer}), exiting..");
                 exit(1);
             }
         }
@@ -231,7 +231,7 @@ pub fn create_core_with_runtime(runtime: &Runtime, args: &Args, fd_total_budget:
     };
     // Make sure args forms a valid set of properties
     if let Err(err) = validate_args(args) {
-        println!("{}", err);
+        println!("{err}");
         exit(1);
     }
 
@@ -301,7 +301,7 @@ do you confirm? (answer y/n or pass --yes to the Spectred command line to confir
                 retention_period_days, worst_case_usage
             );
         } else {
-            panic!("Retention period ({}) must be at least {} days", retention_period_days, MINIMUM_RETENTION_PERIOD_DAYS);
+            panic!("Retention period ({retention_period_days}) must be at least {MINIMUM_RETENTION_PERIOD_DAYS} days");
         }
     }
 

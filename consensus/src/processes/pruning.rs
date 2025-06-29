@@ -585,7 +585,7 @@ mod tests {
             let finality_depth = params.finality_depth();
             let ghostdag_k = params.ghostdag_k();
 
-            println!("Network: {:?}", net);
+            println!("Network: {net:?}");
             println!("finality_depth.before(): {}", finality_depth.before());
             println!("finality_depth.after(): {}", finality_depth.after());
             println!("mod result: {}", finality_depth.after() % finality_depth.before());

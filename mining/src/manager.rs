@@ -172,7 +172,7 @@ impl MiningManager {
                                 x,
                                 true,
                                 TxRemovalReason::InvalidInBlockTemplate,
-                                format!(" error: {}", err).as_str(),
+                                format!(" error: {err}").as_str(),
                             )
                         };
                         if let Err(err) = removal_result {

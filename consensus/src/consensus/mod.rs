@@ -881,7 +881,7 @@ impl ConsensusApi for Consensus {
         self.services
             .pruning_point_manager
             .are_pruning_points_in_valid_chain(pp_info, syncer_virtual_selected_parent)
-            .map_err(|e| ConsensusError::GeneralOwned(format!("past pruning points do not form a valid chain: {}", e)))
+            .map_err(|e| ConsensusError::GeneralOwned(format!("past pruning points do not form a valid chain: {e}")))
     }
 
     fn is_chain_ancestor_of(&self, low: Hash, high: Hash) -> ConsensusResult<bool> {

@@ -82,7 +82,7 @@ impl PruningProofManager {
                 let selected_tip = selected_tip_by_level[level];
                 let block_at_depth_2m = self
                     .block_at_depth(&*ghostdag_stores[level], selected_tip, 2 * self.pruning_proof_m)
-                    .map_err(|err| format!("level: {}, err: {}", level, err))
+                    .map_err(|err| format!("level: {level}, err: {err}"))
                     .unwrap();
 
                 // TODO (relaxed): remove the assertion below
@@ -106,7 +106,7 @@ impl PruningProofManager {
                             block_at_depth_m_at_next_level,
                             block_at_depth_2m,
                         )
-                        .map_err(|err| format!("level: {}, err: {}", level, err))
+                        .map_err(|err| format!("level: {level}, err: {err}"))
                         .unwrap()
                     }
                 } else {
@@ -148,7 +148,7 @@ impl PruningProofManager {
                     .chain_up_to_depth(&*ghostdag_stores[level], selected_tip, 2 * self.pruning_proof_m)
                     .map_err(|err| {
                         dbg!(level, selected_tip, block_at_depth_2m, root);
-                        format!("Assert 2M chain -- level: {}, err: {}", level, err)
+                        format!("Assert 2M chain -- level: {level}, err: {err}")
                     })
                     .unwrap();
                 let chain_2m_len = chain_2m.len();
@@ -164,7 +164,7 @@ impl PruningProofManager {
                         dbg!(ghostdag_stores[level].get_compact_data(selected_tip).unwrap().blue_score);
                         dbg!(ghostdag_stores[level].get_compact_data(block_at_depth_2m).unwrap().blue_score);
                         dbg!(level, selected_tip, block_at_depth_2m, root);
-                        panic!("Assert 2M chain -- missing block {} at index {} out of {} chain blocks", chain_hash, i, chain_2m_len);
+                        panic!("Assert 2M chain -- missing block {chain_hash} at index {i} out of {chain_2m_len} chain blocks");
                     }
                 }
 

@@ -473,7 +473,7 @@ impl SpectreCli {
                                         let pending_utxo_count = balance.as_ref().map(|balance|balance.pending_utxo_count).unwrap_or(0);
 
                                         let pending_utxo_info = if pending_utxo_count > 0 {
-                                            format!("({} pending)", pending_utxo_count)
+                                            format!("({pending_utxo_count} pending)")
                                         } else { "".to_string() };
                                         let utxo_info = style(format!("{mature_utxo_count} UTXOs {pending_utxo_info}")).dim();
 
@@ -632,7 +632,7 @@ impl SpectreCli {
             let range = if flat_list.len() > 1 { format!("[{}..{}] ", 0, flat_list.len() - 1) } else { "".to_string() };
 
             let text =
-                self.term().ask(false, &format!("Please select account {}or <enter> to abort: ", range)).await?.trim().to_string();
+                self.term().ask(false, &format!("Please select account {range}or <enter> to abort: ")).await?.trim().to_string();
             if text.is_empty() {
                 return Err(Error::UserAbort);
             } else {
@@ -683,7 +683,7 @@ impl SpectreCli {
             let range = if flat_list.len() > 1 { format!("[{}..{}] ", 0, flat_list.len() - 1) } else { "".to_string() };
 
             let text =
-                self.term().ask(false, &format!("Please select private key {}or <enter> to abort: ", range)).await?.trim().to_string();
+                self.term().ask(false, &format!("Please select private key {range}or <enter> to abort: ")).await?.trim().to_string();
             if text.is_empty() {
                 return Err(Error::UserAbort);
             } else {

@@ -259,7 +259,7 @@ pub struct DbGhostdagStore {
 
 impl DbGhostdagStore {
     pub fn new(db: Arc<DB>, level: BlockLevel, cache_policy: CachePolicy, compact_cache_policy: CachePolicy) -> Self {
-        assert_ne!(SEPARATOR, level, "level {} is reserved for the separator", level);
+        assert_ne!(SEPARATOR, level, "level {level} is reserved for the separator");
         let lvl_bytes = level.to_le_bytes();
         let prefix = DatabaseStorePrefixes::Ghostdag.into_iter().chain(lvl_bytes).collect_vec();
         let compact_prefix = DatabaseStorePrefixes::GhostdagCompact.into_iter().chain(lvl_bytes).collect_vec();
@@ -278,7 +278,7 @@ impl DbGhostdagStore {
         compact_cache_policy: CachePolicy,
         temp_index: u8,
     ) -> Self {
-        assert_ne!(SEPARATOR, level, "level {} is reserved for the separator", level);
+        assert_ne!(SEPARATOR, level, "level {level} is reserved for the separator");
         let lvl_bytes = level.to_le_bytes();
         let temp_index_bytes = temp_index.to_le_bytes();
         let prefix = DatabaseStorePrefixes::TempGhostdag.into_iter().chain(lvl_bytes).chain(temp_index_bytes).collect_vec();
@@ -370,7 +370,7 @@ impl GhostdagStore for DbGhostdagStore {
             return Err(StoreError::HashAlreadyExists(hash));
         }
         if self.compact_access.has(hash)? {
-            return Err(StoreError::DataInconsistency(format!("store has compact data for {} but is missing full data", hash)));
+            return Err(StoreError::DataInconsistency(format!("store has compact data for {hash} but is missing full data")));
         }
         let mut batch = WriteBatch::default();
         self.access.write(BatchDbWriter::new(&mut batch), hash, data.clone())?;

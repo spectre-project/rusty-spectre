@@ -45,7 +45,7 @@ pub struct DbRelationsStore {
 
 impl DbRelationsStore {
     pub fn new(db: Arc<DB>, level: BlockLevel, cache_policy: CachePolicy, children_cache_policy: CachePolicy) -> Self {
-        assert_ne!(SEPARATOR, level, "level {} is reserved for the separator", level);
+        assert_ne!(SEPARATOR, level, "level {level} is reserved for the separator");
         let lvl_bytes = level.to_le_bytes();
         let parents_prefix = DatabaseStorePrefixes::RelationsParents.into_iter().chain(lvl_bytes).collect_vec();
 

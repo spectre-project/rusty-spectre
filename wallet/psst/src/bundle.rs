@@ -293,13 +293,13 @@ mod tests {
 
         // Serialize Bundle
         let serialized = bundle.serialize().map_err(|err| format!("Unable to serialize bundle: {err}")).unwrap();
-        println!("Serialized: {}", serialized);
+        println!("Serialized: {serialized}");
 
         assert!(!bundle.0.is_empty());
 
         match Bundle::deserialize(&serialized) {
             Ok(bundle_constructor_deser) => {
-                println!("Deserialized: {:?}", bundle_constructor_deser);
+                println!("Deserialized: {bundle_constructor_deser:?}");
                 let psst_constructor_deser: Option<PSST<Constructor>> =
                     bundle_constructor_deser.0.first().map(|inner| PSST::from(inner.clone()));
                 match psst_constructor_deser {
@@ -308,7 +308,7 @@ mod tests {
                 }
             }
             Err(e) => {
-                eprintln!("Failed to deserialize: {}", e);
+                eprintln!("Failed to deserialize: {e}");
                 panic!()
             }
         }

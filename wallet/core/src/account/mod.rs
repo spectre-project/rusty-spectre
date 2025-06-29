@@ -416,7 +416,7 @@ pub trait Account: AnySync + Send + Sync + 'static {
                     ids.push(transaction.try_submit(&self.wallet().rpc_api()).await?);
                 }
                 Err(e) => {
-                    eprintln!("Error processing a PSST from bundle: {:?}", e);
+                    eprintln!("Error processing a PSST from bundle: {e:?}");
                 }
             }
         }

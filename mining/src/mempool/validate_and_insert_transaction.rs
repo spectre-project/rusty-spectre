@@ -89,7 +89,7 @@ impl Mempool {
         if !txs_to_remove.is_empty() {
             let transaction_pool_len_before = self.transaction_pool.len();
             for x in txs_to_remove.iter() {
-                self.remove_transaction(x, true, TxRemovalReason::MakingRoom, format!(" for {}", transaction_id).as_str())?;
+                self.remove_transaction(x, true, TxRemovalReason::MakingRoom, format!(" for {transaction_id}").as_str())?;
                 // self.transaction_pool.limit_transaction_count(&transaction) returns the
                 // smallest prefix of `ready_transactions` (sorted by ascending fee-rate)
                 // that makes enough room for `transaction`, but since each call to `self.remove_transaction`

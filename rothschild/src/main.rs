@@ -131,7 +131,7 @@ pub fn cli() -> Command {
 async fn new_rpc_client(subscription_context: &SubscriptionContext, address: &str) -> GrpcClient {
     GrpcClient::connect_with_args(
         NotificationMode::Direct,
-        format!("grpc://{}", address),
+        format!("grpc://{address}"),
         Some(subscription_context.clone()),
         true,
         None,

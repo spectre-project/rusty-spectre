@@ -227,7 +227,7 @@ impl RelayTransactionsFlow {
                 Ok(_) => {}
                 Err(MiningManagerError::MempoolError(RuleError::RejectInvalid(transaction_id))) => {
                     // TODO: discuss a banning process
-                    return Err(ProtocolError::MisbehavingPeer(format!("rejected invalid transaction {}", transaction_id)));
+                    return Err(ProtocolError::MisbehavingPeer(format!("rejected invalid transaction {transaction_id}")));
                 }
                 Err(MiningManagerError::MempoolError(RuleError::RejectSpamTransaction(_)))
                 | Err(MiningManagerError::MempoolError(RuleError::RejectNonStandard(..))) => {

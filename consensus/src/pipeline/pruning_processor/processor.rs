@@ -214,7 +214,7 @@ impl PruningProcessor {
             let time_display = if time_until_next_pruning_sec > 3600.0 {
                 format!("{:.2} h", time_until_next_pruning_sec / 3600.0)
             } else {
-                format!("{:.2} s", time_until_next_pruning_sec)
+                format!("{time_until_next_pruning_sec:.2} s")
             };
 
             info!(
@@ -700,7 +700,7 @@ impl PruningProcessor {
         assert_eq!(proof_hashes.len(), built_proof_hashes.len(), "Rebuilt proof does not match the expected reference");
         for (i, (a, b)) in proof_hashes.into_iter().zip(built_proof_hashes).enumerate() {
             if a != b {
-                panic!("Proof built following pruning does not match the previous proof: built[{}]={}, prev[{}]={}", i, b, i, a);
+                panic!("Proof built following pruning does not match the previous proof: built[{i}]={b}, prev[{i}]={a}");
             }
         }
         info!("Proof was rebuilt successfully following pruning");

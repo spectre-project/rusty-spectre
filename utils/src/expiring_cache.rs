@@ -122,7 +122,7 @@ mod tests {
             panic!("should not be called");
         });
         let (item3, item4) = join!(call3, call4);
-        println!("item 3: {}, item 4: {}", item3, item4);
+        println!("item 3: {item3}, item 4: {item4}");
         assert_eq!(3, item3);
         assert_eq!(1, item4);
 
@@ -136,7 +136,7 @@ mod tests {
         });
         let call6 = cache.get(async move { 6 });
         let (item5, item6) = join!(call5, call6);
-        println!("item 5: {}, item 6: {}", item5, item6);
+        println!("item 5: {item5}, item 6: {item6}");
         assert_eq!(5, item5);
         assert_eq!(6, item6);
 

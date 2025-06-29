@@ -499,9 +499,7 @@ mod tests {
         let normal_feerate = estimations.normal_buckets.first().unwrap().feerate;
         assert!(
             normal_feerate < HIGH_FEERATE / 10.0,
-            "Normal bucket feerate is expected to be << high feerate due to small mass of high feerate txs ({}, {})",
-            normal_feerate,
-            HIGH_FEERATE
+            "Normal bucket feerate is expected to be << high feerate due to small mass of high feerate txs ({normal_feerate}, {HIGH_FEERATE})"
         );
 
         let buckets = estimations.ordered_buckets();
