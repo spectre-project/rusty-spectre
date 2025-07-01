@@ -40,3 +40,6 @@ tokio = { workspace = true, features = ["rt", "macros", "rt-multi-thread"] }
 [features]
 heap = ["dhat", "spectre-alloc/heap"]
 semaphore-trace = ["spectre-utils/semaphore-trace"]
+
+[lints]
+workspace = true

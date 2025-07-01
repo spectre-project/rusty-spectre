@@ -67,3 +67,6 @@ serde_with = "3.7.0"
 heap = ["dhat", "spectre-alloc/heap"]
 devnet-prealloc = ["spectre-consensus/devnet-prealloc"]
 semaphore-trace = ["spectre-utils/semaphore-trace"]
+
+[lints]
+workspace = true

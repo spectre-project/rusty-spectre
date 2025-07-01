@@ -16,3 +16,5 @@ spectre-rpc-core.workspace = true
 spectre-wrpc-client.workspace = true
 tokio.workspace = true
 
+[lints]
+workspace = true
