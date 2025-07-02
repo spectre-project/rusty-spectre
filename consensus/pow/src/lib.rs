@@ -43,7 +43,7 @@ impl State {
     /// PRE_POW_HASH || TIME || 32 zero byte padding || NONCE
     pub fn calculate_spectrex_v1(&self, nonce: u64) -> Uint256 {
         // Hasher already contains PRE_POW_HASH || TIME || 32 zero byte padding; so only the NONCE is missing
-        let hash = self.hasher.clone().finalize_with_nonce(nonce);
+        let hash = self.hasher.finalize_with_nonce(nonce);
         let bwt_hash = astrobwtv3::astrobwtv3_hash(&hash.as_bytes());
         let hash = self.matrix.heavy_hash(bwt_hash.into());
         Uint256::from_le_bytes(hash.as_bytes())
@@ -54,7 +54,7 @@ impl State {
     /// PRE_POW_HASH || TIME || 32 zero byte padding || NONCE
     pub fn calculate_spectrex_v2(&self, nonce: u64) -> Uint256 {
         // Hasher already contains PRE_POW_HASH || TIME || 32 zero byte padding; so only the NONCE is missing
-        let hash = self.hasher.clone().finalize_with_nonce(nonce);
+        let hash = self.hasher.finalize_with_nonce(nonce);
         let bwt_hash = astrobwtv3::astrobwtv3_hash(&hash.as_bytes());
         let hash = self.matrix.heavy_hash_v2(bwt_hash.into());
         Uint256::from_le_bytes(hash.as_bytes())
