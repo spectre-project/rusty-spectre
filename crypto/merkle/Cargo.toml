@@ -11,3 +11,6 @@ repository.workspace = true
 
 [dependencies]
 spectre-hashes.workspace = true
+
+[lints]
+workspace = true

@@ -27,3 +27,6 @@ thiserror.workspace = true
 [dev-dependencies]
 spectre-consensus.workspace = true
 rand = { workspace = true, features = ["small_rng"] }
+
+[lints]
+workspace = true

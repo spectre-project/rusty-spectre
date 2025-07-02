@@ -402,7 +402,7 @@ utxoindex = false
 disable-upnp = true
 perf-metrics = true
 appdir = "some-dir"
-netsuffix = 11
+netsuffix = 8
 addpeer = ["10.0.0.1", "1.2.3.4"]
 ```
 

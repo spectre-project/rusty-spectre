@@ -55,7 +55,7 @@ declare! {
          */
         encoding?: Encoding;
         /**
-         * Network identifier: `mainnet`, `testnet-10` etc.
+         * Network identifier: `mainnet`, `testnet-8` etc.
          * `networkId` is required when using a resolver.
          */
         networkId?: NetworkId | string;

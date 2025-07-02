@@ -109,11 +109,11 @@ let {RpcClient,Encoding,initConsolePanicHook} = require('./spectre-rpc');
 // initBrowserPanicHook();
 
 // if port is not specified, it will use the default port for the specified network
-const rpc = new RpcClient("127.0.0.1", Encoding.Borsh, "testnet-10");
+const rpc = new RpcClient("127.0.0.1", Encoding.Borsh, "testnet-8");
 const rpc = new RpcClient({
     url : "127.0.0.1",
     encoding : Encoding.Borsh,
-    networkId : "testnet-10"
+    networkId : "testnet-8"
 });
 
 
@@ -151,7 +151,10 @@ cfg_if::cfg_if! {
 
         pub use spectre_addresses::{Address, Version as AddressVersion};
         pub use spectre_consensus_core::tx::{ScriptPublicKey, Transaction, TransactionInput, TransactionOutpoint, TransactionOutput};
+
+        #[cfg(feature = "spectre-pow")]
         pub use spectre_pow::wasm::*;
+
         pub use spectre_txscript::wasm::*;
 
         pub mod rpc {
@@ -178,7 +181,10 @@ cfg_if::cfg_if! {
 
         pub use spectre_addresses::{Address, Version as AddressVersion};
         pub use spectre_consensus_core::tx::{ScriptPublicKey, Transaction, TransactionInput, TransactionOutpoint, TransactionOutput};
+
+        #[cfg(feature = "spectre-pow")]
         pub use spectre_pow::wasm::*;
+
         pub use spectre_txscript::wasm::*;
 
         pub mod rpc {
