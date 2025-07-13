@@ -37,7 +37,7 @@ use spectre_consensus_core::{
     BlockHashMap, BlockHashSet, BlockLevel,
 };
 use spectre_consensusmanager::SessionLock;
-use spectre_core::{debug, info, trace, warn};
+use spectre_core::{debug, info, time::unix_now, trace, warn};
 use spectre_database::prelude::{BatchDbWriter, MemoryWriter, StoreResultExtensions, DB};
 use spectre_hashes::Hash;
 use spectre_muhash::MuHash;
@@ -46,7 +46,7 @@ use std::{
     collections::{hash_map::Entry::Vacant, VecDeque},
     ops::Deref,
     sync::{
-        atomic::{AtomicBool, Ordering},
+        atomic::{AtomicBool, AtomicU64, Ordering},
         Arc,
     },
     time::{Duration, Instant},
@@ -84,7 +84,7 @@ pub struct PruningProcessor {
     is_consensus_exiting: Arc<AtomicBool>,
 
     // PP Logging
-    last_log_time: std::sync::Mutex<u64>,
+    last_log_time: AtomicU64,
 }
 
 impl Deref for PruningProcessor {
@@ -116,7 +116,7 @@ impl PruningProcessor {
             pruning_lock,
             config,
             is_consensus_exiting,
-            last_log_time: std::sync::Mutex::new(0),
+            last_log_time: AtomicU64::new(unix_now()),
         }
     }
 
@@ -172,11 +172,11 @@ impl PruningProcessor {
     }
 
     fn should_log_periodic_pp_estimate(&self) -> bool {
-        let now = spectre_core::time::unix_now();
-        let mut last_log = self.last_log_time.lock().unwrap();
+        let now = unix_now();
+        let last_log = self.last_log_time.load(Ordering::Relaxed);
 
-        if now - *last_log > 60_000 {
-            *last_log = now;
+        if now.saturating_sub(last_log) > 60_000 {
+            self.last_log_time.store(now, Ordering::Relaxed);
             true
         } else {
             false
