@@ -1,7 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
 use crate::{
-    constants,
     errors::{coinbase::CoinbaseError, tx::TxRuleError},
     tx::{TransactionId, TransactionOutpoint},
     BlueWorkType,
@@ -28,8 +27,8 @@ impl<T: Display + Clone> Display for TwoDimVecDisplay<T> {
 
 #[derive(Error, Debug, Clone)]
 pub enum RuleError {
-    #[error("wrong block version: got {0} but expected {}", constants::BLOCK_VERSION)]
-    WrongBlockVersion(u16),
+    #[error("wrong block version: got {0} but expected {1}")]
+    WrongBlockVersion(u16, u16),
 
     #[error("the block timestamp is too far into the future: block timestamp is {0} but maximum timestamp allowed is {1}")]
     TimeTooFarIntoTheFuture(u64, u64),
@@ -97,14 +96,20 @@ pub enum RuleError {
     #[error("coinbase blue score of {0} is not the expected value of {1}")]
     BadCoinbasePayloadBlueScore(u64, u64),
 
+    #[error("coinbase mass commitment field is not zero")]
+    CoinbaseNonZeroMassCommitment,
+
     #[error("transaction in isolation validation failed for tx {0}: {1}")]
     TxInIsolationValidationFailed(TransactionId, TxRuleError),
 
-    #[error("block exceeded mass limit of {0}")]
-    ExceedsMassLimit(u64),
+    #[error("block compute mass {0} exceeds limit of {1}")]
+    ExceedsComputeMassLimit(u64, u64),
 
-    #[error("transaction {0} has mass field of {1} but mass should be at least {2}")]
-    MassFieldTooLow(TransactionId, u64, u64),
+    #[error("block transient storage mass {0} exceeds limit of {1}")]
+    ExceedsTransientMassLimit(u64, u64),
+
+    #[error("block persistent storage mass {0} exceeds limit of {1}")]
+    ExceedsStorageMassLimit(u64, u64),
 
     #[error("outpoint {0} is spent more than once on the same block")]
     DoubleSpendInSameBlock(TransactionOutpoint),

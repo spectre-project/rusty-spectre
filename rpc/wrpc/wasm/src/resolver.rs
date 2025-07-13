@@ -58,7 +58,7 @@ declare! {
          */
         encoding?: Encoding | string;
         /**
-         * Network identifier: `mainnet` or `testnet-11` etc.
+         * Network identifier: `mainnet` or `testnet-8` etc.
          */
         networkId?: NetworkId | string;
     }

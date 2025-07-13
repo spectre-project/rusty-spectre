@@ -46,7 +46,7 @@ function parseArgs(options = {
         }, tokens: true, allowPositionals: true
     });
     if (values.help) {
-        console.log(`Usage: node ${script} [address] [mainnet|testnet-10|testnet-11] [--address <address>] [--network <mainnet|testnet-10|testnet-11>] [--encoding <borsh|json>] ${options.additionalHelpOutput}`);
+        console.log(`Usage: node ${script} [address] [mainnet|testnet-8] [--address <address>] [--network <mainnet|testnet-8>] [--encoding <borsh|json>] ${options.additionalHelpOutput}`);
         process.exit(0);
     }
 

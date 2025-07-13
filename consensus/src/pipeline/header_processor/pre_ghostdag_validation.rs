@@ -15,23 +15,25 @@ impl HeaderProcessor {
     /// Validates the header in isolation including pow check against header declared bits.
     /// Returns the block level as computed from pow state or a rule error if such was encountered
     pub(super) fn validate_header_in_isolation(&self, header: &Header) -> BlockProcessResult<BlockLevel> {
-        self.check_header_version(header)?;
+        self.check_header_version_in_isolation(header)?;
         self.check_block_timestamp_in_isolation(header)?;
-        self.check_parents_limit(header)?;
+        self.check_parents_limit_upper_bound(header)?;
         Self::check_parents_not_origin(header)?;
         self.check_pow_and_calc_block_level(header)
+    }
+
+    fn check_header_version_in_isolation(&self, header: &Header) -> BlockProcessResult<()> {
+        // For isolation validation, we need to check if the version is at least valid
+        // We can't check the exact expected version since we don't have selected parent info yet
+        match header.version {
+            constants::BLOCK_VERSION_SPECTREXV1 | constants::BLOCK_VERSION_SPECTREXV2 => Ok(()),
+            _ => Err(RuleError::WrongBlockVersion(header.version, 0)),
+        }
     }
 
     pub(super) fn validate_parent_relations(&self, header: &Header) -> BlockProcessResult<()> {
         self.check_parents_exist(header)?;
         self.check_parents_incest(header)?;
-        Ok(())
-    }
-
-    fn check_header_version(&self, header: &Header) -> BlockProcessResult<()> {
-        if header.version != constants::BLOCK_VERSION {
-            return Err(RuleError::WrongBlockVersion(header.version));
-        }
         Ok(())
     }
 
@@ -44,13 +46,16 @@ impl HeaderProcessor {
         Ok(())
     }
 
-    fn check_parents_limit(&self, header: &Header) -> BlockProcessResult<()> {
+    fn check_parents_limit_upper_bound(&self, header: &Header) -> BlockProcessResult<()> {
         if header.direct_parents().is_empty() {
             return Err(RuleError::NoParents);
         }
 
-        if header.direct_parents().len() > self.max_block_parents as usize {
-            return Err(RuleError::TooManyParents(header.direct_parents().len(), self.max_block_parents as usize));
+        // [Sigma]: moved the tight parents limit check to pre_pow_validation since it requires selected parent DAA score info
+        // which is available only post ghostdag. We keep this upper bound check here since this method is applied to trusted blocks
+        // as well.
+        if header.direct_parents().len() > self.max_block_parents.upper_bound() as usize {
+            return Err(RuleError::TooManyParents(header.direct_parents().len(), self.max_block_parents.upper_bound() as usize));
         }
 
         Ok(())

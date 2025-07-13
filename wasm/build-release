@@ -4,6 +4,13 @@
 # make the script fail for any failed command
 set -e
 
+# Workaround for Rust 1.87.0
+# https://github.com/rust-lang/rust/issues/141048
+export RUSTFLAGS=-Ctarget-cpu=mvp
+
+# getrandom backend for WASM32 targets (required for getrandom 0.3.*)
+export RUSTFLAGS="$RUSTFLAGS --cfg getrandom_backend=\"wasm_js\""
+
 rm -rf release/*
 rm -rf web/*
 rm -rf nodejs/*

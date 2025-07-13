@@ -1,0 +1,26 @@
+[package]
+name = "spectre-p2p-mining"
+description = "Spectre p2p mining"
+rust-version.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+include.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+spectre-core.workspace = true
+spectre-consensus-core.workspace = true
+spectre-consensusmanager.workspace = true
+spectre-mining-errors.workspace = true
+spectre-hashes.workspace = true
+spectre-math.workspace = true
+spectre-p2p-lib.workspace = true
+spectre-utils.workspace = true
+spectre-utils-tower.workspace = true
+log.workspace = true
+tokio.workspace = true
+
+[lints]
+workspace = true
